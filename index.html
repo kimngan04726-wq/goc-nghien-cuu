@@ -829,5 +829,89 @@ initialize = async function() {
 })();
 </script>
 
+
+<!-- GALLERY: mở bài riêng, giữ nguyên dữ liệu và trình soạn thảo -->
+<style>
+#research.gallery-detail > :not(#researchDetail):not(#researchEditor){display:none!important}
+#researchDetail{display:none}
+#research.gallery-detail #researchDetail{display:block}
+#researchDetail .detail-content{font-size:19px;line-height:1.75;overflow-wrap:anywhere;white-space:pre-wrap}
+#researchDetail .detail-content.rich-format{white-space:normal}
+#researchDetail img{max-width:100%;height:auto}
+#researchDetail table{width:100%;border-collapse:collapse}
+#researchDetail td,#researchDetail th{border:1px solid #bbb;padding:9px}
+#research.gallery-detail #researchEditor{margin-top:18px}
+#research .card{cursor:pointer;transition:box-shadow .15s}
+#research .card:hover{box-shadow:0 4px 18px #19364e22}
+#research .card:focus-visible{outline:3px solid #7596ad}
+#research .card .research-content{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-height:95px}
+</style>
+<script>
+(function(){
+  const section=document.getElementById('research');
+  const cards=Array.from(section.querySelectorAll('.card'));
+  let selected=null;
+  const detail=document.createElement('div');
+  detail.id='researchDetail';
+  const back=document.createElement('button');
+  back.textContent='← Quay lại Gallery';
+  const heading=document.createElement('h2');
+  const body=document.createElement('div');
+  body.className='detail-content';
+  const edit=document.createElement('button');
+  edit.textContent='✎ Chỉnh sửa';
+  edit.style.marginTop='16px';
+  detail.append(back,heading,body,edit);
+  section.insertBefore(detail,document.getElementById('researchEditor'));
+
+  function refresh(){
+    if(selected===null)return;
+    const card=cards[selected-1];
+    heading.textContent=card.querySelector('h3')?.textContent||'Trang nghiên cứu';
+    const source=card.querySelector('.research-content');
+    body.className='detail-content'+(source.classList.contains('rich-format')?' rich-format':'');
+    if(source.classList.contains('rich-format')){
+      if(window.DOMPurify)body.innerHTML=DOMPurify.sanitize(source.innerHTML);
+      else body.textContent=source.textContent;
+    }else body.textContent=source.textContent;
+    edit.style.display=isAdmin?'inline-block':'none';
+  }
+  function open(id){
+    selected=id;
+    section.classList.add('gallery-detail');
+    refresh();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function close(){
+    if(document.getElementById('researchEditor').style.display==='block'){
+      if(!confirm('Hủy các thay đổi chưa lưu và quay lại Gallery?'))return;
+      cancelResearch();
+    }
+    selected=null;
+    section.classList.remove('gallery-detail');
+  }
+  cards.forEach((card,index)=>{
+    card.tabIndex=0;
+    card.setAttribute('role','button');
+    card.setAttribute('aria-label','Mở trang '+(index+1));
+    card.addEventListener('click',event=>{
+      if(event.target.closest('.research-edit-button'))return;
+      open(index+1);
+    });
+    card.addEventListener('keydown',event=>{
+      if(event.key==='Enter' && !event.target.closest('button'))open(index+1);
+    });
+  });
+  back.onclick=close;
+  edit.onclick=()=>{if(isAdmin && selected!==null){edit.style.display='none';openResearchEditor(selected);}};
+  const oldCancel=cancelResearch;
+  cancelResearch=function(){oldCancel();if(selected!==null)refresh();};
+  const oldLoad=loadResearch;
+  loadResearch=async function(){await oldLoad();refresh();};
+  const oldShow=showPage;
+  showPage=function(page){if(page!=='research')close();oldShow(page);};
+})();
+</script>
+
 </body>
 </html>
