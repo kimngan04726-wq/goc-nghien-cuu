@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Góc nghiên cứu của nhóm</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * {box-sizing:border-box;font-family:"Times New Roman",serif}
 body {margin:0;background:#f6f1e8;color:#233b50}
@@ -74,6 +74,26 @@ input,select,textarea{max-width:100%}
 .task-empty{font-size:14px;color:#7c858a}
 @media(max-width:700px){.task-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.task-stat:last-child{grid-column:span 2}.task-stat strong{font-size:21px}}
 @media(prefers-reduced-motion:reduce){#taskProgressFill{transition:none}}
+</style>
+<style>
+/* Mobile ergonomics and reduced layout shifts */
+body{overflow-x:hidden}
+button,select{touch-action:manipulation}
+#app,#research,#tasks,#library{min-width:0}
+#taskList{min-width:0}
+.kanban-item,.reference-card,.card{min-width:0}
+.kanban-item button,.reference-actions button{max-width:100%}
+.research-content,.detail-content{overflow-wrap:anywhere}
+#researchDetail img,.research-content img,.detail-content img{max-width:100%;height:auto}
+@media(max-width:650px){
+ #account{display:block;margin:0 0 8px;overflow-wrap:anywhere}
+ #viewModeButton,#logoutButton{margin:3px 5px 3px 0}
+ #adminControls input{flex:1 1 180px;min-width:0}
+ #adminControls button{flex:0 0 auto}
+ .kanban-item{padding:12px}
+ .task-filters label{flex:1 1 100%}
+ .task-filters .task-reset{width:100%}
+}
 </style>
 </head>
 <body>
@@ -189,10 +209,16 @@ function toggleAdminView(){
  applyAdminView();
  // Chỉ cập nhật giao diện, không gọi Supabase hoặc tải lại dữ liệu.
  document.querySelectorAll(".research-edit-button").forEach(btn=>btn.classList.toggle("hidden",!adminEditingEnabled()));
- const researchEdit=document.getElementById("researchEditButton");
+ const researchEdit=document.querySelector("#researchDetail > button:last-child");
  if(researchEdit)researchEdit.style.display=adminEditingEnabled()?"inline-block":"none";
- document.querySelectorAll("#tasks button, #library button").forEach(btn=>{
-   if(btn.dataset.adminAction==="true")btn.classList.toggle("hidden",!adminEditingEnabled());
+ // Không tải lại dữ liệu khi chuyển chế độ; ẩn các thao tác quản trị qua CSS.
+ document.querySelectorAll("#taskList .kanban-item").forEach(card=>{
+   card.querySelectorAll("button").forEach(btn=>btn.classList.toggle("hidden",!adminEditingEnabled()));
+   const status=card.querySelector("select");if(status)status.disabled=!(adminEditingEnabled()||isMember);
+ });
+ document.querySelectorAll("#libraryList .reference-actions button").forEach(btn=>{
+   if(btn.textContent.trim()==="Xóa")btn.classList.toggle("hidden",!adminEditingEnabled());
+   else btn.classList.toggle("hidden",!(adminEditingEnabled()||isMember));
  });
 }
 function applyAdminView(){
@@ -286,8 +312,7 @@ async function initialize() {
   el("app").classList.remove("hidden");
   el("logoutButton").classList.remove("hidden");
 
-  await loadTasks();
-  await loadResearch();
+  await Promise.all([loadTasks(),loadResearch()]);
 }
 
 async function loadTasks() {
@@ -417,7 +442,7 @@ async function enterGuestMode(){
  el("logoutButton").classList.add("hidden");
  el("app").classList.remove("hidden");
  el("login").classList.remove("hidden");
- try{await loadTasks();await loadResearch();}
+ try{await Promise.all([loadTasks(),loadResearch()]);}
  catch(error){console.error("Guest data load:",error);}
 }
 </script>
@@ -641,7 +666,7 @@ initialize = async function() {
 </script>
 
 <!-- TRÌNH SOẠN THẢO NÂNG CAO -->
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 
 <style>
 #richToolbar {
