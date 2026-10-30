@@ -117,7 +117,7 @@ body.admin-guest-mode #libraryAdmin,body.admin-guest-mode #researchEditor,body.a
 #research:not(.gallery-detail) .card{position:relative}
 #research:not(.gallery-detail) .card .research-rename-button{display:block!important;position:absolute;right:9px;bottom:9px;font-size:12px;padding:5px 9px;margin:0;background:#e6e0d5;color:#19364e;border:1px solid #cfc6b9}
 #research:not(.gallery-detail) .card .research-rename-button.hidden{display:none!important}
-</style><style>#researchAddControls{margin:14px 0 18px}#researchAddControls button{margin:0}#research.gallery-detail #researchAddControls{display:none!important}</style><style>#research:not(.gallery-detail) .card .research-delete-button{display:block!important;position:absolute;left:9px;bottom:9px;font-size:12px;padding:5px 9px;margin:0;background:#f8e6e2;color:#8b302b;border:1px solid #dfbcb5}#research:not(.gallery-detail) .card .research-delete-button.hidden{display:none!important}</style></head>
+</style><style>#researchAddControls{margin:14px 0 18px}#researchAddControls button{margin:0}#research.gallery-detail #researchAddControls{display:none!important}</style><style>#research:not(.gallery-detail) .card .research-delete-button{display:inline-block!important;position:absolute;left:9px;bottom:9px;font-size:12px;padding:5px 9px;margin:0;background:#f8e6e2;color:#8b302b;border:1px solid #dfbcb5}#research:not(.gallery-detail) .card .research-delete-button.hidden{display:none!important}</style></head>
 <body>
 
 <header>
@@ -629,7 +629,7 @@ async function renameResearchCard(id){
 }
 async function deleteResearchCard(id){
  if(!adminEditingEnabled())return;
- if(Number(id)<=7)return alert("7 ô nghiên cứu gốc được giữ lại để tránh mất cấu trúc ban đầu.");
+ if(Number(id)<=7)return alert("Đây là ô gốc (01–07), chưa thể bỏ. Các ô mới thêm có thể xóa.");
  const page=researchPageCache.find(p=>Number(p.id)===Number(id));
  if(!page)return alert("Không tìm thấy ô nghiên cứu.");
  if(!confirm('Xóa vĩnh viễn ô "'+(page.title||'Không tiêu đề')+'" và toàn bộ nội dung?'))return;
@@ -654,7 +654,7 @@ function updateResearchCardAdminActions(){
   }
   btn.classList.toggle('hidden',!adminEditingEnabled());
   let del=card.querySelector('.research-delete-button');
-  if(id>7){
+  {
    if(!del){del=document.createElement('button');del.type='button';del.className='research-delete-button';del.textContent='🗑 Bỏ ô';del.onclick=event=>{event.stopPropagation();deleteResearchCard(id);};card.append(del);}
    del.classList.toggle('hidden',!adminEditingEnabled());
   }
