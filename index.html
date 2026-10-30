@@ -117,7 +117,7 @@ body.admin-guest-mode #libraryAdmin,body.admin-guest-mode #researchEditor,body.a
 #research:not(.gallery-detail) .card{position:relative}
 #research:not(.gallery-detail) .card .research-rename-button{display:block!important;position:absolute;right:9px;bottom:9px;font-size:12px;padding:5px 9px;margin:0;background:#e6e0d5;color:#19364e;border:1px solid #cfc6b9}
 #research:not(.gallery-detail) .card .research-rename-button.hidden{display:none!important}
-</style><style>#researchAddControls{margin:14px 0 18px}#researchAddControls button{margin:0}#research.gallery-detail #researchAddControls{display:none!important}</style><style>#research:not(.gallery-detail) .card .research-delete-button{display:inline-block!important;position:absolute;left:9px;bottom:9px;font-size:12px;padding:5px 9px;margin:0;background:#f8e6e2;color:#8b302b;border:1px solid #dfbcb5}#research:not(.gallery-detail) .card .research-delete-button.hidden{display:none!important}</style></head>
+</style><style>#researchAddControls{margin:14px 0 18px}#researchAddControls button{margin:0}#research.gallery-detail #researchAddControls{display:none!important}</style><style>#research:not(.gallery-detail) .card .research-delete-button{display:inline-block!important;position:absolute;left:9px;bottom:9px;font-size:12px;padding:5px 9px;margin:0;background:#f8e6e2;color:#8b302b;border:1px solid #dfbcb5}#research:not(.gallery-detail) .card .research-delete-button.hidden{display:none!important}</style><style>.research-task-box,.research-work-box{border:1px solid #e0d8cd;border-radius:12px;padding:20px 24px;margin-top:22px;background:#fcfaf6}.research-work-box{background:#fff}.research-task-text{white-space:pre-wrap;line-height:1.7;font-size:18px;margin:14px 0}.research-task-box h3,.research-work-box h3{margin:0 0 12px;color:#19364e}</style></head>
 <body>
 
 <header>
@@ -667,7 +667,7 @@ async function loadResearch() {
 
   const {data, error} = await db
     .from("research_pages")
-    .select("id,title,content,group_number")
+    .select("id,title,content,group_number,task_description")
     .order("id");
 
   if (error) {
@@ -1170,7 +1170,6 @@ researchSetup();
     const {error} = await db
       .from("research_pages")
       .update({
-        title: title,
         content: FORMAT_MARKER + clean,
         updated_at: new Date().toISOString()
       })
@@ -1232,7 +1231,25 @@ researchSetup();
   const edit=document.createElement('button');
   edit.textContent='✎ Chỉnh sửa';
   edit.style.marginTop='16px';
-  detail.append(back,heading,body,edit);
+  const taskBox=document.createElement('section');taskBox.className='research-task-box';
+  const taskHeading=document.createElement('h3');taskHeading.textContent='📋 Mô tả công việc';
+  const taskText=document.createElement('div');taskText.className='research-task-text';
+  const taskEdit=document.createElement('button');taskEdit.textContent='✎ Sửa mô tả (Admin)';
+  taskEdit.onclick=async()=>{
+    if(!adminEditingEnabled()||selected===null)return;
+    const page=researchPageCache.find(p=>Number(p.id)===selected);
+    if(!page)return;
+    const value=prompt('Mô tả công việc dành cho thành viên:',page.task_description||'');
+    if(value===null)return;
+    const {error}=await db.from('research_pages').update({task_description:value,updated_at:new Date().toISOString()}).eq('id',selected);
+    if(error)return alert('Không lưu được mô tả: '+error.message);
+    await loadResearch();refresh();
+  };
+  taskBox.append(taskHeading,taskText,taskEdit);
+  const workBox=document.createElement('section');workBox.className='research-work-box';
+  const workHeading=document.createElement('h3');workHeading.textContent='📝 Bài làm của thành viên';
+  workBox.append(workHeading,body,edit);
+  detail.append(back,heading,taskBox,workBox);
   section.insertBefore(detail,document.getElementById('researchEditor'));
 
   function refresh(){
@@ -1240,6 +1257,9 @@ researchSetup();
     const card=section.querySelector('#researchContent'+selected)?.closest('.card');
     if(!card)return;
     heading.textContent=card.querySelector('h3')?.textContent||'Trang nghiên cứu';
+    const page=researchPageCache.find(p=>Number(p.id)===selected);
+    taskText.textContent=page?.task_description?.trim()||'Admin chưa nhập mô tả công việc.';
+    taskEdit.style.display=adminEditingEnabled()?'inline-block':'none';
     const source=card.querySelector('.research-content');
     body.className='detail-content'+(source.classList.contains('rich-format')?' rich-format':'');
     if(source.classList.contains('rich-format')){
@@ -1284,7 +1304,7 @@ researchSetup();
     });
   };
   back.onclick=close;
-  edit.onclick=()=>{if(adminEditingEnabled() && selected!==null){edit.style.display='none';openResearchEditor(selected);}};
+  edit.onclick=()=>{if(selected!==null&&canEditResearch(selected)){edit.style.display='none';openResearchEditor(selected);}};
   const oldCancel=cancelResearch;
   cancelResearch=function(){oldCancel();if(selected!==null)refresh();};
   const oldLoad=loadResearch;
