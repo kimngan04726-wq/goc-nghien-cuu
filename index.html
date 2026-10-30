@@ -403,6 +403,13 @@ body.site-pick-mode [data-site-edit-key]:hover{outline:3px solid #b58d42}
 #dashboardHome .dash-section>h3{display:flex;align-items:center;gap:11px;line-height:1.35;min-height:32px}
 #dashboardHome .dash-section>h3 button{float:none!important;margin-left:auto;flex-shrink:0}
 @media(max-width:700px){#dashboardHome .dash-heading{grid-template-columns:55px minmax(0,1fr);gap:10px}#dashboardHome .dash-heading .dash-book{width:55px;font-size:37px}#dashboardHome .dash-heading h1{font-size:clamp(22px,5vw,34px)}}
+</style><style id="dashboard-icon-precision">
+#dashboardHome .dash-heading{grid-template-columns:72px minmax(0,1fr)!important;column-gap:20px!important}
+#dashboardHome .dash-heading .dash-book{width:72px!important;height:72px;display:flex!important;align-items:center!important;justify-content:center!important;font-size:55px!important;line-height:1!important;transform:none!important;margin:0!important}
+#dashboardHome .dash-section>h3 .dash-section-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 29px;width:29px;min-height:29px;font-size:23px;line-height:1}
+#dashboardHome .dash-section>h3 .dash-section-title{min-width:0;flex:1}
+#dashboardHome .dash-section>h3 button{margin-left:auto}
+@media(max-width:700px){#dashboardHome .dash-heading{grid-template-columns:52px minmax(0,1fr)!important;gap:10px!important}#dashboardHome .dash-heading .dash-book{width:52px!important;height:52px;font-size:38px!important}}
 </style></head>
 <body>
 
@@ -428,10 +435,10 @@ body.site-pick-mode [data-site-edit-key]:hover{outline:3px solid #b58d42}
 </section>
 
 <section id="dashboardHome" class="hidden" aria-label="Trang chủ">
-<div class="dash-heading"><span class="dash-book">📖</span><div><h1>GÓC NGHIÊN CỨU CỦA NHÓM</h1><div class="dash-subtitle">Tìm tài liệu · Phát triển mô hình · Cùng viết và hoàn thiện nghiên cứu</div></div></div>
+<div class="dash-heading"><span class="dash-book" aria-hidden="true">📖</span><div><h1>GÓC NGHIÊN CỨU CỦA NHÓM</h1><div class="dash-subtitle">Tìm tài liệu · Phát triển mô hình · Cùng viết và hoàn thiện nghiên cứu</div></div></div>
 <div class="dash-topic"><small>▤ &nbsp; Đề tài nghiên cứu</small><b>Tác động của kiến thức tài chính số và thói quen bảo mật đến khả năng nhận diện rủi ro lừa đảo deepfake trong giao dịch ngân hàng.</b></div>
 <div class="dash-panels"><div class="dash-panel photo" aria-label="Ảnh sổ tay nghiên cứu"></div><div class="dash-panel"><h3>💡 &nbsp; Trọng tâm hiện tại</h3><b>Tìm tài liệu và củng cố hướng nghiên cứu</b><ul><li>Hoàn thiện cơ sở lý thuyết</li><li>Phát triển mô hình nghiên cứu</li><li>Tổng hợp tài liệu tham khảo</li></ul></div><div class="dash-panel"><h3>🎯 &nbsp; Hướng tới</h3><p>☐ &nbsp; Tổng quan tài liệu liên quan</p><p>☐ &nbsp; Làm rõ cơ sở lý thuyết và mô hình</p><p>☐ &nbsp; Xây dựng và hoàn thiện nghiên cứu</p><p>☐ &nbsp; Phân công và theo dõi tiến độ</p></div></div>
-<div class="dash-columns"><div class="dash-section"><h3>📖 &nbsp; Nhóm 1 — Lý thuyết và định hướng nghiên cứu <button onclick="showPage('research')">Xem tất cả →</button></h3><div class="dash-cards" id="dashGroup1"></div></div><div class="dash-section group-two"><h3>▥ &nbsp; Nhóm 2 — Mô hình và triển khai nghiên cứu <button onclick="showPage('research')">Xem tất cả →</button></h3><div class="dash-cards" id="dashGroup2"></div></div><div class="dash-section"><h3>📁 &nbsp; Kho tài liệu tham khảo <button onclick="showPage('library')">Xem tất cả →</button></h3><table class="dash-table"><thead><tr><th>Tên tài liệu</th><th>Tác giả</th><th>Năm</th></tr></thead><tbody id="dashLibraryRows"><tr><td colspan="3">Đang tải tài liệu…</td></tr></tbody></table></div><div class="dash-section"><h3>☑ &nbsp; Công việc của nhóm <button onclick="showPage('tasks')">Xem tất cả →</button></h3><div class="dash-mini-kanban" id="dashTaskPreview"></div></div></div>
+<div class="dash-columns"><div class="dash-section"><h3><span class="dash-section-icon" aria-hidden="true">📖</span><span class="dash-section-title">Nhóm 1 — Lý thuyết và định hướng nghiên cứu</span> <button onclick="showPage('research')">Xem tất cả →</button></h3><div class="dash-cards" id="dashGroup1"></div></div><div class="dash-section group-two"><h3><span class="dash-section-icon" aria-hidden="true">▥</span><span class="dash-section-title">Nhóm 2 — Mô hình và triển khai nghiên cứu</span> <button onclick="showPage('research')">Xem tất cả →</button></h3><div class="dash-cards" id="dashGroup2"></div></div><div class="dash-section"><h3>📁 &nbsp; Kho tài liệu tham khảo <button onclick="showPage('library')">Xem tất cả →</button></h3><table class="dash-table"><thead><tr><th>Tên tài liệu</th><th>Tác giả</th><th>Năm</th></tr></thead><tbody id="dashLibraryRows"><tr><td colspan="3">Đang tải tài liệu…</td></tr></tbody></table></div><div class="dash-section"><h3>☑ &nbsp; Công việc của nhóm <button onclick="showPage('tasks')">Xem tất cả →</button></h3><div class="dash-mini-kanban" id="dashTaskPreview"></div></div></div>
 </section><nav aria-label="Điều hướng chính">
 <button class="sidebar-main-link" onclick="showPage('home')"><span class="sidebar-nav-icon" aria-hidden="true">⌂</span><span>Trang chủ</span></button>
 <button class="sidebar-main-link" onclick="showPage('research')"><span class="sidebar-nav-icon" aria-hidden="true">▣</span><span>Nội dung</span></button>
