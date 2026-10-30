@@ -388,6 +388,12 @@ body.admin-guest-mode #profileEditButton,body.admin-guest-mode #profileEditView,
 body.site-pick-mode [data-site-edit-key]{outline:1px dashed #b58d42;outline-offset:2px;cursor:crosshair}
 body.site-pick-mode [data-site-edit-key]:hover{outline:3px solid #b58d42}
 @media(max-width:700px){#siteEditorPanel{top:8px;bottom:8px;right:8px}}
+</style><style id="sidebar-nav-alignment">
+#app>nav>button.sidebar-main-link{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:12px!important;width:100%;text-align:left!important;line-height:1.4!important;min-height:43px;padding:9px 13px!important;white-space:nowrap}
+#app>nav>button.sidebar-main-link .sidebar-nav-icon{display:inline-flex;flex:0 0 25px;width:25px;align-items:center;justify-content:center;font-family:Arial,sans-serif;font-size:20px;line-height:1}
+#app>nav>button.sidebar-main-link .sidebar-document-icon{font-size:21px}
+#app>nav>button.sidebar-main-link>span:last-child{flex:1;text-align:left}
+#app>nav>button.sidebar-main-link:before{content:none!important}
 </style></head>
 <body>
 
@@ -418,10 +424,10 @@ body.site-pick-mode [data-site-edit-key]:hover{outline:3px solid #b58d42}
 <div class="dash-panels"><div class="dash-panel photo" aria-label="Ảnh sổ tay nghiên cứu"></div><div class="dash-panel"><h3>💡 &nbsp; Trọng tâm hiện tại</h3><b>Tìm tài liệu và củng cố hướng nghiên cứu</b><ul><li>Hoàn thiện cơ sở lý thuyết</li><li>Phát triển mô hình nghiên cứu</li><li>Tổng hợp tài liệu tham khảo</li></ul></div><div class="dash-panel"><h3>🎯 &nbsp; Hướng tới</h3><p>☐ &nbsp; Tổng quan tài liệu liên quan</p><p>☐ &nbsp; Làm rõ cơ sở lý thuyết và mô hình</p><p>☐ &nbsp; Xây dựng và hoàn thiện nghiên cứu</p><p>☐ &nbsp; Phân công và theo dõi tiến độ</p></div></div>
 <div class="dash-columns"><div class="dash-section"><h3>📖 &nbsp; Nhóm 1 — Lý thuyết và định hướng nghiên cứu <button onclick="showPage('research')">Xem tất cả →</button></h3><div class="dash-cards" id="dashGroup1"></div></div><div class="dash-section group-two"><h3>▥ &nbsp; Nhóm 2 — Mô hình và triển khai nghiên cứu <button onclick="showPage('research')">Xem tất cả →</button></h3><div class="dash-cards" id="dashGroup2"></div></div><div class="dash-section"><h3>📁 &nbsp; Kho tài liệu tham khảo <button onclick="showPage('library')">Xem tất cả →</button></h3><table class="dash-table"><thead><tr><th>Tên tài liệu</th><th>Tác giả</th><th>Năm</th></tr></thead><tbody id="dashLibraryRows"><tr><td colspan="3">Đang tải tài liệu…</td></tr></tbody></table></div><div class="dash-section"><h3>☑ &nbsp; Công việc của nhóm <button onclick="showPage('tasks')">Xem tất cả →</button></h3><div class="dash-mini-kanban" id="dashTaskPreview"></div></div></div>
 </section><nav aria-label="Điều hướng chính">
-<button onclick="showPage('home')">⌂ Trang chủ</button>
-<button onclick="showPage('research')">Nội dung</button>
-<button onclick="showPage('tasks')">Tiến độ</button>
-<button onclick="showPage('library')">📁 Tài liệu</button>
+<button class="sidebar-main-link" onclick="showPage('home')"><span class="sidebar-nav-icon" aria-hidden="true">⌂</span><span>Trang chủ</span></button>
+<button class="sidebar-main-link" onclick="showPage('research')"><span class="sidebar-nav-icon" aria-hidden="true">▣</span><span>Nội dung</span></button>
+<button class="sidebar-main-link" onclick="showPage('tasks')"><span class="sidebar-nav-icon" aria-hidden="true">☷</span><span>Tiến độ</span></button>
+<button class="sidebar-main-link" onclick="showPage('library')"><span class="sidebar-nav-icon sidebar-document-icon" aria-hidden="true">📑</span><span>Tài liệu</span></button>
 <div class="sidebar-members">
 <h3>👥 &nbsp; Thành viên nhóm</h3>
 <div class="sidebar-member-group group-one">
