@@ -2441,5 +2441,95 @@ body.word-editor-open #researchEditor #richToolbar #wordEditorSizeButton{positio
  openResearchEditor=async function(id){await previousOpen(id);requestAnimationFrame(()=>requestAnimationFrame(compactToolbar))};
  window.addEventListener('resize',()=>{if(document.body.classList.contains('word-editor-open'))compactToolbar()});
 })();
+</script><style id="docs-toolbar-replacement-style">
+#richToolbar.docs-style-toolbar{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:4px!important;padding:7px 8px!important;background:#eef2f7!important;border-color:#dce2e9!important;position:relative!important}
+#richToolbar.docs-style-toolbar>button,#richToolbar.docs-style-toolbar>select{font-family:Arial,sans-serif!important;font-size:14px!important;height:36px!important;min-height:36px!important;border:0!important;background:transparent!important;color:#293743!important;padding:5px 8px!important;border-radius:5px!important;white-space:nowrap}
+#richToolbar.docs-style-toolbar>button:hover,#richToolbar.docs-style-toolbar>select:hover{background:#dce7f7!important}
+#richToolbar.docs-style-toolbar>button.is-active{background:#cbdcf7!important;font-weight:700!important}
+#richToolbar.docs-style-toolbar>select{border-right:1px solid #d0d5dd!important;max-width:155px!important}
+#richToolbar.docs-style-toolbar .docs-table-menu{position:absolute;z-index:1000;top:calc(100% + 3px);left:min(460px,30vw);background:white;border:1px solid #ccd2dc;border-radius:9px;box-shadow:0 12px 28px #0003;padding:12px}
+#richToolbar.docs-style-toolbar .docs-table-menu[hidden]{display:none!important}
+#richToolbar.docs-style-toolbar .docs-table-grid{display:grid;grid-template-columns:repeat(10,19px);gap:3px;margin:8px 0}
+#richToolbar.docs-style-toolbar .docs-table-cell{width:19px;height:19px;border:1px solid #dce0e7;background:#f8fafc;box-sizing:border-box;padding:0;border-radius:1px}
+#richToolbar.docs-style-toolbar .docs-table-cell.selected{background:#c6dcff;border-color:#6396ef}
+#richToolbar.docs-style-toolbar .docs-table-caption{font:13px Arial,sans-serif;text-align:center;color:#35465b}
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{padding-right:110px!important;max-height:130px!important;min-height:49px!important}
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar #wordEditorSizeButton{right:6px!important;bottom:7px!important}
+@media(max-width:720px){#richToolbar.docs-style-toolbar .docs-table-menu{left:8px}body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{padding-right:8px!important;padding-bottom:46px!important}}
+</style>
+<script>
+(function(){
+ const originalMakeToolbar=makeToolbar;
+ makeToolbar=function(){
+  originalMakeToolbar();
+  const bar=document.getElementById('richToolbar');
+  if(!bar||bar.classList.contains('docs-style-toolbar'))return;
+  bar.classList.add('docs-style-toolbar');
+  const old=Array.from(bar.children);
+  const upload=old.find(el=>el.id==='uploadResearchImageButton')||old.find(el=>el.textContent?.includes('Tải ảnh từ máy'));
+  const uploadInput=old.find(el=>el.tagName==='INPUT'&&el.type==='file');
+  const link=old.find(el=>el.textContent==='Liên kết');
+  const editor=document.getElementById('richEditor');
+  const selection=()=>{const sel=window.getSelection();return sel?.rangeCount?sel.getRangeAt(0).cloneRange():null};
+  let saved=null;
+  const restore=()=>{editor.focus();if(saved&&editor.contains(saved.commonAncestorContainer)){const sel=window.getSelection();sel.removeAllRanges();sel.addRange(saved)}};
+  const command=(cmd,val)=>{restore();document.execCommand(cmd,false,val===undefined?null:val);saved=selection()};
+  bar.replaceChildren();
+  function btn(label,title,fn,cmd){
+   const el=document.createElement('button');el.type='button';el.textContent=label;el.title=title;el.setAttribute('aria-label',title);
+   el.addEventListener('mousedown',e=>{e.preventDefault();saved=selection()});
+   el.addEventListener('click',fn);
+   if(cmd){el.dataset.docsCommand=cmd}
+   bar.append(el);return el
+  }
+  function dropdown(label,options,fn){
+   const el=document.createElement('select');el.title=label;el.setAttribute('aria-label',label);
+   options.forEach(([v,t])=>{const o=document.createElement('option');o.value=v;o.textContent=t;el.append(o)});
+   el.addEventListener('mousedown',()=>saved=selection());el.addEventListener('change',()=>fn(el.value));bar.append(el);return el
+  }
+  btn('↶','Hoàn tác',()=>command('undo'));
+  btn('↷','Làm lại',()=>command('redo'));
+  btn('⎙','In tài liệu',()=>window.print());
+  dropdown('Thu phóng',[['100','100%'],['75','75%'],['90','90%'],['125','125%'],['150','150%']],v=>{editor.style.zoom=Number(v)/100});
+  dropdown('Kiểu văn bản',[['p','Văn bản thường'],['h1','Tiêu đề 1'],['h2','Tiêu đề 2'],['h3','Tiêu đề 3']],v=>command('formatBlock',v));
+  dropdown('Phông chữ',[['Arial','Arial'],['Times New Roman','Times New Roman'],['Calibri','Calibri'],['Georgia','Georgia']],v=>command('fontName',v));
+  dropdown('Cỡ chữ',[['3','11'],['2','10'],['4','14'],['5','18'],['6','24'],['7','36']],v=>command('fontSize',v));
+  btn('B','In đậm',()=>command('bold'),'bold');
+  btn('𝑰','In nghiêng',()=>command('italic'),'italic');
+  btn('U̲','Gạch chân',()=>command('underline'),'underline');
+  btn('A̲','Màu chữ',()=>{const color=prompt('Nhập mã màu chữ, ví dụ #17436a','#17436a');if(color&&/^#[0-9a-f]{6}$/i.test(color))command('foreColor',color)});
+  btn('🖍','Tô sáng',()=>command('hiliteColor','#fff2a8'));
+  if(link){link.textContent='🔗';link.title='Chèn liên kết';bar.append(link)}
+  btn('▣','Chèn bảng',()=>{
+   saved=selection();menu.hidden=!menu.hidden;paint(1,1)
+  });
+  btn('▧','Căn trái',()=>command('justifyLeft'));
+  btn('☰','Căn giữa',()=>command('justifyCenter'));
+  btn('≡','Căn phải',()=>command('justifyRight'));
+  btn('↕','Giãn dòng 1.5',()=>{restore();const node=window.getSelection()?.anchorNode;const block=(node?.nodeType===1?node:node?.parentElement)?.closest?.('p,div,li,h1,h2,h3');if(block&&editor.contains(block))block.style.lineHeight='1.5'});
+  btn('☑','Danh sách dấu đầu dòng',()=>command('insertUnorderedList'));
+  btn('☷','Danh sách đánh số',()=>command('insertOrderedList'));
+  btn('⇤','Giảm thụt lề',()=>command('outdent'));
+  btn('⇥','Tăng thụt lề',()=>command('indent'));
+  btn('Tx','Xóa định dạng',()=>command('removeFormat'));
+  if(upload){upload.textContent='📷 Tải ảnh từ máy';bar.append(upload)}
+  if(uploadInput)bar.append(uploadInput);
+  const menu=document.createElement('div');menu.className='docs-table-menu';menu.hidden=true;
+  const caption=document.createElement('div');caption.className='docs-table-caption';caption.textContent='1 × 1';
+  const grid=document.createElement('div');grid.className='docs-table-grid';
+  const cells=[];
+  function paint(rows,cols){caption.textContent=cols+' × '+rows;cells.forEach(({el,r,c})=>el.classList.toggle('selected',r<=rows&&c<=cols))}
+  for(let r=1;r<=8;r++)for(let c=1;c<=10;c++){
+   const cell=document.createElement('button');cell.type='button';cell.className='docs-table-cell';cell.title=c+' cột × '+r+' hàng';
+   cell.addEventListener('mouseenter',()=>paint(r,c));
+   cell.addEventListener('mousedown',e=>e.preventDefault());
+   cell.addEventListener('click',()=>{let html='<table><tbody>';for(let y=0;y<r;y++){html+='<tr>';for(let x=0;x<c;x++)html+='<td><br></td>';html+='</tr>'}html+='</tbody></table><p><br></p>';menu.hidden=true;command('insertHTML',html)});
+   grid.append(cell);cells.push({el:cell,r,c})
+  }
+  menu.append(grid,caption);bar.append(menu);paint(1,1);
+  document.addEventListener('pointerdown',e=>{if(!bar.contains(e.target))menu.hidden=true});
+  document.addEventListener('selectionchange',()=>{const sel=window.getSelection();if(!sel?.anchorNode||!editor.contains(sel.anchorNode))return;bar.querySelectorAll('[data-docs-command]').forEach(el=>{let on=false;try{on=document.queryCommandState(el.dataset.docsCommand)}catch(e){}el.classList.toggle('is-active',on)})});
+ };
+})();
 </script></body>
 </html>
