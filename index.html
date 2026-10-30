@@ -115,7 +115,7 @@ body.admin-guest-mode #libraryAdmin,body.admin-guest-mode #researchEditor,body.a
 </style>
 <style>
 #research:not(.gallery-detail) .card{position:relative}
-#research:not(.gallery-detail) .card .research-rename-button{position:absolute;right:9px;bottom:9px;font-size:12px;padding:5px 9px;margin:0;background:#e6e0d5;color:#19364e;border:1px solid #cfc6b9}
+#research:not(.gallery-detail) .card .research-rename-button{display:block!important;position:absolute;right:9px;bottom:9px;font-size:12px;padding:5px 9px;margin:0;background:#e6e0d5;color:#19364e;border:1px solid #cfc6b9}
 #research:not(.gallery-detail) .card .research-rename-button.hidden{display:none!important}
 </style></head>
 <body>
@@ -262,6 +262,7 @@ function applyAdminView(){
   btn.classList.toggle('mode-active',active);
   btn.setAttribute('aria-pressed',String(active));
  });
+ document.querySelectorAll('.research-rename-button').forEach(btn=>btn.classList.toggle('hidden',!adminEditingEnabled()));
  el('adminControls').classList.toggle('hidden',!adminEditingEnabled());
  el('adminControls').setAttribute('aria-hidden',String(!adminEditingEnabled()));
 }
@@ -559,7 +560,13 @@ function researchSetup() {
     button.textContent = "✎ Chỉnh sửa";
     button.onclick = () => openResearchEditor(pageId);
 
-    card.append(title, content, button);
+    const rename=document.createElement("button");
+    rename.type="button";
+    rename.className="research-rename-button";
+    rename.textContent="✎ Đổi tiêu đề";
+    rename.onclick=event=>{event.stopPropagation();renameResearchCard(pageId);};
+    rename.classList.toggle("hidden",!adminEditingEnabled());
+    card.append(title, content, button, rename);
   });
 
   const editor = document.createElement("div");
