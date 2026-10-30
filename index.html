@@ -299,6 +299,23 @@ main{margin:0 0 0 218px!important;max-width:none!important;padding:18px 23px 45p
 #library .library-mock-empty div{font-size:35px}#library .library-mock-empty strong{font-size:19px}#library .library-mock-empty p{margin:0;color:#63718a}
 #library .library-mock-alert{margin:9px 0 0;background:#fff8e9;color:#a57518;border:1px solid #f1e2bf;padding:10px;border-radius:8px;font-size:13px}
 @media(max-width:650px){#library .library-mock-extra>div{grid-template-columns:1fr}#library .library-mock-apa-head h3{font-size:20px}#library .library-mock-selects{flex-wrap:wrap}}
+</style><style id="sidebar-members-reference">
+#app>nav:after{display:none!important;content:none!important}
+#app>nav .sidebar-members{border-top:1px solid #ded7cb;margin:14px 5px 0;padding-top:16px;flex-shrink:0}
+#app>nav .sidebar-members h3{font-size:15px;line-height:1.3;color:#1d4164;margin:0 0 10px;font-weight:bold}
+#app>nav .sidebar-member-group{border:1px solid #efd5a3;border-radius:12px;padding:12px 10px 10px;margin:9px 0 12px;background:linear-gradient(135deg,#fffaf0,#f7f0df);box-shadow:0 1px 4px rgba(20,40,60,.025)}
+#app>nav .sidebar-member-group.group-two{background:linear-gradient(135deg,#f5faff,#eaf2f7);border-color:#d4e3ee}
+#app>nav .sidebar-group-heading{display:flex;align-items:flex-start;gap:9px;margin-bottom:9px}
+#app>nav .sidebar-group-icon{font-size:28px;line-height:1.1;color:#1c4b73;flex-shrink:0}
+#app>nav .sidebar-group-heading strong{display:block;font-size:17px;line-height:1.15;color:#173653}
+#app>nav .sidebar-group-heading span:not(.sidebar-group-icon){display:block;font-size:14px;line-height:1.25;margin-top:3px;color:#385878}
+#app>nav .sidebar-person{display:flex;align-items:center;gap:10px;font-size:14px;color:#203e5b;margin:8px 0}
+#app>nav .sidebar-avatar{width:35px;height:35px;display:flex;align-items:center;justify-content:center;background:#dcd5ca;border-radius:50%;color:#77736d;font-size:23px;position:relative;overflow:hidden}
+#app>nav .sidebar-avatar:before{content:"";position:absolute;width:13px;height:13px;border-radius:50%;background:#797773;top:6px;left:11px}
+#app>nav .sidebar-avatar:after{content:"";position:absolute;width:23px;height:13px;border-radius:50% 50% 30% 30%;background:#797773;bottom:1px;left:6px}
+#app>nav .sidebar-avatar{font-size:0}
+#app>nav .sidebar-member-photo{height:188px;border-radius:9px;background:#eee5d6 url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=450&q=80') center/cover;margin:17px 0 8px}
+@media(max-width:700px){#app>nav .sidebar-members{display:none}}
 </style></head>
 <body>
 
@@ -333,6 +350,20 @@ main{margin:0 0 0 218px!important;max-width:none!important;padding:18px 23px 45p
 <button onclick="showPage('research')">Nội dung</button>
 <button onclick="showPage('tasks')">Tiến độ</button>
 <button onclick="showPage('library')">📁 Tài liệu</button>
+<div class="sidebar-members">
+<h3>👥 &nbsp; Thành viên nhóm</h3>
+<div class="sidebar-member-group group-one">
+<div class="sidebar-group-heading"><span class="sidebar-group-icon">📁</span><div><strong>NHÓM 1</strong><span>Lý thuyết và định hướng</span></div></div>
+<div class="sidebar-person"><span class="sidebar-avatar">●</span><span>Thành viên 1</span></div>
+<div class="sidebar-person"><span class="sidebar-avatar">●</span><span>Thành viên 2</span></div>
+</div>
+<div class="sidebar-member-group group-two">
+<div class="sidebar-group-heading"><span class="sidebar-group-icon">▥</span><div><strong>NHÓM 2</strong><span>Mô hình và triển khai</span></div></div>
+<div class="sidebar-person"><span class="sidebar-avatar">●</span><span>Thành viên 3</span></div>
+<div class="sidebar-person"><span class="sidebar-avatar">●</span><span>Thành viên 4</span></div>
+</div>
+<div class="sidebar-member-photo" aria-hidden="true"></div>
+</div>
 </nav>
 
 <section id="research">
