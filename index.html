@@ -601,6 +601,30 @@ body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) .rese
  body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar #wordEditorSizeButton{top:auto!important;bottom:4px!important}
  body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #richEditor{padding:18px 20px!important}
 }
+</style><style id="editor-toolbar-no-empty-gap">
+/* Keep all toolbar controls at the top and eliminate the unused blank area. */
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{
+ display:flex!important;flex-wrap:wrap!important;align-items:center!important;align-content:flex-start!important;
+ height:auto!important;min-height:0!important;max-height:none!important;
+ padding:5px 103px 5px 8px!important;gap:3px 5px!important;
+ margin:0!important;box-sizing:border-box!important;
+}
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar #wordEditorSizeButton{
+ position:static!important;top:auto!important;right:auto!important;bottom:auto!important;
+ height:31px!important;min-height:31px!important;margin:0!important;
+}
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>button[title*="Tải ảnh"],
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>button[title*="ảnh từ máy"]{
+ position:static!important;top:auto!important;bottom:auto!important;margin:0!important
+}
+body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #richEditor{
+ margin-top:0!important;border-top:1px solid #d6c6b4!important
+}
+@media(max-width:850px){
+ body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{
+  padding:5px 8px!important;height:auto!important;max-height:none!important;min-height:0!important
+ }
+}
 </style></head>
 <body>
 
