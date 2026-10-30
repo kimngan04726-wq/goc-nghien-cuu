@@ -657,15 +657,7 @@ function cancelResearch() {
 
 researchSetup();
 
-const previousInitialize = initialize;
-
-initialize = async function() {
-  await previousInitialize();
-  if (!document.getElementById("app")
-      .classList.contains("hidden")) {
-    await loadResearch();
-  }
-};
+// initialize() đã tải nghiên cứu cùng Kanban; không tải lặp lại.
 </script>
 
 <!-- TRÌNH SOẠN THẢO NÂNG CAO -->
