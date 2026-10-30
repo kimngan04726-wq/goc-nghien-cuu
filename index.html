@@ -55,7 +55,7 @@ input,select,textarea{max-width:100%}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.card,nav button{transition:none}}
 </style>
 <style>
-#viewModeButton{background:#fff;color:#19364e;border:1px solid #aab9c5;border-radius:7px;padding:9px 13px;font-size:14px;font-weight:normal}#viewModeButton:hover{background:#eef3f6}#logoutButton{border-radius:7px;padding:9px 13px;font-size:14px}
+#viewModeButton{background:#fff;color:#19364e;border:1px solid #aab9c5;border-radius:6px;padding:7px 10px;font-size:13px;font-weight:normal;width:auto;min-width:0;white-space:nowrap;display:inline-block}#viewModeButton.hidden{display:none!important}#viewModeButton:hover{background:#eef3f6}#logoutButton{border-radius:7px;padding:9px 13px;font-size:14px}
 .admin-viewer-mode #researchEditor,.admin-viewer-mode .research-edit-button,.admin-viewer-mode #libraryForm,.admin-viewer-mode #libraryAdmin,.admin-viewer-mode #adminControls{display:none!important}
 </style>
 </head>
@@ -78,7 +78,7 @@ input,select,textarea{max-width:100%}
 <div id="app" class="hidden">
 <section>
 <p id="account"></p>
-<button id="viewModeButton" type="button" class="hidden" onclick="toggleAdminView()" aria-pressed="false">Xem như khách</button>
+<button id="viewModeButton" type="button" class="hidden" onclick="toggleAdminView()" aria-pressed="false">👁 Xem</button>
 <button id="logoutButton" onclick="signOut()">Đăng xuất</button>
 </section>
 
@@ -159,18 +159,20 @@ function toggleAdminView(){
  if(!isAdmin)return;
  adminViewerMode=!adminViewerMode;
  applyAdminView();
- if(adminViewerMode && typeof cancelResearch==="function")cancelResearch();
- if(adminViewerMode && typeof cancelLibraryForm==="function")cancelLibraryForm();
- const active=["research","tasks","library"].find(id=>!el(id).classList.contains("hidden"));
- if(active==="tasks")loadTasks();
- else if(active==="library")loadLibrary();
- else if(active==="research")loadResearch();
+ // Chỉ cập nhật giao diện, không gọi Supabase hoặc tải lại dữ liệu.
+ document.querySelectorAll(".research-edit-button").forEach(btn=>btn.classList.toggle("hidden",!adminEditingEnabled()));
+ const researchEdit=document.getElementById("researchEditButton");
+ if(researchEdit)researchEdit.style.display=adminEditingEnabled()?"inline-block":"none";
+ document.querySelectorAll("#tasks button, #library button").forEach(btn=>{
+   if(btn.dataset.adminAction==="true")btn.classList.toggle("hidden",!adminEditingEnabled());
+ });
 }
 function applyAdminView(){
  document.body.classList.toggle("admin-viewer-mode",isAdmin && adminViewerMode);
  const btn=el("viewModeButton");
  btn.classList.toggle("hidden",!isAdmin);
- btn.textContent=adminViewerMode?"Chuyển sang chỉnh sửa":"Xem như khách";
+ btn.textContent=adminViewerMode?"✎ Sửa":"👁 Xem";
+ btn.title=adminViewerMode?"Chuyển sang chế độ chỉnh sửa":"Xem giao diện như khách";
  btn.setAttribute("aria-pressed",String(adminViewerMode));
  el("adminControls").classList.toggle("hidden",!adminEditingEnabled());
 }
