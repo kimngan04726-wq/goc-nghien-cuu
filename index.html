@@ -230,8 +230,8 @@ function setAdminMode(mode){
  });
  const detailEdit=document.getElementById('researchEditButton');
  if(detailEdit)detailEdit.style.display=mode==='guest'?'none':'inline-block';
+ if(typeof window.renderTaskBoard==='function')window.renderTaskBoard();
  document.querySelectorAll('#taskList .kanban-item').forEach(card=>{
-  card.querySelectorAll('button').forEach(btn=>btn.classList.toggle('hidden',!adminEditingEnabled()));
   const select=card.querySelector('select');if(select)select.disabled=!canChangeTaskStatus();
  });
  if(typeof renderLibrary==='function')renderLibrary();
