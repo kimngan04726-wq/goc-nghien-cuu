@@ -2749,5 +2749,36 @@ body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar #wordEdito
  observer.observe(document.body,{childList:true,subtree:true});
  enhanceDocsToolbar();
 })();
-</script></body>
+</script><style id="final-toolbar-fixed-compact">
+/* Final override placed after all dynamically injected editor styles. */
+html body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{
+ height:82px!important;min-height:82px!important;max-height:82px!important;
+ flex:0 0 82px!important;overflow:visible!important;
+ padding:5px 102px 40px 7px!important;gap:3px 4px!important;
+ display:flex!important;flex-wrap:nowrap!important;align-items:flex-start!important;
+ align-content:flex-start!important;box-sizing:border-box!important;
+}
+html body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>button,
+html body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>select,
+html body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>.docs-font-size-input{
+ flex-shrink:0!important;height:31px!important;min-height:31px!important;
+}
+html body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar #wordEditorSizeButton{
+ position:absolute!important;top:auto!important;bottom:4px!important;right:6px!important;left:auto!important;
+ margin:0!important;height:31px!important;min-height:31px!important;order:unset!important;
+}
+html body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>button[title*="Tải ảnh"],
+html body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>button[title*="ảnh từ máy"]{
+ position:static!important;flex-shrink:0!important;
+}
+html body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #richEditor{
+ margin-top:0!important;min-height:0!important;flex:1 1 auto!important;
+}
+@media(max-width:1100px){
+ html body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{
+ flex-wrap:wrap!important;height:auto!important;min-height:82px!important;max-height:116px!important;
+ flex-basis:auto!important;padding-bottom:40px!important
+ }
+}
+</style></body>
 </html>
