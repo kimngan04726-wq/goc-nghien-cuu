@@ -696,6 +696,85 @@ initialize = async function() {
       toolbar.appendChild(button);
     });
 
+    // Upload ảnh từ máy: chỉ Admin được phép ghi lên Storage.
+    const uploadButton = document.createElement("button");
+    uploadButton.type = "button";
+    uploadButton.id = "uploadResearchImage";
+    uploadButton.textContent = "📷 Tải ảnh từ máy";
+    const uploadInput = document.createElement("input");
+    uploadInput.type = "file";
+    uploadInput.accept = "image/jpeg,image/png,image/webp";
+    uploadInput.style.display = "none";
+    let imageRange = null;
+    uploadButton.addEventListener("mousedown", e => e.preventDefault());
+    uploadButton.addEventListener("click", () => {
+      if (!isAdmin || editingPageId === null) return;
+      const sel = window.getSelection();
+      imageRange = sel && sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
+      uploadInput.click();
+    });
+    uploadInput.addEventListener("change", async () => {
+      const file = uploadInput.files[0];
+      uploadInput.value = "";
+      if (!file || !isAdmin || editingPageId === null) return;
+      if (!["image/jpeg","image/png","image/webp"].includes(file.type)) {
+        alert("Chỉ hỗ trợ JPG, PNG hoặc WebP."); return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Ảnh phải nhỏ hơn hoặc bằng 5 MB."); return;
+      }
+      const pageAtStart = editingPageId;
+      uploadButton.disabled = true;
+      uploadButton.textContent = "Đang tải ảnh...";
+      try {
+        const ext = {"image/jpeg":"jpg","image/png":"png","image/webp":"webp"}[file.type];
+        const path = "research/" + pageAtStart + "/" +
+          crypto.randomUUID() + "." + ext;
+        const result = await db.storage.from("research-images")
+          .upload(path, file, {contentType:file.type,upsert:false});
+        if (result.error) throw result.error;
+        const publicURL = db.storage.from("research-images").getPublicUrl(path).data.publicUrl;
+        if (editingPageId !== pageAtStart) {
+          alert("Ảnh đã tải lên, nhưng bài viết đã đóng. Mở lại bài để chèn ảnh.");
+          return;
+        }
+        const editor = document.getElementById("richEditor");
+        editor.focus();
+        const sel = window.getSelection();
+        if (imageRange && editor.contains(imageRange.commonAncestorContainer)) {
+          sel.removeAllRanges();
+          sel.addRange(imageRange);
+        } else {
+          const range = document.createRange();
+          range.selectNodeContents(editor);
+          range.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+        const img = document.createElement("img");
+        img.src = publicURL;
+        img.alt = file.name;
+        img.style.maxWidth = "100%";
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(img);
+        range.setStartAfter(img);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        alert("Đã chèn ảnh! Bấm Lưu & xong để lưu bài viết.");
+      } catch (err) {
+        alert("Chưa tải được ảnh: " + err.message +
+          "\nKiểm tra đã chạy SQL tạo bucket research-images chưa.");
+      } finally {
+        uploadButton.disabled = false;
+        uploadButton.textContent = "📷 Tải ảnh từ máy";
+        imageRange = null;
+      }
+    });
+    toolbar.appendChild(uploadButton);
+    toolbar.appendChild(uploadInput);
+
     const editor = document.createElement("div");
     editor.id = "richEditor";
     editor.contentEditable = "true";
