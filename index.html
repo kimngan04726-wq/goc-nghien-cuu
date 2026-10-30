@@ -2380,5 +2380,59 @@ body.word-editor-open #researchEditor #researchMessage{flex:none;margin:0!import
  cancelResearch=function(){setWordEditorExpanded(false);return priorCancel()};
  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.body.classList.contains('word-editor-open')){event.preventDefault();setWordEditorExpanded(false)}});
 })();
-</script><script>(function(){const a=document.querySelector('#researchEditor .research-actions');if(!a)return;const b=a.querySelectorAll('button');if(b.length<2)return;b[0].textContent='Lưu';b[0].onclick=function(){if(confirm('Bạn có muốn lưu các thay đổi không?'))saveResearch()};b[1].onclick=function(){if(confirm('Bạn có muốn hủy các thay đổi chưa lưu không?'))cancelResearch()};})();</script></body>
+</script><script>(function(){const a=document.querySelector('#researchEditor .research-actions');if(!a)return;const b=a.querySelectorAll('button');if(b.length<2)return;b[0].textContent='Lưu';b[0].onclick=function(){if(confirm('Bạn có muốn lưu các thay đổi không?'))saveResearch()};b[1].onclick=function(){if(confirm('Bạn có muốn hủy các thay đổi chưa lưu không?'))cancelResearch()};})();</script><style id="compact-docs-toolbar-v4">
+body.word-editor-open #researchEditor>h2{display:none!important}
+body.word-editor-open #researchEditor{padding:5px 8px!important}
+body.word-editor-open #researchEditor .research-actions{top:7px!important;right:10px!important}
+body.word-editor-open #researchEditor #richToolbar{display:flex!important;flex-wrap:wrap!important;align-content:flex-start!important;align-items:center!important;gap:5px!important;overflow:visible!important;max-height:none!important;position:relative!important;padding:7px 145px 7px 8px!important;min-height:49px!important;box-sizing:border-box!important}
+body.word-editor-open #researchEditor #richToolbar>.rich-extra-tools{display:contents!important}
+body.word-editor-open #researchEditor #richToolbar>button,body.word-editor-open #researchEditor #richToolbar>.rich-extra-tools>button{min-height:36px!important;height:36px!important;padding:5px 9px!important;font-size:14px!important}
+body.word-editor-open #researchEditor #richToolbar select{height:36px!important;font-size:13px!important}
+body.word-editor-open #researchEditor #richToolbar .rich-color-tool{height:36px!important}
+body.word-editor-open #researchEditor #richToolbar #wordEditorSizeButton{position:absolute!important;right:8px!important;bottom:7px!important;margin:0!important;z-index:3!important}
+#richToolbar #wordToolbarMore{font-weight:bold!important;background:#e5edf8!important;border:1px solid #8caac7!important}
+#richToolbar #wordToolbarOverflow{position:absolute!important;top:calc(100% - 2px)!important;right:6px!important;z-index:100!important;display:flex!important;flex-wrap:wrap!important;gap:6px!important;align-items:center!important;width:min(560px,calc(100vw - 30px))!important;max-height:55vh!important;overflow:auto!important;padding:12px!important;border:1px solid #c8bcae!important;border-radius:10px!important;background:#faf7f2!important;box-shadow:0 12px 28px #0003!important}
+#richToolbar #wordToolbarOverflow[hidden]{display:none!important}
+#richToolbar #wordToolbarOverflow button{min-height:36px!important;padding:6px 10px!important}
+#richToolbar #wordToolbarOverflow select{height:36px!important}
+@media(max-width:650px){body.word-editor-open #researchEditor #richToolbar{padding-right:8px!important;padding-bottom:48px!important}body.word-editor-open #researchEditor #richToolbar #wordEditorSizeButton{bottom:5px!important}}
+</style>
+<script>
+(function(){
+ let observer;
+ function compactToolbar(){
+  const bar=document.getElementById('richToolbar');
+  if(!bar||!document.body.classList.contains('word-editor-open'))return;
+  const extra=bar.querySelector('.rich-extra-tools');
+  if(extra&&!extra.dataset.flattened){while(extra.firstChild)bar.insertBefore(extra.firstChild,extra);extra.remove(); }
+  let more=document.getElementById('wordToolbarMore');
+  let overflow=document.getElementById('wordToolbarOverflow');
+  if(!more){
+   more=document.createElement('button');more.type='button';more.id='wordToolbarMore';more.textContent='⋮';more.title='Thêm công cụ';more.setAttribute('aria-label','Thêm công cụ');more.setAttribute('aria-expanded','false');
+   overflow=document.createElement('div');overflow.id='wordToolbarOverflow';overflow.hidden=true;
+   more.addEventListener('click',event=>{event.stopPropagation();overflow.hidden=!overflow.hidden;more.setAttribute('aria-expanded',String(!overflow.hidden))});
+   bar.append(more,overflow);
+   document.addEventListener('click',event=>{if(!bar.contains(event.target)){overflow.hidden=true;more.setAttribute('aria-expanded','false')}});
+  }
+  const size=document.getElementById('wordEditorSizeButton');
+  const children=Array.from(bar.children).filter(el=>el!==more&&el!==overflow&&el!==size&&el.tagName!=='INPUT');
+  children.forEach(el=>bar.insertBefore(el,more));
+  overflow.hidden=true;more.setAttribute('aria-expanded','false');
+  // Keep no more than two rows in the visible toolbar; move excess into the menu.
+  const first=children[0]?.offsetTop??0;
+  const rowHeight=children[0]?.offsetHeight||36;
+  children.forEach(el=>{if(el.offsetTop>first+rowHeight+9)overflow.append(el)});
+  // Ensure the menu itself stays within the second row.
+  while(more.offsetTop>first+rowHeight+9){
+   const previous=more.previousElementSibling;
+   if(!previous||previous===size)break;
+   overflow.insertBefore(previous,overflow.firstChild);
+  }
+  more.hidden=overflow.children.length===0;
+ }
+ const previousOpen=openResearchEditor;
+ openResearchEditor=async function(id){await previousOpen(id);requestAnimationFrame(()=>requestAnimationFrame(compactToolbar))};
+ window.addEventListener('resize',()=>{if(document.body.classList.contains('word-editor-open'))compactToolbar()});
+})();
+</script></body>
 </html>
