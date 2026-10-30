@@ -85,7 +85,26 @@ nav button {background:#e6e0d5;color:#19364e}
 
 <section id="library" class="hidden">
 <h2>Thư viện tài liệu tham khảo</h2>
-<p>Nơi tổng hợp các nguồn tài liệu nghiên cứu của nhóm.</p>
+<p>Lưu nguồn nghiên cứu, DOI, liên kết và ghi chú. Mọi thành viên có thể tìm và xem tài liệu.</p>
+<div class="library-tools">
+<input id="librarySearch" type="search" placeholder="Tìm theo tên, tác giả, năm, từ khóa..." oninput="renderLibrary()">
+<select id="libraryCategory" onchange="renderLibrary()"><option value="">Tất cả chủ đề</option><option>Kiến thức tài chính số</option><option>Bảo mật ngân hàng</option><option>Deepfake và lừa đảo</option><option>Phương pháp nghiên cứu</option><option>Khác</option></select>
+<span id="libraryCount"></span>
+</div>
+<form id="libraryForm" class="hidden" onsubmit="saveLibraryReference(event)">
+<h3 id="libraryFormHeading">Thêm tài liệu tham khảo</h3>
+<input id="refTitle" required maxlength="500" placeholder="Tên tài liệu *">
+<input id="refAuthors" maxlength="500" placeholder="Tác giả">
+<input id="refYear" type="number" min="1900" max="2100" placeholder="Năm">
+<select id="refCategory"><option>Kiến thức tài chính số</option><option>Bảo mật ngân hàng</option><option>Deepfake và lừa đảo</option><option>Phương pháp nghiên cứu</option><option>Khác</option></select>
+<input id="refDOI" maxlength="300" placeholder="DOI (ví dụ: 10.1000/xyz)">
+<input id="refURL" type="url" maxlength="2000" placeholder="URL bài báo / tài liệu (https://...)">
+<textarea id="refNotes" rows="3" maxlength="5000" placeholder="Ghi chú, tóm tắt, mức độ liên quan"></textarea>
+<div><button type="submit" id="librarySave">Lưu tài liệu</button><button type="button" onclick="cancelLibraryForm()">Hủy</button></div>
+</form>
+<div id="libraryAdmin" class="hidden"><button type="button" onclick="openLibraryForm()">+ Thêm tài liệu</button></div>
+<p id="libraryMessage" role="status"></p>
+<div id="libraryList"></div>
 </section>
 </div>
 </main>
@@ -119,6 +138,7 @@ function showPage(page) {
     el(id).classList.toggle("hidden", id !== page);
   });
   if (page === "tasks") loadTasks();
+  if (page === "library") loadLibrary();
 }
 
 async function signIn() {
@@ -1115,6 +1135,136 @@ initialize = async function() {
    await loadTasks();
  };
 })();
+</script>
+
+
+<!-- REFERENCE LIBRARY V1 -->
+<style>
+.library-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+#librarySearch{flex:1;min-width:230px}
+#libraryForm{padding:18px;background:#f8f4ec;border:1px solid #d9cfc0;border-radius:10px;margin:16px 0}
+#libraryForm:not(.hidden){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#libraryForm h3,#libraryForm textarea,#libraryForm>div{grid-column:1/-1}
+#libraryForm input,#libraryForm select,#libraryForm textarea{width:100%;margin:0;font-size:16px;padding:10px;border:1px solid #ccc;border-radius:6px;font-family:inherit}
+#libraryForm textarea{resize:vertical}
+#libraryList{display:grid;gap:12px;margin-top:14px}
+.reference-card{background:#fcfaf6;border:1px solid #e3dacd;border-radius:10px;padding:17px;overflow-wrap:anywhere}
+.reference-card h3{margin:0 0 8px;font-size:20px}
+.reference-meta{color:#536579;margin:7px 0}
+.reference-note{white-space:pre-wrap;margin:12px 0}
+.reference-links{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0}
+.reference-links a{color:#135e85}
+.reference-actions{display:flex;gap:8px}
+#libraryMessage{color:#7d3b27}
+@media(max-width:650px){#libraryForm:not(.hidden){grid-template-columns:1fr}}
+</style>
+<script>
+let libraryItems=[];
+let editingLibraryId=null;
+function libraryText(tag,value,className){
+ const node=document.createElement(tag);node.textContent=value;
+ if(className)node.className=className;
+ return node;
+}
+function safeLibraryUrl(value){
+ try{const url=new URL(value);return ['https:','http:'].includes(url.protocol)?url.href:null}
+ catch{return null}
+}
+function libraryLink(label,url){
+ const href=safeLibraryUrl(url);
+ if(!href)return null;
+ const link=document.createElement('a');link.textContent=label;
+ link.href=href;link.target='_blank';link.rel='noopener noreferrer';
+ return link;
+}
+function openLibraryForm(id=null){
+ if(!isAdmin)return;
+ const item=libraryItems.find(x=>x.id===id);
+ editingLibraryId=item?item.id:null;
+ el('libraryForm').reset();
+ el('refTitle').value=item?.title||'';
+ el('refAuthors').value=item?.authors||'';
+ el('refYear').value=item?.year||'';
+ el('refCategory').value=item?.category||'Kiến thức tài chính số';
+ el('refDOI').value=item?.doi||'';
+ el('refURL').value=item?.url||'';
+ el('refNotes').value=item?.notes||'';
+ el('libraryFormHeading').textContent=item?'Chỉnh sửa tài liệu':'Thêm tài liệu tham khảo';
+ el('libraryForm').classList.remove('hidden');
+ el('refTitle').focus();
+}
+function cancelLibraryForm(){
+ editingLibraryId=null;el('libraryForm').reset();
+ el('libraryForm').classList.add('hidden');
+}
+async function loadLibrary(){
+ el('libraryAdmin').classList.toggle('hidden',!isAdmin);
+ const {data,error}=await db.from('research_references').select('*').order('created_at',{ascending:false});
+ if(error){
+   el('libraryMessage').textContent='Chưa tải được thư viện: '+error.message+' — Hãy chạy SQL tạo bảng research_references.';
+   return;
+ }
+ el('libraryMessage').textContent='';
+ libraryItems=data||[];renderLibrary();
+}
+function renderLibrary(){
+ const root=el('libraryList');root.replaceChildren();
+ const search=el('librarySearch').value.trim().toLocaleLowerCase('vi');
+ const category=el('libraryCategory').value;
+ const filtered=libraryItems.filter(x=>(!category||x.category===category)&&
+  (!search||[x.title,x.authors,x.year,x.category,x.doi,x.notes].some(v=>String(v??'').toLocaleLowerCase('vi').includes(search))));
+ el('libraryCount').textContent=filtered.length+' tài liệu';
+ if(!filtered.length){root.append(libraryText('p','Chưa có tài liệu phù hợp.'));return;}
+ filtered.forEach(item=>{
+  const card=libraryText('article','','reference-card');
+  card.append(libraryText('h3',item.title));
+  card.append(libraryText('p',[item.authors,item.year].filter(Boolean).join(' · ')||'Chưa có tác giả / năm','reference-meta'));
+  card.append(libraryText('p',item.category||'Chưa phân loại','reference-meta'));
+  if(item.notes)card.append(libraryText('p',item.notes,'reference-note'));
+  const links=libraryText('div','','reference-links');
+  if(item.doi){
+   const doi=item.doi.replace(/^https?:\/\/(dx\.)?doi\.org\//i,'').trim();
+   const link=libraryLink('DOI: '+doi,'https://doi.org/'+encodeURI(doi));
+   if(link)links.append(link);
+  }
+  if(item.url){const link=libraryLink('Mở tài liệu',item.url);if(link)links.append(link);}
+  card.append(links);
+  if(isAdmin){
+   const actions=libraryText('div','','reference-actions');
+   const edit=libraryText('button','Sửa');edit.type='button';edit.onclick=()=>openLibraryForm(item.id);
+   const remove=libraryText('button','Xóa');remove.type='button';remove.onclick=()=>deleteLibraryReference(item.id);
+   actions.append(edit,remove);card.append(actions);
+  }
+  root.append(card);
+ });
+}
+async function saveLibraryReference(event){
+ event.preventDefault();
+ if(!isAdmin)return;
+ const title=el('refTitle').value.trim();
+ if(!title)return alert('Nhập tên tài liệu.');
+ const year=el('refYear').value;
+ const url=el('refURL').value.trim();
+ if(url&&!safeLibraryUrl(url))return alert('Liên kết phải bắt đầu bằng http:// hoặc https://');
+ const payload={
+  title,authors:el('refAuthors').value.trim(),
+  year:year?Number(year):null,category:el('refCategory').value,
+  doi:el('refDOI').value.trim(),url,notes:el('refNotes').value.trim()
+ };
+ const button=el('librarySave');button.disabled=true;
+ const result=editingLibraryId?
+  await db.from('research_references').update(payload).eq('id',editingLibraryId):
+  await db.from('research_references').insert(payload);
+ button.disabled=false;
+ if(result.error)return alert('Không lưu được: '+result.error.message);
+ cancelLibraryForm();await loadLibrary();
+}
+async function deleteLibraryReference(id){
+ if(!isAdmin||!confirm('Xóa tài liệu tham khảo này?'))return;
+ const {error}=await db.from('research_references').delete().eq('id',id);
+ if(error)return alert('Không xóa được: '+error.message);
+ await loadLibrary();
+}
 </script>
 
 </body>
