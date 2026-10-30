@@ -97,6 +97,14 @@ button,select{touch-action:manipulation}
 </style>
 <style>#taskList.kanban-single-status{grid-template-columns:minmax(0,1fr)}#taskList.kanban-single-status .kanban-lane{min-height:180px;max-width:100%}</style>
 <style>#taskList .kanban-lane[hidden]{display:none!important}#taskList.kanban-single-status{grid-template-columns:minmax(0,1fr)!important}</style>
+<style>
+#adminModeControls{display:inline-flex;flex-wrap:wrap;gap:6px;margin:4px 8px 10px 0}
+#adminModeControls.hidden{display:none!important}
+#adminModeControls button{font-size:14px;padding:8px 11px;width:auto;min-width:0;white-space:nowrap;background:#eee9df;color:#17354d}
+#adminModeControls button.mode-active{background:#17354d;color:white}
+body.admin-guest-mode #libraryAdmin,body.admin-guest-mode #researchEditor,body.admin-guest-mode .research-edit-button{display:none!important}
+@media(max-width:600px){#adminModeControls{display:flex}#adminModeControls button{flex:1 1 auto}}
+</style>
 </head>
 <body>
 
@@ -107,7 +115,7 @@ button,select{touch-action:manipulation}
 
 <main>
 <section id="login">
-<h2>Đăng nhập quản trị</h2><p>Khách có thể xem nội dung và cập nhật trạng thái công việc mà không cần đăng nhập.</p>
+<h2>Đăng nhập quản trị</h2><p>Khách chỉ có thể xem nội dung; chỉ thành viên đăng nhập mới được cập nhật trạng thái công việc.</p>
 <input id="email" type="email" placeholder="Email">
 <input id="password" type="password" placeholder="Mật khẩu">
 <button onclick="signIn()">Đăng nhập</button>
@@ -117,7 +125,7 @@ button,select{touch-action:manipulation}
 <div id="app" class="hidden">
 <section>
 <p id="account"></p>
-<button id="viewModeButton" type="button" class="hidden" onclick="toggleAdminView()" aria-pressed="false">👁 Xem</button>
+<div id="adminModeControls" class="hidden" role="group" aria-label="Chế độ hiển thị"><button type="button" onclick="setAdminMode('edit')" data-admin-mode="edit">✎ Quản trị</button><button type="button" onclick="setAdminMode('member')" data-admin-mode="member">👥 Thành viên</button><button type="button" onclick="setAdminMode('guest')" data-admin-mode="guest">👁 Khách</button></div>
 <button id="logoutButton" onclick="signOut()">Đăng xuất</button>
 </section>
 
@@ -205,39 +213,48 @@ const SUPABASE_KEY =
 let db;
 let isAdmin = false;
 let adminViewerMode = false;
-function adminEditingEnabled(){return isAdmin && !adminViewerMode;}
-function toggleAdminView(){
- if(!isAdmin)return;
- adminViewerMode=!adminViewerMode;
+let adminMode = 'edit';
+function adminEditingEnabled(){return isAdmin && adminMode==='edit';}
+function canChangeTaskStatus(){return (isAdmin && adminMode!=='guest') || isMember;}
+function canEditResearch(id){return (isAdmin && adminMode!=='guest') || (isMember && assignedResearchPages.has(Number(id)));}
+function canContributeLibrary(){return (isAdmin && adminMode!=='guest') || isMember;}
+function setAdminMode(mode){
+ if(!isAdmin || !['edit','member','guest'].includes(mode))return;
+ adminMode=mode;
+ adminViewerMode=mode!=='edit';
  applyAdminView();
- // Chỉ cập nhật giao diện, không gọi Supabase hoặc tải lại dữ liệu.
- document.querySelectorAll(".research-edit-button").forEach(btn=>btn.classList.toggle("hidden",!adminEditingEnabled()));
- const researchEdit=document.querySelector("#researchDetail > button:last-child");
- if(researchEdit)researchEdit.style.display=adminEditingEnabled()?"inline-block":"none";
- // Không tải lại dữ liệu khi chuyển chế độ; ẩn các thao tác quản trị qua CSS.
- document.querySelectorAll("#taskList .kanban-item").forEach(card=>{
-   card.querySelectorAll("button").forEach(btn=>btn.classList.toggle("hidden",!adminEditingEnabled()));
-   const status=card.querySelector("select");if(status)status.disabled=!(isAdmin||isMember);
+ document.querySelectorAll('.research-edit-button').forEach(btn=>{
+  const id=Number(btn.closest('.card')?.querySelector('.research-content')?.id.replace('researchContent',''));
+  btn.classList.toggle('hidden',!canEditResearch(id));
+  btn.style.display=canEditResearch(id)?'inline-block':'none';
  });
- document.querySelectorAll("#libraryList .reference-actions button").forEach(btn=>{
-   if(btn.textContent.trim()==="Xóa")btn.classList.toggle("hidden",!adminEditingEnabled());
-   else btn.classList.toggle("hidden",!(isAdmin||isMember));
+ const detailEdit=document.getElementById('researchEditButton');
+ if(detailEdit)detailEdit.style.display=mode==='guest'?'none':'inline-block';
+ document.querySelectorAll('#taskList .kanban-item').forEach(card=>{
+  card.querySelectorAll('button').forEach(btn=>btn.classList.toggle('hidden',!adminEditingEnabled()));
+  const select=card.querySelector('select');if(select)select.disabled=!canChangeTaskStatus();
  });
+ if(typeof renderLibrary==='function')renderLibrary();
+ const libraryAdmin=document.getElementById('libraryAdmin');
+ if(libraryAdmin)libraryAdmin.classList.toggle('hidden',!canContributeLibrary());
 }
+function toggleAdminView(){setAdminMode(adminMode==='edit'?'member':'edit');}
 function applyAdminView(){
- document.body.classList.toggle("admin-viewer-mode",isAdmin && adminViewerMode);
- const btn=el("viewModeButton");
- btn.classList.toggle("hidden",!isAdmin);
- btn.textContent=adminViewerMode?"✎ Sửa":"👁 Xem";
- btn.title=adminViewerMode?"Chuyển sang chế độ chỉnh sửa":"Xem giao diện như khách";
- btn.setAttribute("aria-pressed",String(adminViewerMode));
- el("adminControls").classList.toggle("hidden",!adminEditingEnabled());
+ document.body.classList.toggle('admin-viewer-mode',isAdmin && adminMode!=='edit');
+ document.body.classList.toggle('admin-guest-mode',isAdmin && adminMode==='guest');
+ const controls=el('adminModeControls');
+ controls.classList.toggle('hidden',!isAdmin);
+ controls.querySelectorAll('button').forEach(btn=>{
+  const active=btn.dataset.adminMode===adminMode;
+  btn.classList.toggle('mode-active',active);
+  btn.setAttribute('aria-pressed',String(active));
+ });
+ el('adminControls').classList.toggle('hidden',!adminEditingEnabled());
+ el('adminControls').setAttribute('aria-hidden',String(!adminEditingEnabled()));
 }
 
 let isMember = false;
 let assignedResearchPages = new Set();
-function canEditResearch(id){return adminEditingEnabled() || (isMember && assignedResearchPages.has(Number(id)));}
-function canContributeLibrary(){return adminEditingEnabled() || isMember;}
 
 function el(id) {
   return document.getElementById(id);
@@ -369,7 +386,7 @@ async function addTask() {
 }
 
 async function changeStatus(id,status) {
-  if(!(isAdmin||isMember))return alert("Chỉ thành viên đăng nhập mới được cập nhật trạng thái.");
+  if(!canChangeTaskStatus())return alert("Chỉ thành viên đăng nhập mới được cập nhật trạng thái.");
   const {error} = await db.rpc("set_group_task_status",{
     p_task_id:id,
     p_status:status
@@ -440,6 +457,7 @@ window.addEventListener("load",async () => {
 async function enterGuestMode(){
  isAdmin=false;
  adminViewerMode=false;
+ adminMode='edit';
  applyAdminView();
  isMember=false;
  assignedResearchPages=new Set();
@@ -1243,8 +1261,8 @@ researchSetup();
      if(task.due_date&&task.due_date<today&&status!=='Hoàn thành'){deadline.classList.add('task-overdue');deadline.textContent+=' · Quá hạn';}
      const select=document.createElement('select');
      statuses.forEach(value=>{const option=document.createElement('option');option.value=value;option.textContent=value;option.selected=value===task.status;select.append(option);});
-     select.disabled=!(isAdmin||isMember);
-     select.onchange=async()=>{if(!(isAdmin||isMember))return;select.disabled=true;await changeStatus(task.id,select.value);};
+     select.disabled=!(canChangeTaskStatus());
+     select.onchange=async()=>{if(!(canChangeTaskStatus()))return;select.disabled=true;await changeStatus(task.id,select.value);};
      card.append(name,groupInfo,deadline,select);
      if(adminEditingEnabled()){
        const edit=document.createElement('button');edit.textContent='Sửa';edit.onclick=()=>editTask(task.id);
