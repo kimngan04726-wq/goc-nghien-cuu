@@ -105,6 +105,14 @@ button,select{touch-action:manipulation}
 body.admin-guest-mode #libraryAdmin,body.admin-guest-mode #researchEditor,body.admin-guest-mode .research-edit-button{display:none!important}
 @media(max-width:600px){#adminModeControls{display:flex}#adminModeControls button{flex:1 1 auto}}
 </style>
+<style>
+/* Gallery chỉ hiển thị tiêu đề; nội dung và công cụ sửa nằm trong trang chi tiết. */
+#research:not(.gallery-detail) .card .research-content,
+#research:not(.gallery-detail) .card .research-edit-button{display:none!important}
+#research:not(.gallery-detail) .card{cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:155px;text-align:center;padding:24px}
+#research:not(.gallery-detail) .card h3{margin:0;line-height:1.4}
+#research:not(.gallery-detail) .card:focus-visible{outline:3px solid #3c7194;outline-offset:3px}
+</style>
 </head>
 <body>
 
@@ -1135,7 +1143,7 @@ researchSetup();
       if(window.DOMPurify)body.innerHTML=DOMPurify.sanitize(source.innerHTML);
       else body.textContent=source.textContent;
     }else body.textContent=source.textContent;
-    edit.style.display=adminEditingEnabled()?'inline-block':'none';
+    edit.style.display=canEditResearch(selected)?'inline-block':'none';
   }
   function open(id){
     selected=id;
