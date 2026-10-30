@@ -118,6 +118,10 @@ const SUPABASE_KEY =
 
 let db;
 let isAdmin = false;
+let isMember = false;
+let assignedResearchPages = new Set();
+function canEditResearch(id){return isAdmin || (isMember && assignedResearchPages.has(Number(id)));}
+function canContributeLibrary(){return isAdmin || isMember;}
 
 function el(id) {
   return document.getElementById(id);
@@ -181,9 +185,16 @@ async function initialize() {
   }
 
   isAdmin = profile.role === "admin";
+  isMember = profile.role === "member";
+  assignedResearchPages = new Set();
+  if(isMember){
+    const {data:assignments,error:assignmentError}=await db.from("research_page_assignments").select("page_id").eq("user_id",user.id);
+    if(assignmentError)console.error("Không tải được phân công:",assignmentError.message);
+    else assignedResearchPages = new Set((assignments||[]).map(x=>Number(x.page_id)));
+  }
 
   el("account").textContent =
-    user.email + (isAdmin ? " — Admin" : " — Thành viên");
+    user.email + (isAdmin ? " — Admin" : isMember ? " — Thành viên" : " — Chỉ xem");
 
   el("adminControls").classList.toggle("hidden",!isAdmin);
   el("login").classList.add("hidden");
@@ -243,6 +254,7 @@ async function addTask() {
 }
 
 async function changeStatus(id,status) {
+  if(!(isAdmin||isMember))return alert("Chỉ thành viên đăng nhập mới được cập nhật trạng thái.");
   const {error} = await db.rpc("set_group_task_status",{
     p_task_id:id,
     p_status:status
@@ -310,6 +322,8 @@ window.addEventListener("load",async () => {
 <script>
 async function enterGuestMode(){
  isAdmin=false;
+ isMember=false;
+ assignedResearchPages=new Set();
  el("account").textContent="Đang xem với tư cách Khách";
  el("adminControls").classList.add("hidden");
  el("logoutButton").classList.add("hidden");
@@ -445,14 +459,14 @@ async function loadResearch() {
   document.querySelectorAll(
     ".research-edit-button"
   ).forEach(button => {
-    button.style.display = isAdmin
+    button.style.display = canEditResearch(Number(button.closest(".card")?.querySelector(".research-content")?.id.replace("researchContent","")))
       ? "inline-block"
       : "none";
   });
 }
 
 async function openResearchEditor(id) {
-  if (!isAdmin) return;
+  if (!canEditResearch(id)) return;
 
   const {data, error} = await db
     .from("research_pages")
@@ -481,7 +495,7 @@ async function openResearchEditor(id) {
 }
 
 async function saveResearch() {
-  if (!isAdmin || editingPageId === null) return;
+  if (editingPageId === null || !canEditResearch(editingPageId)) return;
 
   const title = document.getElementById(
     "researchTitle"
@@ -747,7 +761,7 @@ initialize = async function() {
     let imageRange = null;
     uploadButton.addEventListener("mousedown", e => e.preventDefault());
     uploadButton.addEventListener("click", () => {
-      if (!isAdmin || editingPageId === null) return;
+      if (editingPageId === null || !canEditResearch(editingPageId)) return;
       const sel = window.getSelection();
       imageRange = sel && sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
       uploadInput.click();
@@ -894,7 +908,7 @@ initialize = async function() {
   };
 
   saveResearch = async function () {
-    if (!isAdmin || editingPageId === null) return;
+    if (editingPageId === null || !canEditResearch(editingPageId)) return;
 
     const title = document.getElementById(
       "researchTitle"
@@ -1100,7 +1114,9 @@ initialize = async function() {
          option.selected=value===task.status;
          select.append(option);
        });
+       select.disabled=!(isAdmin||isMember);
        select.onchange=async()=>{
+         if(!(isAdmin||isMember))return;
          select.disabled=true;
          await changeStatus(task.id,select.value);
        };
@@ -1197,7 +1213,7 @@ function libraryLink(label,url){
  return link;
 }
 function openLibraryForm(id=null){
- if(!isAdmin)return;
+ if(!canContributeLibrary())return;
  const item=libraryItems.find(x=>x.id===id);
  editingLibraryId=item?item.id:null;
  el('libraryForm').reset();
@@ -1217,7 +1233,7 @@ function cancelLibraryForm(){
  el('libraryForm').classList.add('hidden');
 }
 async function loadLibrary(){
- el('libraryAdmin').classList.toggle('hidden',!isAdmin);
+ el('libraryAdmin').classList.toggle('hidden',!canContributeLibrary());
  const {data,error}=await db.from('research_references').select('*').order('created_at',{ascending:false});
  if(error){
    el('libraryMessage').textContent='Chưa tải được thư viện: '+error.message+' — Hãy chạy SQL tạo bảng research_references.';
@@ -1248,18 +1264,19 @@ function renderLibrary(){
   }
   if(item.url){const link=libraryLink('Mở tài liệu',item.url);if(link)links.append(link);}
   card.append(links);
-  if(isAdmin){
+  if(canContributeLibrary()){
    const actions=libraryText('div','','reference-actions');
    const edit=libraryText('button','Sửa');edit.type='button';edit.onclick=()=>openLibraryForm(item.id);
-   const remove=libraryText('button','Xóa');remove.type='button';remove.onclick=()=>deleteLibraryReference(item.id);
-   actions.append(edit,remove);card.append(actions);
+   actions.append(edit);
+   if(isAdmin){const remove=libraryText('button','Xóa');remove.type='button';remove.onclick=()=>deleteLibraryReference(item.id);actions.append(remove);}
+   card.append(actions);
   }
   root.append(card);
  });
 }
 async function saveLibraryReference(event){
  event.preventDefault();
- if(!isAdmin)return;
+ if(!canContributeLibrary())return;
  const title=el('refTitle').value.trim();
  if(!title)return alert('Nhập tên tài liệu.');
  const year=el('refYear').value;
