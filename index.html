@@ -2438,8 +2438,8 @@ body.word-editor-open #researchEditor #richToolbar #wordEditorSizeButton{positio
   more.hidden=overflow.children.length===0;
  }
  const previousOpen=openResearchEditor;
- openResearchEditor=async function(id){await previousOpen(id);requestAnimationFrame(()=>requestAnimationFrame(compactToolbar))};
- window.addEventListener('resize',()=>{if(document.body.classList.contains('word-editor-open'))compactToolbar()});
+ openResearchEditor=async function(id){await previousOpen(id);requestAnimationFrame(()=>requestAnimationFrame(()=>{if(!document.getElementById('richToolbar')?.classList.contains('docs-style-toolbar'))compactToolbar()}))};
+ window.addEventListener('resize',()=>{if(document.body.classList.contains('word-editor-open')&&!document.getElementById('richToolbar')?.classList.contains('docs-style-toolbar'))compactToolbar()});
 })();
 </script><style id="docs-toolbar-replacement-style">
 #richToolbar.docs-style-toolbar{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:4px!important;padding:7px 8px!important;background:#eef2f7!important;border-color:#dce2e9!important;position:relative!important}
