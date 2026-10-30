@@ -2324,5 +2324,34 @@ async function lookupReferenceMetadata(){
  }catch(err){status.textContent='Không tự phân tích được: '+err.message+' Bà có thể nhập thủ công.'}
  finally{button.disabled=false}
 }
+</script><style id="word-fullscreen-editor-style">
+body.word-editor-open{overflow:hidden!important}
+body.word-editor-open #researchEditor{position:fixed!important;inset:0!important;z-index:2147483000!important;display:flex!important;flex-direction:column!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;margin:0!important;padding:18px clamp(12px,3vw,42px)!important;box-sizing:border-box!important;overflow:hidden!important;background:#f3efe9!important;border:0!important;border-radius:0!important}
+body.word-editor-open #researchEditor>h2{flex:none;margin:0 0 10px!important;font-size:23px!important}
+body.word-editor-open #researchEditor #richToolbar{flex:none!important;max-height:130px;overflow-y:auto;margin:0!important}
+body.word-editor-open #researchEditor #richEditor{flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important;overflow-y:auto!important;max-width:1100px!important;width:100%!important;margin:0 auto!important;box-sizing:border-box!important;box-shadow:0 4px 22px #0001!important}
+body.word-editor-open #researchEditor .research-actions{flex:none!important;display:flex!important;gap:12px!important;align-items:center!important;padding:12px 0 0!important;margin:0!important}
+body.word-editor-open #researchEditor #researchMessage{flex:none;margin:0!important}
+#researchEditor .word-editor-size-button{margin-left:auto!important;background:#f9f1e4!important;border:1px solid #bba27f!important;font-weight:700!important}
+@media(max-width:650px){body.word-editor-open #researchEditor{padding:10px!important}body.word-editor-open #researchEditor #richToolbar{max-height:160px}body.word-editor-open #researchEditor #richEditor{padding:14px!important}}
+</style>
+<script>
+(function(){
+ function setWordEditorExpanded(expanded){
+  document.body.classList.toggle('word-editor-open',expanded);
+  const btn=document.getElementById('wordEditorSizeButton');
+  if(btn){btn.textContent=expanded?'⤢ Thu nhỏ':'⛶ Phóng to';btn.setAttribute('aria-pressed',String(expanded))}
+ }
+ function ensureSizeButton(){
+  const toolbar=document.getElementById('richToolbar');if(!toolbar)return;
+  let btn=document.getElementById('wordEditorSizeButton');
+  if(!btn){btn=document.createElement('button');btn.type='button';btn.id='wordEditorSizeButton';btn.className='word-editor-size-button';btn.addEventListener('mousedown',e=>e.preventDefault());btn.addEventListener('click',()=>setWordEditorExpanded(!document.body.classList.contains('word-editor-open')));toolbar.append(btn)}
+ }
+ const priorOpen=openResearchEditor;
+ openResearchEditor=async function(id){await priorOpen(id);if(editingPageId!==id)return;ensureSizeButton();setWordEditorExpanded(true);document.getElementById('richEditor')?.focus()};
+ const priorCancel=cancelResearch;
+ cancelResearch=function(){setWordEditorExpanded(false);return priorCancel()};
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.body.classList.contains('word-editor-open')){event.preventDefault();setWordEditorExpanded(false)}});
+})();
 </script></body>
 </html>
