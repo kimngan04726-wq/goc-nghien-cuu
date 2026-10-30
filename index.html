@@ -394,6 +394,15 @@ body.site-pick-mode [data-site-edit-key]:hover{outline:3px solid #b58d42}
 #app>nav>button.sidebar-main-link .sidebar-document-icon{font-size:21px}
 #app>nav>button.sidebar-main-link>span:last-child{flex:1;text-align:left}
 #app>nav>button.sidebar-main-link:before{content:none!important}
+</style><style id="dashboard-heading-alignment">
+#dashboardHome .dash-heading{display:grid!important;grid-template-columns:88px minmax(0,1fr);column-gap:16px;align-items:center!important}
+#dashboardHome .dash-heading .dash-book{display:flex!important;align-items:center;justify-content:center;width:88px;line-height:1;font-size:57px}
+#dashboardHome .dash-heading>div{min-width:0}
+#dashboardHome .dash-heading h1{margin:0!important;line-height:1.12}
+#dashboardHome .dash-heading .dash-subtitle{margin:7px 0 0!important;line-height:1.4}
+#dashboardHome .dash-section>h3{display:flex;align-items:center;gap:11px;line-height:1.35;min-height:32px}
+#dashboardHome .dash-section>h3 button{float:none!important;margin-left:auto;flex-shrink:0}
+@media(max-width:700px){#dashboardHome .dash-heading{grid-template-columns:55px minmax(0,1fr);gap:10px}#dashboardHome .dash-heading .dash-book{width:55px;font-size:37px}#dashboardHome .dash-heading h1{font-size:clamp(22px,5vw,34px)}}
 </style></head>
 <body>
 
