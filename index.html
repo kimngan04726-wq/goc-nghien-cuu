@@ -316,6 +316,59 @@ main{margin:0 0 0 218px!important;max-width:none!important;padding:18px 23px 45p
 #app>nav .sidebar-avatar{font-size:0}
 #app>nav .sidebar-member-photo{height:188px;border-radius:9px;background:#eee5d6 url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=450&q=80') center/cover;margin:17px 0 8px}
 @media(max-width:700px){#app>nav .sidebar-members{display:none}}
+</style><style id="member-profile-styles">
+#app>nav button.sidebar-person{width:100%;display:flex;text-align:left;background:transparent;border:0;padding:2px 0;margin:6px 0;gap:10px;align-items:center;font-size:14px;color:#203e5b;border-radius:7px}
+#app>nav button.sidebar-person:hover,#app>nav button.sidebar-person.selected{background:#f1e4ce}
+#app>nav button.sidebar-person:before{content:none!important}
+#memberProfile{background:transparent;border:0;box-shadow:none;padding:0;color:#102b4d}
+#memberProfile .profile-crumb{font-size:16px;color:#365a80;margin:0 0 16px}
+#memberProfile button{cursor:pointer}
+#memberProfile .profile-crumb button{border:0;background:none;color:#123d67;font-size:20px;padding:0}
+#memberProfile .profile-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:18px}
+#memberProfile .profile-head h2{font-size:clamp(28px,3vw,42px);margin:0}
+#memberProfile .profile-head p{margin:0;color:#58749a;font-size:18px}
+#memberProfile .profile-head>button{border:1px solid #1c477c;background:white;border-radius:8px;padding:13px 20px;color:#163e70;font-size:16px}
+#memberProfile .profile-summary{display:grid;grid-template-columns:34% 1fr;gap:25px;padding:14px;background:linear-gradient(125deg,#fffaf1,#fffdf8);border:1px solid #e8d9be;border-radius:14px}
+#memberProfile .profile-portrait{text-align:center;min-height:375px;padding:23px 10px;background:radial-gradient(circle at center,#fffdf8,#f6ebd8);border-radius:10px}
+#memberProfile .profile-avatar-big{width:245px;height:245px;max-width:100%;border-radius:50%;border:7px double #b58b39;margin:0 auto 12px;background:linear-gradient(145deg,#e7e0d5,#c9c1b5);position:relative;overflow:hidden}
+#memberProfile .profile-avatar-big span{font-size:0}
+#memberProfile .profile-avatar-big:before{content:"";position:absolute;width:32%;height:32%;background:#817a72;border-radius:50%;left:34%;top:22%}
+#memberProfile .profile-avatar-big:after{content:"";position:absolute;width:65%;height:42%;background:#817a72;border-radius:50% 50% 0 0;left:17.5%;bottom:-2%}
+#memberProfile .profile-portrait h2,#memberProfile .profile-edit-portrait h2{font-size:32px;margin:10px 0 5px}
+#memberProfile .profile-group-pill{background:#fff1d9;border:1px solid #eed39c;border-radius:30px;padding:7px 18px;display:inline-block;font-size:17px}
+#memberProfile .profile-portrait p{font-size:16px;margin:9px}
+#memberProfile .profile-facts{padding:18px 22px}
+#memberProfile .profile-facts h3,#memberProfile .profile-edit-panel h3{font-size:25px;margin:0}
+#memberProfile .profile-facts>p,#memberProfile .profile-edit-panel>p{color:#58749a;margin:3px 0 19px;font-size:16px}
+#memberProfile .profile-facts-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 30px}
+#memberProfile .profile-facts-grid>div{display:flex;align-items:center;gap:20px;border-bottom:1px solid #dfc89e;min-height:96px}
+#memberProfile .profile-facts-grid>div>span{font-size:35px;color:#aa7b24;min-width:38px;text-align:center}
+#memberProfile .profile-facts-grid small{display:block;font-size:16px;color:#5e7190}
+#memberProfile .profile-facts-grid strong{font-size:20px;display:block;margin-top:4px}
+#memberProfile .profile-intro{display:grid;grid-template-columns:1fr 30%;gap:14px;border:1px solid #e9dabe;border-radius:13px;padding:9px;margin:15px 0;background:#fffaf1}
+#memberProfile .profile-intro>div:first-child{padding:14px 18px}
+#memberProfile .profile-intro h3{font-size:25px;margin:0}
+#memberProfile .profile-intro p{color:#58749a;font-size:16px;margin:3px 0 15px}
+#memberProfile .profile-intro blockquote{font-size:19px;font-style:italic;margin:0;padding:0;border:0;white-space:pre-wrap}
+#memberProfile .profile-plant{min-height:175px;border-radius:10px;background:url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=700&q=80') center/cover}
+#memberProfile .profile-footer{display:flex;justify-content:space-between;gap:12px}
+#memberProfile .profile-footer button{border:0;background:transparent;color:#143f72;font-size:17px;padding:13px 7px}
+#memberProfile .profile-edit-layout{display:grid;grid-template-columns:29% 1fr;gap:17px;background:#fffdf9;border:1px solid #e8d9be;border-radius:14px;padding:12px}
+#memberProfile .profile-edit-portrait{text-align:center;padding:22px 10px;border:1px solid #f1e7d8;border-radius:11px}
+#memberProfile .profile-edit-portrait .profile-avatar-big{width:205px;height:205px;border-color:#e4ded4}
+#memberProfile .profile-edit-portrait>p{font-size:13px;color:#71839b}
+#memberProfile .profile-edit-portrait .profile-plant{margin-top:20px}
+#memberProfile .profile-edit-panel{border:1px solid #eee4d7;border-radius:10px;padding:18px;margin-bottom:14px}
+#memberProfile .profile-edit-fields{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#memberProfile .profile-edit-fields label{font-weight:bold;font-size:16px}
+#memberProfile .profile-edit-fields input,#memberProfile .profile-edit-fields select,#memberProfile .profile-edit-panel textarea{width:100%;margin-top:7px;padding:13px;border:1px solid #d7dce5;background:#fff;border-radius:8px;color:#153456;font-size:16px;font-family:inherit}
+#memberProfile .profile-edit-panel textarea{resize:vertical}
+#memberProfile .profile-edit-actions{display:flex;justify-content:flex-end;gap:12px}
+#memberProfile .profile-edit-actions button{padding:12px 24px;border:1px solid #1a4b80;background:white;color:#153d6c;border-radius:8px}
+#memberProfile .profile-edit-actions button:last-child{background:#103b65;color:white}
+#memberProfile .profile-draft-note{color:#8c681c;background:#fff6df;padding:10px;border-radius:8px;font-size:13px}
+@media(max-width:950px){#memberProfile .profile-summary{grid-template-columns:1fr}#memberProfile .profile-portrait{min-height:0}#memberProfile .profile-edit-layout{grid-template-columns:1fr}}
+@media(max-width:650px){#memberProfile .profile-facts-grid,#memberProfile .profile-edit-fields,#memberProfile .profile-intro{grid-template-columns:1fr}#memberProfile .profile-head{align-items:flex-start;flex-direction:column}#memberProfile .profile-footer button{font-size:13px}#memberProfile .profile-intro .profile-plant{min-height:120px}}
 </style></head>
 <body>
 
@@ -354,19 +407,36 @@ main{margin:0 0 0 218px!important;max-width:none!important;padding:18px 23px 45p
 <h3>👥 &nbsp; Thành viên nhóm</h3>
 <div class="sidebar-member-group group-one">
 <div class="sidebar-group-heading"><span class="sidebar-group-icon">📁</span><div><strong>NHÓM 1</strong><span>Lý thuyết và định hướng</span></div></div>
-<div class="sidebar-person"><span class="sidebar-avatar">●</span><span>Thành viên 1</span></div>
-<div class="sidebar-person"><span class="sidebar-avatar">●</span><span>Thành viên 2</span></div>
+<button type="button" class="sidebar-person" onclick="openMemberProfile(1)"><span class="sidebar-avatar">●</span><span>Thành viên 1</span></button>
+<button type="button" class="sidebar-person" onclick="openMemberProfile(2)"><span class="sidebar-avatar">●</span><span>Thành viên 2</span></button>
 </div>
 <div class="sidebar-member-group group-two">
 <div class="sidebar-group-heading"><span class="sidebar-group-icon">▥</span><div><strong>NHÓM 2</strong><span>Mô hình và triển khai</span></div></div>
-<div class="sidebar-person"><span class="sidebar-avatar">●</span><span>Thành viên 3</span></div>
-<div class="sidebar-person"><span class="sidebar-avatar">●</span><span>Thành viên 4</span></div>
+<button type="button" class="sidebar-person" onclick="openMemberProfile(3)"><span class="sidebar-avatar">●</span><span>Thành viên 3</span></button>
+<button type="button" class="sidebar-person" onclick="openMemberProfile(4)"><span class="sidebar-avatar">●</span><span>Thành viên 4</span></button>
 </div>
 <div class="sidebar-member-photo" aria-hidden="true"></div>
 </div>
 </nav>
 
-<section id="research">
+<section id="memberProfile" class="hidden" aria-label="Hồ sơ thành viên">
+<div class="profile-crumb"><button onclick="showPage('home')">⌂</button> &nbsp; Thành viên nhóm &nbsp; / &nbsp; <span id="profileCrumbName">Thành viên 1</span></div>
+<div class="profile-head"><div><h2>▣ &nbsp; HỒ SƠ THÀNH VIÊN</h2><p>Một chút thông tin để cả nhóm hiểu nhau hơn</p></div><button id="profileEditButton" type="button" onclick="toggleMemberProfileEdit()">✎ &nbsp; Chỉnh sửa hồ sơ</button></div>
+<div id="profileReadView">
+<div class="profile-summary"><div class="profile-portrait"><div class="profile-avatar-big"><span>●</span></div><h2 id="profileDisplayName">Thành viên 1</h2><div class="profile-group-pill" id="profileGroupPill">📁 &nbsp; Nhóm 1</div><p id="profileGroupNote">Lý thuyết và định hướng</p></div>
+<div class="profile-facts"><h3>♙ &nbsp; Thông tin thành viên</h3><p>Những thông tin cơ bản để các thành viên trong nhóm dễ dàng làm quen và phối hợp.</p><div class="profile-facts-grid">
+<div><span>♙</span><section><small>Họ và tên</small><strong id="profileFactName">Chưa cập nhật</strong></section></div>
+<div><span>♧</span><section><small>Lớp</small><strong id="profileFactClass">Chưa cập nhật</strong></section></div>
+<div><span>♟</span><section><small>Vai trò trong nhóm</small><strong id="profileFactRole">Chưa cập nhật</strong></section></div>
+<div><span>▱</span><section><small>Nhóm phụ trách</small><strong id="profileFactGroup">Nhóm 1</strong></section></div>
+<div><span>▦</span><section><small>Ngày sinh</small><strong id="profileFactBirth">Chưa cập nhật</strong></section></div>
+<div><span>✧</span><section><small>Cung hoàng đạo</small><strong id="profileFactZodiac">Chưa cập nhật</strong></section></div>
+</div></div></div>
+<div class="profile-intro"><div><h3>❝ &nbsp; Đôi lời giới thiệu</h3><p>Viết một vài dòng để mọi người hiểu thêm về bạn.</p><blockquote id="profileIntroText">Thành viên chưa thêm lời giới thiệu.</blockquote></div><div class="profile-plant"></div></div>
+<div class="profile-footer"><button onclick="openMemberProfile((currentMemberNumber+2)%4+1)">← &nbsp; Thành viên trước</button><button onclick="showPage('home')">⌂ &nbsp; Về trang chủ</button><button onclick="openMemberProfile(currentMemberNumber%4+1)">Thành viên tiếp theo &nbsp; →</button></div>
+</div>
+<div id="profileEditView" class="hidden"><div class="profile-edit-layout"><div class="profile-edit-portrait"><div class="profile-avatar-big"><span>●</span></div><h2 id="profileEditName">Thành viên 1</h2><div class="profile-group-pill" id="profileEditGroup">📁 &nbsp; Nhóm 1</div><p>Thêm ảnh đại diện sau khi kết nối lưu hồ sơ</p><div class="profile-plant"></div></div><form id="memberProfileForm" onsubmit="saveMemberProfileDraft(event)"><div class="profile-edit-panel"><h3>♙ &nbsp; Thông tin cá nhân</h3><p>Những thông tin cơ bản để các thành viên trong nhóm dễ dàng làm quen và phối hợp.</p><div class="profile-edit-fields"><label>Họ và tên<input id="profileInputName" placeholder="Nhập họ và tên"></label><label>Lớp<input id="profileInputClass" placeholder="Nhập tên lớp"></label><label>Vai trò trong nhóm<input id="profileInputRole" placeholder="Nhập vai trò"></label><label>Nhóm phụ trách<select id="profileInputGroup" disabled><option value="1">Nhóm 1</option><option value="2">Nhóm 2</option></select></label><label>Ngày sinh<input id="profileInputBirth" type="date"></label><label>Cung hoàng đạo<input id="profileInputZodiac" placeholder="Hiển thị khi có ngày sinh" readonly></label></div></div><div class="profile-edit-panel"><h3>📖 &nbsp; Đôi lời giới thiệu</h3><p>Viết một vài dòng để mọi người hiểu thêm về bạn.</p><textarea id="profileInputIntro" rows="5" placeholder="Viết vài dòng về bản thân..."></textarea></div><p class="profile-draft-note">Bản xem trước giao diện: thông tin hiện chỉ lưu trên trình duyệt này, chưa đồng bộ với các thành viên.</p><div class="profile-edit-actions"><button type="button" onclick="toggleMemberProfileEdit(false)">Hủy</button><button type="submit">▣ &nbsp; Lưu thay đổi</button></div></form></div></div>
+</section><section id="research">
 <h2>Đề tài nghiên cứu</h2>
 <p><b>Tác động của kiến thức tài chính số và thói quen bảo mật đến khả năng nhận diện rủi ro lừa đảo deepfake trong giao dịch ngân hàng</b></p>
 
@@ -520,8 +590,8 @@ function escapeHTML(value) {
 }
 
 function showPage(page) {
-  ["research","tasks","library","dashboardHome"].forEach(id => {
-    el(id).classList.toggle("hidden", (id === "dashboardHome" ? "home" : id) !== page);
+  ["research","tasks","library","dashboardHome","memberProfile"].forEach(id => {
+    el(id).classList.toggle("hidden", (id === "dashboardHome" ? "home" : id === "memberProfile" ? "member" : id) !== page);
   });
   document.querySelectorAll("nav button").forEach((button,index)=>{const active=["home","research","tasks","library"][index]===page;button.classList.toggle("nav-active",active);button.setAttribute("aria-current",active?"page":"false");});
   if (page === "home") refreshDashboard();
@@ -1875,5 +1945,15 @@ window.addEventListener('load',()=>{
  const root=document.getElementById('libraryList');
  if(root){const observer=new MutationObserver(refreshLibraryAPA);observer.observe(root,{childList:true});refreshLibraryAPA();}
 });
+</script><script>
+let currentMemberNumber=1;
+function memberProfileKey(n){return 'research_member_profile_draft_'+n}
+function memberProfileData(n){try{return JSON.parse(localStorage.getItem(memberProfileKey(n))||'{}')}catch(e){return {}}}
+function memberZodiac(date){if(!date)return '';const p=date.split('-');const m=Number(p[1]),d=Number(p[2]);if(!m||!d)return '';const z=['Ma Kết','Bảo Bình','Song Ngư','Bạch Dương','Kim Ngưu','Song Tử','Cự Giải','Sư Tử','Xử Nữ','Thiên Bình','Bọ Cạp','Nhân Mã'];const edges=[20,19,21,20,21,21,23,23,23,23,22,22];return d<edges[m-1]?z[(m+10)%12]:z[(m+11)%12]}
+function openMemberProfile(n){currentMemberNumber=Math.max(1,Math.min(4,Number(n)||1));showPage('member');document.querySelectorAll('.sidebar-person').forEach((b,i)=>b.classList.toggle('selected',i===currentMemberNumber-1));renderMemberProfile();window.scrollTo?.(0,0)}
+function renderMemberProfile(){const n=currentMemberNumber,d=memberProfileData(n),group=n<=2?1:2,groupNote=group===1?'Lý thuyết và định hướng':'Mô hình và triển khai',name=d.name||'Thành viên '+n;const put=(id,value)=>{const e=document.getElementById(id);if(e)e.textContent=value};put('profileCrumbName','Thành viên '+n);put('profileDisplayName',name);put('profileEditName',name);put('profileGroupPill','📁  Nhóm '+group);put('profileEditGroup','📁  Nhóm '+group);put('profileGroupNote',groupNote);put('profileFactName',d.name||'Chưa cập nhật');put('profileFactClass',d.className||'Chưa cập nhật');put('profileFactRole',d.role||'Chưa cập nhật');put('profileFactGroup','Nhóm '+group);put('profileFactBirth',d.birth?d.birth.split('-').reverse().join('/'):'Chưa cập nhật');put('profileFactZodiac',memberZodiac(d.birth)||'Chưa cập nhật');put('profileIntroText',d.intro||'Thành viên chưa thêm lời giới thiệu.');document.getElementById('profileInputName').value=d.name||'';document.getElementById('profileInputClass').value=d.className||'';document.getElementById('profileInputRole').value=d.role||'';document.getElementById('profileInputGroup').value=String(group);document.getElementById('profileInputBirth').value=d.birth||'';document.getElementById('profileInputZodiac').value=memberZodiac(d.birth);document.getElementById('profileInputIntro').value=d.intro||'';toggleMemberProfileEdit(false)}
+function toggleMemberProfileEdit(edit){const on=typeof edit==='boolean'?edit:document.getElementById('profileEditView').classList.contains('hidden');document.getElementById('profileReadView').classList.toggle('hidden',on);document.getElementById('profileEditView').classList.toggle('hidden',!on);document.getElementById('profileEditButton').classList.toggle('hidden',on)}
+function saveMemberProfileDraft(e){e.preventDefault();const d={name:document.getElementById('profileInputName').value.trim(),className:document.getElementById('profileInputClass').value.trim(),role:document.getElementById('profileInputRole').value.trim(),birth:document.getElementById('profileInputBirth').value,intro:document.getElementById('profileInputIntro').value.trim()};try{localStorage.setItem(memberProfileKey(currentMemberNumber),JSON.stringify(d));renderMemberProfile()}catch(err){alert('Không lưu được bản nháp trên trình duyệt: '+err.message)}}
+window.addEventListener('load',()=>{document.getElementById('profileInputBirth')?.addEventListener('change',e=>document.getElementById('profileInputZodiac').value=memberZodiac(e.target.value))});
 </script></body>
 </html>
