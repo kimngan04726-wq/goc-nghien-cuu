@@ -1670,26 +1670,31 @@ researchSetup();
 
  let cachedKanbanTasks=[];
  function localDateISO(date=new Date()){return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');}
+ function taskProgressWeight(t){return ({'Chưa làm':0,'Đang làm':50,'Chờ rà soát':90,'Hoàn thành':100})[t.status]??0}
  function updateTaskDashboard(){
-  const all=cachedKanbanTasks, done=all.filter(t=>t.status==='Hoàn thành').length;
-  const today=localDateISO(), overdue=all.filter(t=>t.due_date&&t.due_date<today&&t.status!=='Hoàn thành').length;
-  const pct=all.length?Math.round(done*100/all.length):0;
-  const stats=document.getElementById('taskStats');
-  stats.replaceChildren();
-  [['Tổng công việc',all.length],['Hoàn thành',done],['Đang thực hiện',all.filter(t=>t.status==='Đang làm').length],['Quá hạn',overdue],['Tiến độ',pct+'%']].forEach(([label,value])=>{
+  const group=document.getElementById('taskFilterGroup').value;
+  const all=cachedKanbanTasks.filter(t=>group==='all'||String(t.group_number||1)===group);
+  const done=all.filter(t=>t.status==='Hoàn thành').length;
+  const today=localDateISO(),overdue=all.filter(t=>t.due_date&&t.due_date<today&&t.status!=='Hoàn thành').length;
+  const pct=all.length?Math.round(all.reduce((total,t)=>total+taskProgressWeight(t),0)/all.length):0;
+  const stats=document.getElementById('taskStats');stats.replaceChildren();
+  [['Tổng công việc',all.length],['Hoàn thành',done],['Đang thực hiện',all.filter(t=>t.status==='Đang làm'||t.status==='Chờ rà soát').length],['Quá hạn',overdue],['Tiến độ',pct+'%']].forEach(([label,value])=>{
    const box=document.createElement('div');box.className='task-stat';
    const num=document.createElement('strong');num.textContent=value;
    const caption=document.createElement('span');caption.textContent=label;
    box.append(num,caption);stats.append(box);
   });
   document.getElementById('taskProgressFill').style.width=pct+'%';
-
+  let explanation=document.getElementById('taskProgressExplanation');
+  if(!explanation){explanation=document.createElement('p');explanation.id='taskProgressExplanation';explanation.style.cssText='font-size:14px;color:#506579;margin:8px 0 15px';document.getElementById('taskProgressFill').parentElement.insertAdjacentElement('afterend',explanation)}
+  explanation.textContent='Tiến độ '+(group==='all'?'chung hai nhóm':'Nhóm '+group)+': '+pct+'% trên thang 100% ('+all.length+' công việc). Quy ước: Chưa làm 0%, Đang làm 50%, Chờ rà soát 90%, Hoàn thành 100%.';
  }
  function resetTaskFilters(){
   ['taskFilterGroup','taskFilterStatus'].forEach(id=>document.getElementById(id).value='all');
   renderTaskBoard();
  }
  function renderTaskBoard(){
+  updateTaskDashboard();
   const today=localDateISO();
   const group=document.getElementById('taskFilterGroup').value;
   const statusFilter=document.getElementById('taskFilterStatus').value;
@@ -1753,6 +1758,7 @@ researchSetup();
  // Cho phép bộ lọc HTML gọi hàm nằm trong module Kanban.
  document.getElementById("taskApplyFilter").addEventListener("click",()=>{renderTaskBoard();enforceStatusLaneVisibility();});
  document.getElementById("taskFilterStatus").addEventListener("change",()=>{renderTaskBoard();enforceStatusLaneVisibility();});
+ document.getElementById("taskFilterGroup").addEventListener("change",()=>{renderTaskBoard();enforceStatusLaneVisibility();});
  document.getElementById("taskShowAll").addEventListener("click",resetTaskFilters);
  window.renderTaskBoard=renderTaskBoard;
  window.resetTaskFilters=resetTaskFilters;
