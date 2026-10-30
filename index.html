@@ -2459,9 +2459,7 @@ body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar #wordEdito
 </style>
 <script>
 (function(){
- const originalMakeToolbar=makeToolbar;
- makeToolbar=function(){
-  originalMakeToolbar();
+ function enhanceDocsToolbar(){
   const bar=document.getElementById('richToolbar');
   if(!bar||bar.classList.contains('docs-style-toolbar'))return;
   bar.classList.add('docs-style-toolbar');
@@ -2529,7 +2527,11 @@ body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar #wordEdito
   menu.append(grid,caption);bar.append(menu);paint(1,1);
   document.addEventListener('pointerdown',e=>{if(!bar.contains(e.target))menu.hidden=true});
   document.addEventListener('selectionchange',()=>{const sel=window.getSelection();if(!sel?.anchorNode||!editor.contains(sel.anchorNode))return;bar.querySelectorAll('[data-docs-command]').forEach(el=>{let on=false;try{on=document.queryCommandState(el.dataset.docsCommand)}catch(e){}el.classList.toggle('is-active',on)})});
- };
+ }
+ // Original editor functions are scoped inside another script; watch for its toolbar instead.
+ const observer=new MutationObserver(()=>{const bar=document.getElementById('richToolbar');if(bar&&!bar.classList.contains('docs-style-toolbar'))enhanceDocsToolbar()});
+ observer.observe(document.body,{childList:true,subtree:true});
+ enhanceDocsToolbar();
 })();
 </script></body>
 </html>
