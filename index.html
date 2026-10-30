@@ -2118,19 +2118,30 @@ async function lookupReferenceMetadata(){
  button.disabled=true;status.textContent='Đang tra cứu thông tin xuất bản…';
  try{
   let work=null,source='';
-  if(doi){const response=await fetch('https://api.crossref.org/works/'+encodeURIComponent(doi));if(response.ok){work=(await response.json()).message;source='Crossref'}}
-  if(!work){const query=doi||url;try{const response=await fetch('https://api.openalex.org/works/'+encodeURIComponent(query));if(response.ok){work=(await response.json());source='OpenAlex'}}catch(e){console.warn('OpenAlex lookup:',e)}}
+  const errors=[];
+  if(doi){
+   try{const response=await fetch('https://api.crossref.org/works/'+encodeURI(doi),{headers:{Accept:'application/json'}});if(response.ok){work=(await response.json()).message;source='Crossref'}else errors.push('Crossref HTTP '+response.status)}catch(e){errors.push('Crossref: '+e.message)}
+  }
+  if(!work&&doi){
+   try{const response=await fetch('https://api.openalex.org/works/https://doi.org/'+encodeURI(doi));if(response.ok){work=await response.json();source='OpenAlex'}else errors.push('OpenAlex DOI HTTP '+response.status)}catch(e){errors.push('OpenAlex DOI: '+e.message)}
+  }
+  if(!work&&doi){
+   try{const response=await fetch('https://www.ebi.ac.uk/europepmc/webservices/rest/search?query='+encodeURIComponent('DOI:'+doi)+'&format=json&pageSize=1');if(response.ok){const item=(await response.json()).resultList?.result?.[0];if(item){work={title:item.title,authorString:item.authorString,year:item.pubYear,journalTitle:item.journalTitle,volume:item.journalInfo?.journalIssueId||'',page:item.pageInfo,doi:item.doi};source='Europe PMC'}}else errors.push('Europe PMC HTTP '+response.status)}catch(e){errors.push('Europe PMC: '+e.message)}
+  }
+  if(!work&&!doi){
+   try{const response=await fetch('https://api.openalex.org/works?search='+encodeURIComponent(url)+'&per-page=3');if(response.ok){const candidates=(await response.json()).results||[];work=candidates.find(x=>x.primary_location?.landing_page_url===url||x.locations?.some(l=>l.landing_page_url===url))||null;if(work)source='OpenAlex'}}catch(e){errors.push('OpenAlex URL: '+e.message)}
+  }
   if(!work&&url){try{const u=new URL(url);const hint=decodeURIComponent(u.pathname.split('/').filter(Boolean).pop()||'').replace(/[-_]/g,' ');const response=await fetch('https://api.crossref.org/works?query.bibliographic='+encodeURIComponent(hint)+'&rows=3');if(response.ok){const items=(await response.json()).message?.items||[];const matched=items.find(x=>x.URL===url||x.link?.some(l=>l.URL===url)||x.DOI&&url.includes(x.DOI));if(matched){work=matched;source='Crossref'}}}catch(e){console.warn('Crossref URL lookup:',e)}}
-  if(!work)throw Error('Không tìm thấy metadata từ Crossref hoặc OpenAlex. Một số trang web không cung cấp dữ liệu xuất bản.');
+  if(!work)throw Error('Không tìm thấy dữ liệu xuất bản qua các dịch vụ tra cứu. '+(errors.length?'Chi tiết: '+errors.join('; '):'Liên kết chưa được nhận diện.') );
   const cross=source==='Crossref';
   const title=cross?(work.title?.[0]||''):(work.title||'');
-  const authors=cross?(work.author||[]).map(a=>[a.family,a.given].filter(Boolean).join(', ')).join('; '):(work.authorships||[]).map(a=>a.author?.display_name||'').filter(Boolean).join('; ');
-  const year=cross?(work.published?.['date-parts']?.[0]?.[0]||work.issued?.['date-parts']?.[0]?.[0]):work.publication_year;
-  const journal=cross?(work['container-title']?.[0]||work.publisher||''):(work.primary_location?.source?.display_name||work.primary_location?.landing_page_url||'');
-  const type=cross?({'journal-article':'article','book':'book','book-chapter':'bookSection','proceedings-article':'conference','posted-content':'report','dissertation':'thesis','report':'report'}[work.type]||'misc'):({'article':'article','book':'book','book-chapter':'bookSection','dissertation':'thesis','report':'report'}[work.type]||'misc');
+  const authors=source==='Europe PMC'?(work.authorString||''):cross?(work.author||[]).map(a=>[a.family,a.given].filter(Boolean).join(', ')).join('; '):(work.authorships||[]).map(a=>a.author?.display_name||'').filter(Boolean).join('; ');
+  const year=source==='Europe PMC'?work.year:cross?(work.published?.['date-parts']?.[0]?.[0]||work.issued?.['date-parts']?.[0]?.[0]):work.publication_year;
+  const journal=source==='Europe PMC'?work.journalTitle:cross?(work['container-title']?.[0]||work.publisher||''):(work.primary_location?.source?.display_name||work.primary_location?.landing_page_url||'');
+  const type=source==='Europe PMC'?'article':cross?({'journal-article':'article','book':'book','book-chapter':'bookSection','proceedings-article':'conference','posted-content':'report','dissertation':'thesis','report':'report'}[work.type]||'misc'):({'article':'article','book':'book','book-chapter':'bookSection','dissertation':'thesis','report':'report'}[work.type]||'misc');
   const set=(id,value)=>{const el=document.getElementById(id);if(el&&value!==undefined&&value!==null)el.value=String(value)};
   set('quickType',type);quickTypeChanged();set('quickAuthors',authors);set('quickTitle',title);set('quickSource',journal);
-  set('quickVolume',cross?[work.volume,work.issue?'('+work.issue+')':'',work.page].filter(Boolean).join(', '):work.biblio?.first_page||'');
+  set('quickVolume',source==='Europe PMC'?[work.volume,work.page].filter(Boolean).join(', '):cross?[work.volume,work.issue?'('+work.issue+')':'',work.page].filter(Boolean).join(', '):work.biblio?.first_page||'');
   set('quickLink',doi||work.DOI||work.doi||url||work.primary_location?.landing_page_url||'');
   const years=document.getElementById('quickYear');if([...years.options].some(o=>o.value===String(year)))set('quickYear',year);else years.value='';
   const missing=[!authors?'tác giả':null,!title?'tên tài liệu':null,!journal?'nguồn xuất bản':null,!year?'năm':null].filter(Boolean);
