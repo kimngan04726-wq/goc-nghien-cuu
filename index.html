@@ -149,7 +149,7 @@ button,select{touch-action:manipulation}
 <h2>Bảng công việc</h2>
 <div id="adminControls" class="hidden">
 <input id="taskTitle" placeholder="Tên công việc">
-<input id="taskOwner" placeholder="Người phụ trách">
+
 <button onclick="addTask()">Thêm công việc</button>
 </div>
 <div id="taskDashboard" class="task-dashboard">
@@ -157,8 +157,7 @@ button,select{touch-action:manipulation}
  <div class="task-progress-track" aria-label="Tiến độ hoàn thành"><div id="taskProgressFill"></div></div>
  <div class="task-filters">
   <label>Nhóm <select id="taskFilterGroup" ><option value="all">Tất cả nhóm</option><option value="1">Nhóm 1</option><option value="2">Nhóm 2</option></select></label>
-  <label>Người phụ trách <select id="taskFilterOwner" ><option value="all">Tất cả</option></select></label>
-  <label>Hạn nộp <select id="taskFilterDue" ><option value="all">Tất cả</option><option value="overdue">Quá hạn</option><option value="today">Hôm nay</option><option value="upcoming">Sắp đến hạn (7 ngày)</option><option value="none">Chưa đặt hạn</option></select></label>
+  <label>Trạng thái <select id="taskFilterStatus"><option value="all">Tất cả trạng thái</option><option value="Chưa làm">Chưa làm</option><option value="Đang làm">Đang làm</option><option value="Chờ rà soát">Chờ rà soát</option><option value="Hoàn thành">Hoàn thành</option></select></label>
   <button type="button" id="taskApplyFilter">Lọc</button>
   <button type="button" class="task-reset" id="taskShowAll">Xem tất cả</button>
  </div>
@@ -1205,36 +1204,23 @@ initialize = async function() {
    box.append(num,caption);stats.append(box);
   });
   document.getElementById('taskProgressFill').style.width=pct+'%';
-  const ownerSelect=document.getElementById('taskFilterOwner');
-  const previous=ownerSelect.value;
-  const owners=[...new Set(all.map(t=>(t.owner||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'vi'));
-  ownerSelect.replaceChildren(new Option('Tất cả','all'),new Option('Chưa giao','__unassigned__'),...owners.map(owner=>new Option(owner,owner)));
-  ownerSelect.value=[...ownerSelect.options].some(option=>option.value===previous)?previous:'all';
+
  }
  function resetTaskFilters(){
-  ['taskFilterGroup','taskFilterOwner','taskFilterDue'].forEach(id=>document.getElementById(id).value='all');
+  ['taskFilterGroup','taskFilterStatus'].forEach(id=>document.getElementById(id).value='all');
   renderTaskBoard();
  }
  function renderTaskBoard(){
-  const today=localDateISO(), limit=new Date();limit.setDate(limit.getDate()+7);
-  const soon=localDateISO(limit);
+  const today=localDateISO();
   const group=document.getElementById('taskFilterGroup').value;
-  const owner=document.getElementById('taskFilterOwner').value;
-  const due=document.getElementById('taskFilterDue').value;
+  const statusFilter=document.getElementById('taskFilterStatus').value;
   const data=cachedKanbanTasks.filter(t=>{
    if(group!=='all'&&String(t.group_number||1)!==group)return false;
-   if(owner!=='all'){
-    const assigned=(t.owner||'').trim();
-    if(owner==='__unassigned__' ? assigned!=='' : assigned!==owner)return false;
-   }
-   if(due==='overdue'&&!(t.due_date&&t.due_date<today&&t.status!=='Hoàn thành'))return false;
-   if(due==='today'&&t.due_date!==today)return false;
-   if(due==='upcoming'&&!(t.due_date&&t.due_date>=today&&t.due_date<=soon&&t.status!=='Hoàn thành'))return false;
-   if(due==='none'&&t.due_date)return false;
+   if(statusFilter!=='all'&&t.status!==statusFilter)return false;
    return true;
   });
   document.getElementById('taskFilterCount').textContent='Đang hiển thị '+data.length+' / '+cachedKanbanTasks.length+' công việc';
-  const active=[group!=='all'?'Nhóm '+group:null,owner!=='all'?'Phụ trách: '+(owner==='__unassigned__'?'Chưa giao':owner):null,due!=='all'?'Hạn nộp: '+document.getElementById('taskFilterDue').selectedOptions[0].textContent:null].filter(Boolean);
+  const active=[group!=='all'?'Nhóm '+group:null,statusFilter!=='all'?'Trạng thái: '+statusFilter:null].filter(Boolean);
   const g1=cachedKanbanTasks.filter(t=>String(t.group_number||1)==='1').length;
   const g2=cachedKanbanTasks.filter(t=>String(t.group_number||1)==='2').length;
   const message=document.getElementById('taskFilterMessage');
@@ -1253,7 +1239,6 @@ initialize = async function() {
    list.forEach(task=>{
      const card=document.createElement('div');card.className='kanban-item';
      const name=document.createElement('b');name.textContent=task.title;
-     const owner=document.createElement('p');owner.textContent='Phụ trách: '+(task.owner||'Chưa giao');
      const groupInfo=document.createElement('p');groupInfo.className='task-due';groupInfo.textContent='Nhóm '+(task.group_number||1);
      const deadline=document.createElement('p');deadline.className='task-due';deadline.textContent='Hạn: '+labelDate(task.due_date);
      if(task.due_date&&task.due_date<today&&status!=='Hoàn thành'){deadline.classList.add('task-overdue');deadline.textContent+=' · Quá hạn';}
@@ -1261,9 +1246,9 @@ initialize = async function() {
      statuses.forEach(value=>{const option=document.createElement('option');option.value=value;option.textContent=value;option.selected=value===task.status;select.append(option);});
      select.disabled=!(adminEditingEnabled()||isMember);
      select.onchange=async()=>{if(!(adminEditingEnabled()||isMember))return;select.disabled=true;await changeStatus(task.id,select.value);};
-     card.append(name,owner,groupInfo,deadline,select);
+     card.append(name,groupInfo,deadline,select);
      if(adminEditingEnabled()){
-       const edit=document.createElement('button');edit.textContent='Sửa / Giao';edit.onclick=()=>editTask(task.id);
+       const edit=document.createElement('button');edit.textContent='Sửa';edit.onclick=()=>editTask(task.id);
        const remove=document.createElement('button');remove.textContent='Xóa';remove.onclick=()=>deleteTask(task.id);
        card.append(edit,remove);
      }
@@ -1294,12 +1279,12 @@ initialize = async function() {
    const title=el('taskTitle').value.trim();
    if(!title)return alert('Hãy nhập tên công việc.');
    const {error}=await db.from('group_tasks').insert({
-     title,owner:el('taskOwner').value.trim(),
+     title,
      group_number:Number(group.value),
      due_date:due.value||null
    });
    if(error)return alert('Không thêm được: '+error.message);
-   el('taskTitle').value='';el('taskOwner').value='';due.value='';
+   el('taskTitle').value='';due.value='';
    await loadTasks();
  };
  editTask=async function(id){
@@ -1309,8 +1294,6 @@ initialize = async function() {
    const title=prompt('Tên công việc:',data.title);
    if(title===null)return;
    if(!title.trim())return alert('Tên không được để trống.');
-   const owner=prompt('Người phụ trách:',data.owner||'');
-   if(owner===null)return;
    const date=prompt('Hạn hoàn thành (YYYY-MM-DD, để trống nếu không có):',data.due_date||'');
    if(date===null)return;
    if(date.trim()&&!/^\d{4}-\d{2}-\d{2}$/.test(date.trim()))
@@ -1319,7 +1302,7 @@ initialize = async function() {
    if(groupNo===null)return;
    if(!['1','2'].includes(groupNo.trim()))return alert('Nhóm phải là 1 hoặc 2.');
    const result=await db.from('group_tasks').update({
-     title:title.trim(),owner:owner.trim(),
+     title:title.trim(),
      due_date:date.trim()||null,group_number:Number(groupNo.trim())
    }).eq('id',id);
    if(result.error)alert('Không lưu được: '+result.error.message);
