@@ -423,7 +423,7 @@ body.site-pick-mode [data-site-edit-key]:hover{outline:3px solid #b58d42}
 #library .quick-apa-row .apa-entry{margin:0 0 7px}
 #library .quick-apa-row button{margin:7px 8px 0 0}
 @media(max-width:800px){#library .quick-reference-details{grid-template-columns:repeat(2,minmax(0,1fr))}#library .quick-apa-head,#library .quick-apa-row{grid-template-columns:110px minmax(0,1fr)}}
-</style></head>
+</style><style id="reference-auto-lookup-style">#referenceAutoLookup{border:1px solid #e6ddcf;border-radius:14px;padding:18px;margin:16px 0;background:#fffdf9}#referenceAutoLookup h3{margin:0 0 9px;color:#173a5b}#referenceAutoLookup p{margin:8px 0;color:#51647a}#referenceAutoLookup .reference-auto-row{display:flex;gap:10px;flex-wrap:wrap}#referenceLookupUrl{flex:1 1 310px;min-width:0;padding:12px;border:1px solid #d7dbe0;border-radius:8px}#referenceLookupButton{background:#173a5b;color:white;border:0;border-radius:8px;padding:12px 18px;cursor:pointer}#referenceLookupButton:disabled{opacity:.6;cursor:wait}#referenceLookupStatus{min-height:20px}</style></head>
 <body>
 
 <header>
@@ -537,6 +537,7 @@ body.site-pick-mode [data-site-edit-key]:hover{outline:3px solid #b58d42}
 <h2>KHO TÀI LIỆU THAM KHẢO</h2>
 <p class="library-subtitle">Nhập thông tin nguồn và tổng hợp danh mục APA 7</p>
 <div class="library-mock-search">⌕ <input aria-label="Tìm kiếm tài liệu minh họa" placeholder="Tìm theo tên tài liệu, tác giả, từ khóa..."></div>
+<div id="referenceAutoLookup" class="reference-auto-lookup"><h3>🔗 Tự động lấy thông tin tài liệu</h3><p>Dán DOI hoặc liên kết bài nghiên cứu. Website sẽ tra cứu thông tin xuất bản và điền vào biểu mẫu để bà kiểm tra.</p><div class="reference-auto-row"><input type="text" id="referenceLookupUrl" placeholder="VD: 10.1038/s41586-020-2649-2 hoặc https://doi.org/..." aria-label="DOI hoặc liên kết tài liệu"><button type="button" id="referenceLookupButton" onclick="lookupReferenceMetadata()">✨ Phân tích</button></div><p id="referenceLookupStatus" role="status" aria-live="polite"></p></div>
 <div class="library-mock-entry" id="libraryEntryPanel"><h3>▤ &nbsp; Thông tin tài liệu</h3><p>Nhập một tài liệu mỗi lần. Năm xuất bản chỉ nhận 3 năm gần nhất.</p>
 <form id="referenceQuickForm" onsubmit="saveQuickReference(event)"><div class="library-mock-scroll"><table class="library-mock-table"><thead><tr><th>Loại tài liệu</th><th>Tác giả *</th><th>Năm *</th><th>Tên tài liệu *</th><th>Tạp chí / NXB / Website *</th><th>Tập · Số · Trang</th><th>DOI / URL</th></tr></thead><tbody><tr>
 <td><select id="quickType" onchange="quickTypeChanged()" required><option value="article">Bài báo trong tạp chí</option><option value="periodical">Bài viết trong ấn phẩm định kỳ</option><option value="book">Sách</option><option value="bookSection">Chương / mục trong sách</option><option value="conference">Bài báo hội nghị / kỷ yếu</option><option value="web">Trang web</option><option value="webDocument">Tài liệu trên website</option><option value="electronic">Nguồn điện tử</option><option value="report">Báo cáo</option><option value="thesis">Luận văn / luận án</option><option value="newspaper">Bài báo trên báo chí</option><option value="magazine">Bài viết tạp chí phổ thông</option><option value="dataset">Bộ dữ liệu</option><option value="software">Phần mềm / ứng dụng</option><option value="video">Phim / video</option><option value="audio">Bản ghi âm / podcast</option><option value="interview">Phỏng vấn</option><option value="art">Tác phẩm nghệ thuật</option><option value="performance">Buổi biểu diễn</option><option value="patent">Bằng sáng chế</option><option value="case">Vụ án / án lệ</option><option value="standard">Tiêu chuẩn / quy chuẩn</option><option value="legislation">Văn bản pháp luật</option><option value="misc">Khác</option></select></td>
@@ -2106,5 +2107,36 @@ window.addEventListener('load',()=>{const years=document.getElementById('quickYe
  window.addEventListener('research-tasks-updated',e=>{tasks=Array.isArray(e.detail?.tasks)?e.detail.tasks:[];window.renderHomeTaskPreview()});
  window.addEventListener('load',()=>{document.getElementById('homeTaskModalClose').onclick=close;document.getElementById('homeTaskModal').addEventListener('click',e=>{if(e.target.id==='homeTaskModal')close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});window.renderHomeTaskPreview()});
 })();
+</script><script>
+async function lookupReferenceMetadata(){
+ const input=document.getElementById('referenceLookupUrl'),status=document.getElementById('referenceLookupStatus'),button=document.getElementById('referenceLookupButton');
+ if(!adminEditingEnabled()){status.textContent='Chỉ quản trị viên được điền thông tin tài liệu.';return}
+ const raw=input.value.trim();if(!raw){status.textContent='Bà hãy dán DOI hoặc URL trước.';return}
+ let doi='',url='';
+ if(/^10\.\d{4,9}\/\S+$/i.test(raw))doi=raw;
+ else{try{const u=new URL(raw);if(!['https:','http:'].includes(u.protocol))throw Error('URL không hợp lệ');url=u.href;if(/(^|\.)doi\.org$/i.test(u.hostname))doi=decodeURIComponent(u.pathname.slice(1))}catch{status.textContent='Đường dẫn không hợp lệ. Hãy dùng DOI hoặc URL bắt đầu bằng https://';return}}
+ button.disabled=true;status.textContent='Đang tra cứu thông tin xuất bản…';
+ try{
+  let work=null,source='';
+  if(doi){const response=await fetch('https://api.crossref.org/works/'+encodeURIComponent(doi));if(response.ok){work=(await response.json()).message;source='Crossref'}}
+  if(!work){const query=doi||url;const response=await fetch('https://api.openalex.org/works/'+encodeURIComponent(query));if(response.ok){work=(await response.json());source='OpenAlex'}}
+  if(!work)throw Error('Không tìm thấy metadata từ Crossref hoặc OpenAlex. Một số trang web không cung cấp dữ liệu xuất bản.');
+  const cross=source==='Crossref';
+  const title=cross?(work.title?.[0]||''):(work.title||'');
+  const authors=cross?(work.author||[]).map(a=>[a.family,a.given].filter(Boolean).join(', ')).join('; '):(work.authorships||[]).map(a=>a.author?.display_name||'').filter(Boolean).join('; ');
+  const year=cross?(work.published?.['date-parts']?.[0]?.[0]||work.issued?.['date-parts']?.[0]?.[0]):work.publication_year;
+  const journal=cross?(work['container-title']?.[0]||work.publisher||''):(work.primary_location?.source?.display_name||work.primary_location?.landing_page_url||'');
+  const type=cross?({'journal-article':'article','book':'book','book-chapter':'bookSection','proceedings-article':'conference','posted-content':'report','dissertation':'thesis','report':'report'}[work.type]||'misc'):({'article':'article','book':'book','book-chapter':'bookSection','dissertation':'thesis','report':'report'}[work.type]||'misc');
+  const set=(id,value)=>{const el=document.getElementById(id);if(el&&value!==undefined&&value!==null)el.value=String(value)};
+  set('quickType',type);quickTypeChanged();set('quickAuthors',authors);set('quickTitle',title);set('quickSource',journal);
+  set('quickVolume',cross?[work.volume,work.issue?'('+work.issue+')':'',work.page].filter(Boolean).join(', '):work.biblio?.first_page||'');
+  set('quickLink',doi||work.DOI||work.doi||url||work.primary_location?.landing_page_url||'');
+  const years=document.getElementById('quickYear');if([...years.options].some(o=>o.value===String(year)))set('quickYear',year);else years.value='';
+  const missing=[!authors?'tác giả':null,!title?'tên tài liệu':null,!journal?'nguồn xuất bản':null,!year?'năm':null].filter(Boolean);
+  status.textContent='Đã lấy thông tin từ '+source+'. '+(year&&!years.value?'Năm '+year+' nằm ngoài giới hạn 3 năm; bà không thể lưu theo quy định hiện tại. ':'')+(missing.length?'Cần bổ sung: '+missing.join(', ')+'. ':'')+'Hãy kiểm tra lại trước khi bấm Thêm tài liệu.';
+  document.getElementById('libraryEntryPanel').scrollIntoView({behavior:'smooth',block:'start'});
+ }catch(err){status.textContent='Không tự phân tích được: '+err.message+' Bà có thể nhập thủ công.'}
+ finally{button.disabled=false}
+}
 </script></body>
 </html>
