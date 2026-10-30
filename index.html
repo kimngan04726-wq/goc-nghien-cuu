@@ -541,6 +541,31 @@ body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #rich
  #researchEditor #richToolbar.docs-style-toolbar>select{max-width:145px!important}
  body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #richEditor{padding:16px!important}
 }
+</style><style id="compact-editor-height-2026">
+/* Remove the oversized blank second toolbar row; reserve only one compact action strip. */
+body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar){padding:43px 8px 6px!important}
+body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) .research-actions{top:4px!important;right:10px!important}
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{
+ min-height:0!important;max-height:96px!important;height:auto!important;
+ padding:7px 116px 7px 8px!important;gap:3px 5px!important;
+ align-items:center!important;align-content:flex-start!important;overflow:visible!important
+}
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>button,
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>select,
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>.docs-font-size-input{
+ height:32px!important;min-height:32px!important;font-size:14px!important;padding:4px 7px!important
+}
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>button[title*="Tải ảnh"],
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>button[title*="ảnh từ máy"]{
+ position:static!important;height:32px!important;min-height:32px!important;
+ padding:4px 9px!important;font-size:14px!important;margin:0!important
+}
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar #wordEditorSizeButton{
+ position:absolute!important;right:7px!important;bottom:6px!important;top:auto!important;
+ height:32px!important;min-height:32px!important;font-size:14px!important;padding:4px 8px!important
+}
+body.word-editor-open #researchEditor #richEditor{margin-top:0!important}
+@media(max-width:760px){body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{max-height:130px!important;padding-right:8px!important;padding-bottom:41px!important;overflow-y:auto!important}}
 </style></head>
 <body>
 
