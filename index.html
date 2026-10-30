@@ -266,6 +266,39 @@ main{margin:0 0 0 218px!important;max-width:none!important;padding:18px 23px 45p
 #library #libraryList .reference-card h3{font-size:18px}
 @media(max-width:750px){#library #libraryForm{grid-template-columns:1fr 1fr}#library #libraryList{grid-template-columns:1fr}#library .library-tools{flex-wrap:wrap}#library #libraryCategory{max-width:none;flex:1}#library .library-subtitle{margin-left:0}#library>h2{font-size:28px}}
 @media(max-width:450px){#library #libraryForm{grid-template-columns:1fr}#library #libraryForm>*{grid-column:1/-1}#library .library-entry-panel,#library .library-results-panel,#library .library-records-panel{padding:12px}}
+</style><style id="library-visual-mock">
+#app>nav button:nth-child(4):before{content:"";display:none}
+#library{position:relative}
+#library:before{content:"GIAO DIỆN MINH HỌA";position:absolute;right:10px;top:4px;font-size:11px;color:#52627a;background:#f4f5f7;border:1px solid #d9dce1;padding:3px 10px;border-radius:15px}
+#library .library-original{display:none}
+#library .library-mock-search{height:47px;border:1px solid #dce0e6;border-radius:9px;background:white;display:flex;align-items:center;gap:12px;padding:0 16px;font-size:28px;color:#334963;margin:13px 0}
+#library .library-mock-search input{border:0;outline:0;flex:1;width:100%;font-size:17px;margin:0}
+#library .library-mock-entry,#library .library-mock-apa{background:white;border:1px solid #e5e0d9;border-radius:11px;padding:14px 12px;margin:14px 0}
+#library .library-mock-entry h3,#library .library-mock-apa h3{font-size:23px;margin:0;color:#122e50}
+#library .library-mock-entry>p{margin:0 0 10px 44px;color:#566b87;font-size:15px}
+#library .library-mock-scroll{overflow-x:auto}
+#library .library-mock-table{border-collapse:collapse;width:100%;min-width:950px;table-layout:fixed}
+#library .library-mock-table th{font-size:14px;text-align:left;color:#153459;background:#f7f8fa;border:1px solid #e1e4e8;padding:10px 7px}
+#library .library-mock-table td{border:1px solid #e1e4e8;padding:5px}
+#library .library-mock-table th:nth-child(1){width:11%}#library .library-mock-table th:nth-child(2){width:14%}#library .library-mock-table th:nth-child(3){width:7%}#library .library-mock-table th:nth-child(4){width:17%}#library .library-mock-table th:nth-child(5){width:17%}#library .library-mock-table th:nth-child(6){width:12%}#library .library-mock-table th:nth-child(7){width:13%}#library .library-mock-table th:nth-child(8){width:9%}
+#library .library-mock-table input,#library .library-mock-table select{width:100%;min-width:0;margin:0;font-size:13px;border:1px solid #d9dfe7;background:white;padding:9px 6px}
+#library .library-mock-table button{white-space:nowrap;background:#e9f2ff;color:#143e71;border:0;margin:0;padding:9px 6px;font-size:13px}
+#library .library-mock-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 7px;color:#1e3c61;font-size:14px}
+#library .library-mock-bottom button{background:#eaf3ff;color:#1b4778;border:0;margin:0}
+#library .library-mock-extra{border:1px solid #e1e4e8;border-radius:8px;background:#fbfbfb;padding:10px 14px}
+#library .library-mock-extra h4{font-size:17px;margin:0 0 9px}#library .library-mock-extra h4 small{font-weight:normal;color:#62758d;font-size:13px}
+#library .library-mock-extra>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+#library .library-mock-extra label{font-size:14px}#library .library-mock-extra input{width:100%;margin:4px 0;font-size:14px}
+#library .library-mock-apa-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#library .library-mock-apa-head h3{flex:1 1 360px}#library .library-mock-apa-head span{background:#fff3d9;border-radius:20px;padding:7px 12px;font-size:13px;color:#986d28}
+#library .library-mock-apa-head button{font-size:13px;margin:0;padding:10px 13px}
+#library .library-mock-apa-head button:last-child{background:white;color:#153d68;border:1px solid #153d68}
+#library .library-mock-selects{display:flex;gap:12px;margin:12px 0}
+#library .library-mock-selects select{font-size:14px;background:white;margin:0;max-width:300px}
+#library .library-mock-empty{border:1px dashed #d9dfe5;border-radius:9px;text-align:center;padding:17px;color:#1b3455}
+#library .library-mock-empty div{font-size:35px}#library .library-mock-empty strong{font-size:19px}#library .library-mock-empty p{margin:0;color:#63718a}
+#library .library-mock-alert{margin:9px 0 0;background:#fff8e9;color:#a57518;border:1px solid #f1e2bf;padding:10px;border-radius:8px;font-size:13px}
+@media(max-width:650px){#library .library-mock-extra>div{grid-template-columns:1fr}#library .library-mock-apa-head h3{font-size:20px}#library .library-mock-selects{flex-wrap:wrap}}
 </style></head>
 <body>
 
@@ -299,7 +332,7 @@ main{margin:0 0 0 218px!important;max-width:none!important;padding:18px 23px 45p
 <button onclick="showPage('home')">⌂ Trang chủ</button>
 <button onclick="showPage('research')">Nội dung</button>
 <button onclick="showPage('tasks')">Tiến độ</button>
-<button onclick="showPage('library')">Tài liệu</button>
+<button onclick="showPage('library')">📁 Tài liệu</button>
 </nav>
 
 <section id="research">
@@ -348,7 +381,18 @@ main{margin:0 0 0 218px!important;max-width:none!important;padding:18px 23px 45p
 <section id="library" class="hidden">
 <h2>KHO TÀI LIỆU THAM KHẢO</h2>
 <p class="library-subtitle">Nhập thông tin nguồn và tổng hợp danh mục APA 7</p>
-<div class="library-tools">
+<div class="library-mock-search">⌕ <input aria-label="Tìm kiếm tài liệu minh họa" placeholder="Tìm theo tên tài liệu, tác giả, từ khóa..."></div>
+<div class="library-mock-entry">
+<h3>▤ &nbsp; Thông tin tài liệu</h3><p>Mỗi dòng là một tài liệu. Chọn loại nguồn để nhập các trường phù hợp.</p>
+<div class="library-mock-scroll"><table class="library-mock-table"><thead><tr><th>Loại tài liệu</th><th>Tác giả</th><th>Năm</th><th>Tên tài liệu</th><th>Tạp chí / NXB / Website</th><th>Tập · Số · Trang</th><th>DOI / URL</th><th>Bổ sung</th></tr></thead><tbody>
+<tr><td><select><option>Bài báo</option><option>Sách</option><option>Website</option></select></td><td><input placeholder="Nhập tác giả"></td><td><input placeholder="Năm"></td><td><input placeholder="Nhập tên tài liệu"></td><td><input placeholder="Tên tạp chí"></td><td><input placeholder="Tập / Số / Trang"></td><td><input placeholder="https://..."></td><td><button type="button">Chi tiết ↗</button></td></tr>
+<tr><td><select><option>Sách</option><option>Bài báo</option><option>Website</option></select></td><td><input placeholder="Nhập tác giả"></td><td><input placeholder="Năm"></td><td><input placeholder="Nhập tên sách"></td><td><input placeholder="Nhà xuất bản"></td><td><input placeholder="Không áp dụng"></td><td><input placeholder="DOI / URL nếu có"></td><td><button type="button">Chi tiết ↗</button></td></tr>
+</tbody></table></div>
+<div class="library-mock-bottom"><span>♙ &nbsp; Người tìm &nbsp; · &nbsp; ◷ &nbsp; Tình trạng đọc &nbsp; · &nbsp; ▤ &nbsp; Nội dung liên quan &nbsp; · &nbsp; ▧ &nbsp; Ghi chú đọc</span><button type="button">＋ Thêm dòng</button></div>
+<div class="library-mock-extra"><h4>⚙ &nbsp; Thông tin bổ sung theo loại nguồn <small>· Chỉ nhập khi phù hợp với tài liệu.</small></h4><div><label>Ngày xuất bản<input placeholder="dd/mm/yyyy"></label><label>Ấn bản<input placeholder="Nhập ấn bản (nếu có)"></label><label>Số bài / Mã báo cáo<input placeholder="Nhập số bài hoặc mã báo cáo"></label></div></div>
+</div>
+<div class="library-mock-apa"><div class="library-mock-apa-head"><h3>📖 &nbsp; DANH MỤC TÀI LIỆU THAM KHẢO — APA 7</h3><span>⟳ &nbsp; Tự cập nhật từ thông tin đã nhập</span><button type="button">▣ &nbsp; Sao chép danh mục</button><button type="button">▤ &nbsp; Xuất Word</button></div><div class="library-mock-selects"><select><option>Tài liệu được sử dụng trong bài</option></select><select><option>↟ &nbsp; Sắp xếp theo tác giả</option></select></div><div class="library-mock-empty"><div>📖</div><strong>Chưa có trích dẫn hoàn chỉnh</strong><p>Nhập thông tin tài liệu ở bảng trên để tạo danh mục.</p></div><p class="library-mock-alert">⚠ &nbsp; Thiếu thông tin sẽ được đánh dấu, không tự bổ sung dữ liệu.</p></div>
+<div class="library-original"><div class="library-tools">
 <input id="librarySearch" type="search" placeholder="Tìm theo tên, tác giả, năm, từ khóa..." oninput="renderLibrary()">
 <select id="libraryCategory" onchange="renderLibrary()"><option value="">Tất cả chủ đề</option><option>Kiến thức tài chính số</option><option>Bảo mật ngân hàng</option><option>Deepfake và lừa đảo</option><option>Phương pháp nghiên cứu</option><option>Khác</option></select>
 <span id="libraryCount"></span>
@@ -366,7 +410,7 @@ main{margin:0 0 0 218px!important;max-width:none!important;padding:18px 23px 45p
 </form>
 <div id="libraryAdmin" class="hidden"><button type="button" onclick="openLibraryForm()">＋ Thêm tài liệu</button></div></div>
 <p id="libraryMessage" role="status"></p>
-<div class="library-results-panel"><h3>📖 &nbsp; DANH MỤC TÀI LIỆU THAM KHẢO — APA 7</h3><div class="library-apa-tools"><button type="button" onclick="copyLibraryAPA()">▣ &nbsp; Sao chép danh mục</button><span>Danh mục tự cập nhật theo tài liệu đã lưu</span></div><div id="libraryAPAList" aria-live="polite"></div><div class="library-apa-warning">⚠ &nbsp; Trích dẫn tự động cần được kiểm tra và bổ sung thông tin theo APA 7 trước khi sử dụng chính thức.</div></div><div class="library-records-panel"><h3>▤ &nbsp; Tài liệu đã lưu <small>(nhấn Sửa để cập nhật)</small></h3><div id="libraryList"></div></div>
+<div class="library-results-panel"><h3>📖 &nbsp; DANH MỤC TÀI LIỆU THAM KHẢO — APA 7</h3><div class="library-apa-tools"><button type="button" onclick="copyLibraryAPA()">▣ &nbsp; Sao chép danh mục</button><span>Danh mục tự cập nhật theo tài liệu đã lưu</span></div><div id="libraryAPAList" aria-live="polite"></div><div class="library-apa-warning">⚠ &nbsp; Trích dẫn tự động cần được kiểm tra và bổ sung thông tin theo APA 7 trước khi sử dụng chính thức.</div></div><div class="library-records-panel"><h3>▤ &nbsp; Tài liệu đã lưu <small>(nhấn Sửa để cập nhật)</small></h3><div id="libraryList"></div></div></div>
 </section>
 </div>
 </main>
