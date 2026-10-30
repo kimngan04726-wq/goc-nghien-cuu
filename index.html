@@ -54,6 +54,10 @@ input,select,textarea{max-width:100%}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.card,nav button{transition:none}}
 </style>
+<style>
+#viewModeButton{background:#e7dfd1;color:#19364e;border:1px solid #c6b9a5;font-weight:bold}
+.admin-viewer-mode #researchEditor,.admin-viewer-mode .research-edit-button,.admin-viewer-mode #libraryForm,.admin-viewer-mode #libraryAdmin,.admin-viewer-mode #adminControls{display:none!important}
+</style>
 </head>
 <body>
 
@@ -74,6 +78,7 @@ input,select,textarea{max-width:100%}
 <div id="app" class="hidden">
 <section>
 <p id="account"></p>
+<button id="viewModeButton" type="button" class="hidden" onclick="toggleAdminView()" aria-pressed="false">👁 Chế độ người xem</button>
 <button id="logoutButton" onclick="signOut()">Đăng xuất</button>
 </section>
 
@@ -148,10 +153,29 @@ const SUPABASE_KEY =
 
 let db;
 let isAdmin = false;
+let adminViewerMode = false;
+function adminEditingEnabled(){return isAdmin && !adminViewerMode;}
+function toggleAdminView(){
+ if(!adminEditingEnabled())return;
+ adminViewerMode=!adminViewerMode;
+ applyAdminView();
+ if(adminViewerMode && typeof cancelResearch==="function")cancelResearch();
+ if(adminViewerMode && typeof cancelLibraryForm==="function")cancelLibraryForm();
+ loadTasks();loadLibrary();loadResearch();
+}
+function applyAdminView(){
+ document.body.classList.toggle("admin-viewer-mode",isAdmin && adminViewerMode);
+ const btn=el("viewModeButton");
+ btn.classList.toggle("hidden",!isAdmin);
+ btn.textContent=adminViewerMode?"✎ Chuyển sang chỉnh sửa":"👁 Chế độ người xem";
+ btn.setAttribute("aria-pressed",String(adminViewerMode));
+ el("adminControls").classList.toggle("hidden",!adminEditingEnabled());
+}
+
 let isMember = false;
 let assignedResearchPages = new Set();
-function canEditResearch(id){return isAdmin || (isMember && assignedResearchPages.has(Number(id)));}
-function canContributeLibrary(){return isAdmin || isMember;}
+function canEditResearch(id){return adminEditingEnabled() || (isMember && assignedResearchPages.has(Number(id)));}
+function canContributeLibrary(){return adminEditingEnabled() || isMember;}
 
 function el(id) {
   return document.getElementById(id);
@@ -224,7 +248,7 @@ async function initialize() {
   el("account").textContent =
     user.email + (isAdmin ? " — Admin" : isMember ? " — Thành viên" : " — Chỉ xem");
 
-  el("adminControls").classList.toggle("hidden",!isAdmin);
+  applyAdminView();
   el("login").classList.add("hidden");
   el("app").classList.remove("hidden");
   el("logoutButton").classList.remove("hidden");
@@ -257,7 +281,7 @@ async function loadTasks() {
             </option>
           `).join("")}
       </select>
-      ${isAdmin ? `
+      ${adminEditingEnabled() ? `
         <button onclick="editTask('${task.id}')">Sửa</button>
         <button onclick="deleteTask('${task.id}')">Xóa</button>
       ` : ""}
@@ -283,7 +307,7 @@ async function addTask() {
 }
 
 async function changeStatus(id,status) {
-  if(!(isAdmin||isMember))return alert("Chỉ thành viên đăng nhập mới được cập nhật trạng thái.");
+  if(!(adminEditingEnabled()||isMember))return alert("Chỉ thành viên đăng nhập mới được cập nhật trạng thái.");
   const {error} = await db.rpc("set_group_task_status",{
     p_task_id:id,
     p_status:status
@@ -351,6 +375,8 @@ window.addEventListener("load",async () => {
 <script>
 async function enterGuestMode(){
  isAdmin=false;
+ adminViewerMode=false;
+ applyAdminView();
  isMember=false;
  assignedResearchPages=new Set();
  el("account").textContent="Đang xem với tư cách Khách";
@@ -798,7 +824,7 @@ initialize = async function() {
     uploadInput.addEventListener("change", async () => {
       const file = uploadInput.files[0];
       uploadInput.value = "";
-      if (!file || !isAdmin || editingPageId === null) return;
+      if (!file || !adminEditingEnabled() || editingPageId === null) return;
       if (!["image/jpeg","image/png","image/webp"].includes(file.type)) {
         alert("Chỉ hỗ trợ JPG, PNG hoặc WebP."); return;
       }
@@ -1035,7 +1061,7 @@ initialize = async function() {
       if(window.DOMPurify)body.innerHTML=DOMPurify.sanitize(source.innerHTML);
       else body.textContent=source.textContent;
     }else body.textContent=source.textContent;
-    edit.style.display=isAdmin?'inline-block':'none';
+    edit.style.display=adminEditingEnabled()?'inline-block':'none';
   }
   function open(id){
     selected=id;
@@ -1064,7 +1090,7 @@ initialize = async function() {
     });
   });
   back.onclick=close;
-  edit.onclick=()=>{if(isAdmin && selected!==null){edit.style.display='none';openResearchEditor(selected);}};
+  edit.onclick=()=>{if(adminEditingEnabled() && selected!==null){edit.style.display='none';openResearchEditor(selected);}};
   const oldCancel=cancelResearch;
   cancelResearch=function(){oldCancel();if(selected!==null)refresh();};
   const oldLoad=loadResearch;
@@ -1143,14 +1169,14 @@ initialize = async function() {
          option.selected=value===task.status;
          select.append(option);
        });
-       select.disabled=!(isAdmin||isMember);
+       select.disabled=!(adminEditingEnabled()||isMember);
        select.onchange=async()=>{
-         if(!(isAdmin||isMember))return;
+         if(!(adminEditingEnabled()||isMember))return;
          select.disabled=true;
          await changeStatus(task.id,select.value);
        };
        card.append(name,owner,groupInfo,deadline,select);
-       if(isAdmin){
+       if(adminEditingEnabled()){
          const edit=document.createElement('button');edit.textContent='Sửa / Giao';
          edit.onclick=()=>editTask(task.id);
          const remove=document.createElement('button');remove.textContent='Xóa';
@@ -1297,7 +1323,7 @@ function renderLibrary(){
    const actions=libraryText('div','','reference-actions');
    const edit=libraryText('button','Sửa');edit.type='button';edit.onclick=()=>openLibraryForm(item.id);
    actions.append(edit);
-   if(isAdmin){const remove=libraryText('button','Xóa');remove.type='button';remove.onclick=()=>deleteLibraryReference(item.id);actions.append(remove);}
+   if(adminEditingEnabled()){const remove=libraryText('button','Xóa');remove.type='button';remove.onclick=()=>deleteLibraryReference(item.id);actions.append(remove);}
    card.append(actions);
   }
   root.append(card);
@@ -1325,7 +1351,7 @@ async function saveLibraryReference(event){
  cancelLibraryForm();await loadLibrary();
 }
 async function deleteLibraryReference(id){
- if(!isAdmin||!confirm('Xóa tài liệu tham khảo này?'))return;
+ if(!adminEditingEnabled()||!confirm('Xóa tài liệu tham khảo này?'))return;
  const {error}=await db.from('research_references').delete().eq('id',id);
  if(error)return alert('Không xóa được: '+error.message);
  await loadLibrary();
