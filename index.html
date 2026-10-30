@@ -113,7 +113,11 @@ body.admin-guest-mode #libraryAdmin,body.admin-guest-mode #researchEditor,body.a
 #research:not(.gallery-detail) .card h3{margin:0;line-height:1.4}
 #research:not(.gallery-detail) .card:focus-visible{outline:3px solid #3c7194;outline-offset:3px}
 </style>
-</head>
+<style>
+#research:not(.gallery-detail) .card{position:relative}
+#research:not(.gallery-detail) .card .research-rename-button{position:absolute;right:9px;bottom:9px;font-size:12px;padding:5px 9px;margin:0;background:#e6e0d5;color:#19364e;border:1px solid #cfc6b9}
+#research:not(.gallery-detail) .card .research-rename-button.hidden{display:none!important}
+</style></head>
 <body>
 
 <header>
@@ -238,6 +242,7 @@ function setAdminMode(mode){
  });
  const detailEdit=document.getElementById('researchEditButton');
  if(detailEdit)detailEdit.style.display=mode==='guest'?'none':'inline-block';
+ updateResearchCardAdminActions();
  if(typeof window.renderTaskBoard==='function')window.renderTaskBoard();
  document.querySelectorAll('#taskList .kanban-item').forEach(card=>{
   const select=card.querySelector('select');if(select)select.disabled=!canChangeTaskStatus();
@@ -577,6 +582,36 @@ function researchSetup() {
   document.getElementById("research").appendChild(editor);
 }
 
+
+// Admin được đổi tên ô ngay tại gallery; không ảnh hưởng nội dung bên trong.
+async function renameResearchCard(id){
+ if(!adminEditingEnabled())return;
+ const page=researchPageCache.find(p=>Number(p.id)===Number(id));
+ if(!page)return alert("Không tìm thấy bài nghiên cứu.");
+ const title=prompt("Nhập tiêu đề mới cho ô nghiên cứu:",page.title||"");
+ if(title===null)return;
+ const trimmed=title.trim();
+ if(!trimmed)return alert("Tiêu đề không được để trống.");
+ const {error}=await db.from("research_pages").update({title:trimmed,updated_at:new Date().toISOString()}).eq("id",id);
+ if(error)return alert("Không đổi được tiêu đề: "+error.message);
+ await loadResearch();
+}
+function updateResearchCardAdminActions(){
+ document.querySelectorAll('#research .grid .card').forEach(card=>{
+  const id=Number(card.querySelector('.research-content')?.id.replace('researchContent',''));
+  if(!id)return;
+  let btn=card.querySelector('.research-rename-button');
+  if(!btn){
+   btn=document.createElement('button');
+   btn.type='button';btn.className='research-rename-button';
+   btn.textContent='✎ Đổi tiêu đề';
+   btn.addEventListener('click',event=>{event.stopPropagation();renameResearchCard(id);});
+   card.append(btn);
+  }
+  btn.classList.toggle('hidden',!adminEditingEnabled());
+ });
+}
+
 let researchPageCache = [];
 async function loadResearch() {
   if (!db) return;
@@ -606,6 +641,7 @@ async function loadResearch() {
     }
   }
 
+  updateResearchCardAdminActions();
   document.querySelectorAll(
     ".research-edit-button"
   ).forEach(button => {
