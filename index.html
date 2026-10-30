@@ -70,7 +70,7 @@ input,select,textarea{max-width:100%}
 .task-filters label{font-size:14px;display:flex;flex-direction:column;gap:4px;flex:1 1 160px}
 .task-filters select{width:100%;margin:0;font-size:14px}
 .task-filters button{margin:0;font-size:14px;white-space:nowrap}.task-filters .task-reset{background:#e9e5dc;color:#19364e}
-.task-filter-count{color:#596a75;font-size:14px;margin:12px 0}
+.task-filter-count{color:#596a75;font-size:14px;margin:12px 0 3px}.task-filter-message{font-size:14px;color:#244c62;margin:3px 0 12px}
 .task-empty{font-size:14px;color:#7c858a}
 @media(max-width:700px){.task-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.task-stat:last-child{grid-column:span 2}.task-stat strong{font-size:21px}}
 @media(prefers-reduced-motion:reduce){#taskProgressFill{transition:none}}
@@ -163,6 +163,7 @@ button,select{touch-action:manipulation}
   <button type="button" class="task-reset" id="taskShowAll">Xem tất cả</button>
  </div>
  <p id="taskFilterCount" class="task-filter-count" aria-live="polite"></p>
+ <p id="taskFilterMessage" class="task-filter-message" role="status" aria-live="polite"></p>
 </div>
 <div id="taskList"></div>
 </section>
@@ -1233,6 +1234,14 @@ initialize = async function() {
    return true;
   });
   document.getElementById('taskFilterCount').textContent='Đang hiển thị '+data.length+' / '+cachedKanbanTasks.length+' công việc';
+  const active=[group!=='all'?'Nhóm '+group:null,owner!=='all'?'Phụ trách: '+(owner==='__unassigned__'?'Chưa giao':owner):null,due!=='all'?'Hạn nộp: '+document.getElementById('taskFilterDue').selectedOptions[0].textContent:null].filter(Boolean);
+  const g1=cachedKanbanTasks.filter(t=>String(t.group_number||1)==='1').length;
+  const g2=cachedKanbanTasks.filter(t=>String(t.group_number||1)==='2').length;
+  const message=document.getElementById('taskFilterMessage');
+  message.textContent=active.length?('Đã lọc theo '+active.join(' · ')+'. Kết quả: '+data.length+' công việc.'+(data.length===cachedKanbanTasks.length?' Tất cả công việc hiện đều phù hợp với lựa chọn này.':'')):'Đang xem tất cả công việc.';
+  if(!data.length)message.textContent+=' Không có công việc phù hợp; bà có thể chọn Xem tất cả.';
+  document.getElementById('taskFilterGroup').options[1].textContent='Nhóm 1 ('+g1+')';
+  document.getElementById('taskFilterGroup').options[2].textContent='Nhóm 2 ('+g2+')';
   const root=el('taskList');root.replaceChildren();
   statuses.forEach(status=>{
    const lane=document.createElement('div');lane.className='kanban-lane';
