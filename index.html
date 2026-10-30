@@ -173,6 +173,42 @@ main{margin:0 0 0 218px!important;max-width:none!important;padding:18px 23px 45p
 #taskList{overflow-x:auto}
 @media(max-width:1100px){#dashboardHome .dash-columns{grid-template-columns:1fr}#dashboardHome .dash-panels{grid-template-columns:1fr 1fr}#dashboardHome .dash-panels .photo{display:none}}
 @media(max-width:700px){header{margin-left:0;height:120px}body:before{position:absolute;top:12px;left:10px;width:160px;font-size:16px;background:#faf8f1cc;border-radius:8px;padding:5px}main{margin:0!important;padding:12px!important}#app>nav{position:static;order:-1;width:100%;padding:8px;flex-direction:row;overflow-x:auto;gap:3px}#app>nav button{min-width:110px;font-size:13px;padding:10px 8px;text-align:center}#app>nav:after{display:none}#dashboardHome .dash-panels{grid-template-columns:1fr}#dashboardHome .dash-panels .photo{display:block;min-height:130px}#dashboardHome .dash-columns{grid-template-columns:1fr}#dashboardHome .dash-cards,#dashboardHome .dash-section.group-two .dash-cards{grid-template-columns:repeat(2,minmax(0,1fr))}#dashboardHome .dash-mini-kanban{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style><style id="task-visual-reference">
+/* Giao diện Tiến độ: chỉ đổi trình bày, không can thiệp dữ liệu, lọc, quyền hay Kanban */
+#tasks{background:transparent;border:0;box-shadow:none;padding:0;margin:0}
+#tasks>h2{font-size:clamp(29px,3vw,40px);margin:3px 0 14px;color:#102744;display:flex;align-items:center;gap:15px;line-height:1.15}
+#tasks>h2:before{content:"📋";font-size:43px;font-weight:normal}
+#tasks .task-dashboard{margin:12px 0 17px}
+#tasks .task-stats{gap:10px}
+#tasks .task-stat{position:relative;min-height:80px;background:linear-gradient(135deg,#fffdf9,#f6f2ea);border:1px solid #e9e2d7;border-radius:10px;padding:12px 10px 10px 66px;justify-content:center;gap:0;box-shadow:0 2px 7px rgba(32,45,60,.025)}
+#tasks .task-stat:before{content:"▤";position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:32px;color:#1e4564}
+#tasks .task-stat:nth-child(2):before{content:"✓";color:#377b46;border:2px solid #377b46;border-radius:50%;font-size:24px;line-height:29px;width:30px;text-align:center}
+#tasks .task-stat:nth-child(3):before{content:"◷";color:#b98d32}
+#tasks .task-stat:nth-child(4):before{content:"⚠";color:#c33f2c}
+#tasks .task-stat:nth-child(5):before{content:"▥";color:#244c70}
+#tasks .task-stat strong{font-size:27px;line-height:1.1;color:#102744}
+#tasks .task-stat span{font-size:14px;color:#233b52;line-height:1.25}
+#tasks .task-progress-track{height:10px;background:#e7e5e1;margin:12px 0 19px}
+#tasks .task-filters{gap:12px}
+#tasks .task-filters label{color:#263f59;font-weight:600;font-size:14px;gap:5px}
+#tasks .task-filters select{background:white;border:1px solid #d8dce1;border-radius:6px;height:42px;color:#1c344c}
+#tasks .task-filters button{height:42px;border-radius:7px;padding:8px 18px}
+#tasks .task-filter-count{font-size:13px;margin-top:12px}
+#tasks .task-filter-message:empty{display:none}
+#tasks #taskList{gap:10px;margin-top:15px;align-items:stretch}
+#tasks #taskList .kanban-lane{min-height:250px;border-radius:11px;padding:15px 13px;border:1px solid #e9dfd2;background:linear-gradient(135deg,#fbf8f3,#f6f0e6)}
+#tasks #taskList .kanban-lane:nth-child(2){background:linear-gradient(135deg,#fffcf2,#fff4d8);border-color:#f0e6c9}
+#tasks #taskList .kanban-lane:nth-child(3){background:linear-gradient(135deg,#f1f9fe,#e3f2fc);border-color:#d6e9f6}
+#tasks #taskList .kanban-lane:nth-child(4){background:linear-gradient(135deg,#f4fbf3,#e5f5e7);border-color:#d8eadb}
+#tasks #taskList .kanban-lane h3{color:#122a45;font-size:19px;margin:2px 0 14px}
+#tasks #taskList .kanban-item{background:#fff;border:1px solid #ebe4da;box-shadow:0 2px 8px rgba(28,44,58,.04);border-radius:7px}
+#tasks #taskList .task-empty{color:#607087;text-align:center;padding:80px 5px 20px;position:relative;font-size:15px}
+#tasks #taskList .task-empty:before{content:"▤";font-size:55px;line-height:1;position:absolute;top:10px;left:0;right:0;color:#b8a993;font-weight:normal}
+#tasks #taskList .kanban-lane:nth-child(2) .task-empty:before{content:"◷";color:#c9ae72}
+#tasks #taskList .kanban-lane:nth-child(3) .task-empty:before{content:"⌕";color:#88a6bd}
+#tasks #taskList .kanban-lane:nth-child(4) .task-empty:before{content:"✓";color:#8aa78f}
+@media(max-width:950px){#tasks .task-stats{grid-template-columns:repeat(2,minmax(0,1fr))}#tasks .task-stat:last-child{grid-column:span 2}}
+@media(max-width:600px){#tasks>h2{font-size:30px}#tasks .task-stat{padding-left:50px;min-height:74px}#tasks .task-stat:before{left:11px;font-size:26px}#tasks #taskList{grid-template-columns:1fr}}
 </style></head>
 <body>
 
@@ -204,8 +240,8 @@ main{margin:0 0 0 218px!important;max-width:none!important;padding:18px 23px 45p
 <div class="dash-columns"><div class="dash-section"><h3>📖 &nbsp; Nhóm 1 — Lý thuyết và định hướng nghiên cứu <button onclick="showPage('research')">Xem tất cả →</button></h3><div class="dash-cards" id="dashGroup1"></div></div><div class="dash-section group-two"><h3>▥ &nbsp; Nhóm 2 — Mô hình và triển khai nghiên cứu <button onclick="showPage('research')">Xem tất cả →</button></h3><div class="dash-cards" id="dashGroup2"></div></div><div class="dash-section"><h3>📁 &nbsp; Kho tài liệu tham khảo <button onclick="showPage('library')">Xem tất cả →</button></h3><table class="dash-table"><thead><tr><th>Tên tài liệu</th><th>Tác giả</th><th>Năm</th></tr></thead><tbody id="dashLibraryRows"><tr><td colspan="3">Đang tải tài liệu…</td></tr></tbody></table></div><div class="dash-section"><h3>☑ &nbsp; Công việc của nhóm <button onclick="showPage('tasks')">Xem tất cả →</button></h3><div class="dash-mini-kanban" id="dashTaskPreview"></div></div></div>
 </section><nav aria-label="Điều hướng chính">
 <button onclick="showPage('home')">⌂ Trang chủ</button>
-<button onclick="showPage('research')">Nghiên cứu</button>
-<button onclick="showPage('tasks')">Công việc</button>
+<button onclick="showPage('research')">Nội dung</button>
+<button onclick="showPage('tasks')">Tiến độ</button>
 <button onclick="showPage('library')">Tài liệu</button>
 </nav>
 
