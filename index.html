@@ -130,9 +130,9 @@ main{margin:0 0 0 218px!important;max-width:none!important;padding:18px 23px 45p
 #app>nav{position:fixed;z-index:10;top:0;bottom:0;left:0;width:218px;background:linear-gradient(150deg,#faf9f4,#f1ece2);border-right:1px solid #e4dfd5;padding:148px 9px 24px;display:flex;flex-direction:column;flex-wrap:nowrap;gap:6px;overflow:auto;margin:0}
 #app>nav button{width:100%;text-align:left;background:transparent;border:0;color:var(--navy);font-size:16px;padding:13px 15px;margin:0;border-radius:7px}
 #app>nav button:hover,#app>nav button.nav-active{background:#e7e2d8;color:#142d43;border-left:3px solid #284d69}
-#app>nav button:nth-child(1):before{content:"▣  "}
-#app>nav button:nth-child(2):before{content:"☷  "}
-#app>nav button:nth-child(3):before{content:"▤  "}
+#app>nav button:nth-child(1):before{content:"⌂  "}
+#app>nav button:nth-child(2):before{content:"▣  "}
+#app>nav button:nth-child(3):before{content:"☷  "}
 #app>nav:after{content:"THÀNH VIÊN NHÓM\A\A ◉  Thành viên 1\A\A ◉  Thành viên 2\A\A ◉  Thành viên 3";white-space:pre-wrap;color:#33475b;font-size:14px;line-height:1.5;border-top:1px solid #ddd6ca;margin:20px 12px;padding-top:22px}
 #login{max-width:650px;margin:20px auto}
 #dashboardHome{order:-1;display:block}
@@ -414,7 +414,8 @@ async function initialize() {
   el("app").classList.remove("hidden");
   el("logoutButton").classList.remove("hidden");
 
-  await Promise.all([loadTasks(),loadResearch()]);
+  await Promise.all([loadTasks(),loadResearch(),loadLibrary()]);
+  showPage("home");
 }
 
 async function loadTasks() {
@@ -548,7 +549,7 @@ async function enterGuestMode(){
  el("logoutButton").classList.add("hidden");
  el("app").classList.remove("hidden");
  el("login").classList.remove("hidden");
- try{await Promise.all([loadTasks(),loadResearch()]);}
+ try{await Promise.all([loadTasks(),loadResearch(),loadLibrary()]);showPage("home");}
  catch(error){console.error("Guest data load:",error);}
 }
 </script>
