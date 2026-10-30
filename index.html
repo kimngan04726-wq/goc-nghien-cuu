@@ -610,7 +610,8 @@ async function addResearchCard(){
  if(Number(data.group_number)!==group)return alert("Ô đã lưu nhưng nhóm không khớp. Báo tui để kiểm tra nha.");
  await loadResearch();
  const created=document.getElementById("researchContent"+data.id)?.closest(".card");
- if(created)document.getElementById("researchGroup"+group).append(created);
+ if(created){document.getElementById("researchGroup"+group).append(created);created.dataset.researchGroup=String(group);}
+ if(!created)return alert("Đã lưu ô nhưng chưa hiển thị được. Bà tải lại trang giúp tui.");
  alert("Đã thêm ô nghiên cứu vào Nhóm "+group+"!");
 }
 async function renameResearchCard(id){
@@ -659,7 +660,7 @@ async function loadResearch() {
   researchPageCache.forEach(page=>{
     const id=Number(page.id);
     if(!Number.isInteger(id))return;
-    const group=id<=7?(id<=3?1:2):(Number(page.group_number)===2?2:1);
+    const group=Number(page.group_number)===2?2:1;
     let card=document.getElementById("researchContent"+id)?.closest(".card");
     if(!card){
       card=document.createElement("div");card.className="card";
@@ -671,6 +672,7 @@ async function loadResearch() {
     }
     const target=document.getElementById("researchGroup"+group);
     if(card.parentElement!==target)target.append(card);
+    card.dataset.researchGroup=String(group);
   });
   for (const page of researchPageCache) {
     const box = document.getElementById(
