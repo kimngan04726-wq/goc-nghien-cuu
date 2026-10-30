@@ -351,6 +351,7 @@ async function loadTasks() {
 }
 
 async function addTask() {
+  if (!adminEditingEnabled()) return;
   const title = el("taskTitle").value.trim();
   if (!title) return alert("Hãy nhập tên công việc.");
 
@@ -379,6 +380,7 @@ async function changeStatus(id,status) {
 }
 
 async function editTask(id) {
+  if (!adminEditingEnabled()) return;
   const {data,error} = await db
     .from("group_tasks")
     .select("*")
@@ -402,6 +404,7 @@ async function editTask(id) {
 }
 
 async function deleteTask(id) {
+  if (!adminEditingEnabled()) return;
   if (!confirm("Xóa công việc này?")) return;
 
   const {error} = await db
@@ -1165,7 +1168,7 @@ researchSetup();
 .task-due{font-size:15px;color:#586779}
 .task-overdue{color:#a22d2d;font-weight:bold}
 #adminControls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-#adminControls.hidden{display:none}
+#adminControls.hidden{display:none!important}
 #taskDue{max-width:190px}
 #taskGroup{max-width:150px}
 @media(max-width:1000px){#taskList{grid-template-columns:repeat(2,minmax(0,1fr))}}
