@@ -117,7 +117,7 @@ body.admin-guest-mode #libraryAdmin,body.admin-guest-mode #researchEditor,body.a
 #research:not(.gallery-detail) .card{position:relative}
 #research:not(.gallery-detail) .card .research-rename-button{display:block!important;position:absolute;right:9px;bottom:9px;font-size:12px;padding:5px 9px;margin:0;background:#e6e0d5;color:#19364e;border:1px solid #cfc6b9}
 #research:not(.gallery-detail) .card .research-rename-button.hidden{display:none!important}
-</style></head>
+</style><style>#researchAddControls{margin:14px 0 18px}#researchAddControls button{margin:0}#research.gallery-detail #researchAddControls{display:none!important}</style></head>
 <body>
 
 <header>
@@ -151,15 +151,16 @@ body.admin-guest-mode #libraryAdmin,body.admin-guest-mode #researchEditor,body.a
 <h2>Đề tài nghiên cứu</h2>
 <p><b>Tác động của kiến thức tài chính số và thói quen bảo mật đến khả năng nhận diện rủi ro lừa đảo deepfake trong giao dịch ngân hàng</b></p>
 
+<div id="researchAddControls" class="hidden"><button type="button" onclick="addResearchCard()">+ Thêm ô nghiên cứu</button></div>
 <h3>Nhóm nội dung 1</h3>
-<div class="grid">
+<div class="grid" id="researchGroup1">
 <div class="card">01. Lý do chọn đề tài</div>
 <div class="card">02. Mục đích, mục tiêu và câu hỏi nghiên cứu</div>
 <div class="card">03. Cơ sở lý thuyết</div>
 </div>
 
 <h3>Nhóm nội dung 2</h3>
-<div class="grid">
+<div class="grid" id="researchGroup2">
 <div class="card">04. Mô hình nghiên cứu và giả thuyết</div>
 <div class="card">05. Các biến nghiên cứu</div>
 <div class="card">06. Thang đo và phương án đo lường</div>
@@ -263,6 +264,7 @@ function applyAdminView(){
   btn.setAttribute('aria-pressed',String(active));
  });
  document.querySelectorAll('.research-rename-button').forEach(btn=>btn.classList.toggle('hidden',!adminEditingEnabled()));
+ const addResearch=el("researchAddControls");if(addResearch)addResearch.classList.toggle("hidden",!adminEditingEnabled());
  el('adminControls').classList.toggle('hidden',!adminEditingEnabled());
  el('adminControls').setAttribute('aria-hidden',String(!adminEditingEnabled()));
 }
@@ -591,6 +593,21 @@ function researchSetup() {
 
 
 // Admin được đổi tên ô ngay tại gallery; không ảnh hưởng nội dung bên trong.
+
+async function addResearchCard(){
+ if(!adminEditingEnabled())return;
+ const title=prompt("Tiêu đề ô nghiên cứu mới:");
+ if(title===null)return;
+ if(!title.trim())return alert("Bà cần nhập tiêu đề.");
+ const groupText=prompt("Thêm vào nhóm nào? Nhập 1 hoặc 2:","1");
+ if(groupText===null)return;
+ const group=Number(groupText.trim());
+ if(group!==1&&group!==2)return alert("Chỉ chọn Nhóm 1 hoặc Nhóm 2 nha bà.");
+ const {error}=await db.from("research_pages").insert({title:title.trim(),content:"",group_number:group});
+ if(error)return alert("Chưa thêm được ô: "+error.message);
+ await loadResearch();
+ alert("Đã thêm ô nghiên cứu vào Nhóm "+group+"!");
+}
 async function renameResearchCard(id){
  if(!adminEditingEnabled())return;
  const page=researchPageCache.find(p=>Number(p.id)===Number(id));
@@ -625,7 +642,7 @@ async function loadResearch() {
 
   const {data, error} = await db
     .from("research_pages")
-    .select("id,title,content")
+    .select("id,title,content,group_number")
     .order("id");
 
   if (error) {
@@ -634,6 +651,22 @@ async function loadResearch() {
   }
 
   researchPageCache = data || [];
+  researchPageCache.forEach(page=>{
+    const id=Number(page.id);
+    if(!Number.isInteger(id))return;
+    const group=Number(page.group_number)===2?2:(id<=3?1:2);
+    let card=document.getElementById("researchContent"+id)?.closest(".card");
+    if(!card){
+      card=document.createElement("div");card.className="card";
+      const title=document.createElement("h3");
+      const content=document.createElement("div");content.className="research-content";content.id="researchContent"+id;
+      const edit=document.createElement("button");edit.className="research-edit-button";edit.textContent="✎ Chỉnh sửa";edit.onclick=()=>openResearchEditor(id);
+      card.append(title,content,edit);
+      document.getElementById("researchGroup"+group).append(card);
+    }
+    const target=document.getElementById("researchGroup"+group);
+    if(card.parentElement!==target)target.append(card);
+  });
   for (const page of researchPageCache) {
     const box = document.getElementById(
       "researchContent" + page.id
@@ -1161,7 +1194,7 @@ researchSetup();
 <script>
 (function(){
   const section=document.getElementById('research');
-  const cards=Array.from(section.querySelectorAll('.card'));
+  const cards=()=>Array.from(section.querySelectorAll('.grid .card'));
   let selected=null;
   const detail=document.createElement('div');
   detail.id='researchDetail';
@@ -1178,7 +1211,8 @@ researchSetup();
 
   function refresh(){
     if(selected===null)return;
-    const card=cards[selected-1];
+    const card=section.querySelector('#researchContent'+selected)?.closest('.card');
+    if(!card)return;
     heading.textContent=card.querySelector('h3')?.textContent||'Trang nghiên cứu';
     const source=card.querySelector('.research-content');
     body.className='detail-content'+(source.classList.contains('rich-format')?' rich-format':'');
@@ -1202,18 +1236,27 @@ researchSetup();
     selected=null;
     section.classList.remove('gallery-detail');
   }
-  cards.forEach((card,index)=>{
-    card.tabIndex=0;
-    card.setAttribute('role','button');
-    card.setAttribute('aria-label','Mở trang '+(index+1));
-    card.addEventListener('click',event=>{
-      if(event.target.closest('.research-edit-button'))return;
-      open(index+1);
-    });
-    card.addEventListener('keydown',event=>{
-      if(event.key==='Enter' && !event.target.closest('button'))open(index+1);
-    });
+  section.addEventListener('click',event=>{
+    const card=event.target.closest('.grid .card');
+    if(!card||event.target.closest('button'))return;
+    const id=Number(card.querySelector('.research-content')?.id.replace('researchContent',''));
+    if(id)open(id);
   });
+  section.addEventListener('keydown',event=>{
+    if(event.key!=='Enter'||event.target.closest('button'))return;
+    const card=event.target.closest('.grid .card');
+    if(!card)return;
+    const id=Number(card.querySelector('.research-content')?.id.replace('researchContent',''));
+    if(id)open(id);
+  });
+  const oldRefreshCards=loadResearch;
+  loadResearch=async function(){
+    await oldRefreshCards();
+    cards().forEach(card=>{
+      card.tabIndex=0;card.setAttribute('role','button');
+      card.setAttribute('aria-label','Mở '+(card.querySelector('h3')?.textContent||'bài nghiên cứu'));
+    });
+  };
   back.onclick=close;
   edit.onclick=()=>{if(adminEditingEnabled() && selected!==null){edit.style.display='none';openResearchEditor(selected);}};
   const oldCancel=cancelResearch;
