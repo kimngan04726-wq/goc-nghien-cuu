@@ -58,6 +58,23 @@ input,select,textarea{max-width:100%}
 #viewModeButton{background:#fff;color:#19364e;border:1px solid #aab9c5;border-radius:6px;padding:7px 10px;font-size:13px;font-weight:normal;width:auto;min-width:0;white-space:nowrap;display:inline-block}#viewModeButton.hidden{display:none!important}#viewModeButton:hover{background:#eef3f6}#logoutButton{border-radius:7px;padding:9px 13px;font-size:14px}
 .admin-viewer-mode #researchEditor,.admin-viewer-mode .research-edit-button,.admin-viewer-mode #libraryForm,.admin-viewer-mode #libraryAdmin,.admin-viewer-mode #adminControls{display:none!important}
 </style>
+<style>
+.task-dashboard{margin:16px 0 20px}
+.task-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.task-stat{background:#f7f5f0;border:1px solid #e3ddd2;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:3px}
+.task-stat strong{font-size:24px;color:#19364e}
+.task-stat span{font-size:13px;color:#596a75}
+.task-progress-track{height:9px;background:#e6e3dc;border-radius:99px;overflow:hidden;margin:14px 0 18px}
+#taskProgressFill{height:100%;width:0;background:#467b6a;transition:width .2s}
+.task-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.task-filters label{font-size:14px;display:flex;flex-direction:column;gap:4px;flex:1 1 160px}
+.task-filters select{width:100%;margin:0;font-size:14px}
+.task-filters .task-reset{margin:0;font-size:14px;background:#e9e5dc;color:#19364e}
+.task-filter-count{color:#596a75;font-size:14px;margin:12px 0}
+.task-empty{font-size:14px;color:#7c858a}
+@media(max-width:700px){.task-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.task-stat:last-child{grid-column:span 2}.task-stat strong{font-size:21px}}
+@media(prefers-reduced-motion:reduce){#taskProgressFill{transition:none}}
+</style>
 </head>
 <body>
 
@@ -114,6 +131,17 @@ input,select,textarea{max-width:100%}
 <input id="taskTitle" placeholder="Tên công việc">
 <input id="taskOwner" placeholder="Người phụ trách">
 <button onclick="addTask()">Thêm công việc</button>
+</div>
+<div id="taskDashboard" class="task-dashboard">
+ <div class="task-stats" id="taskStats" aria-live="polite"></div>
+ <div class="task-progress-track" aria-label="Tiến độ hoàn thành"><div id="taskProgressFill"></div></div>
+ <div class="task-filters">
+  <label>Nhóm <select id="taskFilterGroup" onchange="renderTaskBoard()"><option value="all">Tất cả nhóm</option><option value="1">Nhóm 1</option><option value="2">Nhóm 2</option></select></label>
+  <label>Người phụ trách <select id="taskFilterOwner" onchange="renderTaskBoard()"><option value="all">Tất cả</option></select></label>
+  <label>Hạn nộp <select id="taskFilterDue" onchange="renderTaskBoard()"><option value="all">Tất cả</option><option value="overdue">Quá hạn</option><option value="today">Hôm nay</option><option value="upcoming">Sắp đến hạn (7 ngày)</option><option value="none">Chưa đặt hạn</option></select></label>
+  <button type="button" class="task-reset" onclick="resetTaskFilters()">Xóa bộ lọc</button>
+ </div>
+ <p id="taskFilterCount" class="task-filter-count" aria-live="polite"></p>
 </div>
 <div id="taskList"></div>
 </section>
@@ -1135,64 +1163,91 @@ initialize = async function() {
  adminControls.insertBefore(group,adminControls.lastElementChild);
  adminControls.insertBefore(due,adminControls.lastElementChild);
 
+ let cachedKanbanTasks=[];
+ function localDateISO(date=new Date()){return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');}
+ function updateTaskDashboard(){
+  const all=cachedKanbanTasks, done=all.filter(t=>t.status==='Hoàn thành').length;
+  const today=localDateISO(), overdue=all.filter(t=>t.due_date&&t.due_date<today&&t.status!=='Hoàn thành').length;
+  const pct=all.length?Math.round(done*100/all.length):0;
+  const stats=document.getElementById('taskStats');
+  stats.replaceChildren();
+  [['Tổng công việc',all.length],['Hoàn thành',done],['Đang thực hiện',all.filter(t=>t.status==='Đang làm').length],['Quá hạn',overdue],['Tiến độ',pct+'%']].forEach(([label,value])=>{
+   const box=document.createElement('div');box.className='task-stat';
+   const num=document.createElement('strong');num.textContent=value;
+   const caption=document.createElement('span');caption.textContent=label;
+   box.append(num,caption);stats.append(box);
+  });
+  document.getElementById('taskProgressFill').style.width=pct+'%';
+  const ownerSelect=document.getElementById('taskFilterOwner');
+  const previous=ownerSelect.value;
+  const owners=[...new Set(all.map(t=>(t.owner||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'vi'));
+  ownerSelect.replaceChildren(new Option('Tất cả','all'),new Option('Chưa giao','__unassigned__'),...owners.map(owner=>new Option(owner,owner)));
+  ownerSelect.value=[...ownerSelect.options].some(option=>option.value===previous)?previous:'all';
+ }
+ function resetTaskFilters(){
+  ['taskFilterGroup','taskFilterOwner','taskFilterDue'].forEach(id=>document.getElementById(id).value='all');
+  renderTaskBoard();
+ }
+ function renderTaskBoard(){
+  const today=localDateISO(), limit=new Date();limit.setDate(limit.getDate()+7);
+  const soon=localDateISO(limit);
+  const group=document.getElementById('taskFilterGroup').value;
+  const owner=document.getElementById('taskFilterOwner').value;
+  const due=document.getElementById('taskFilterDue').value;
+  const data=cachedKanbanTasks.filter(t=>{
+   if(group!=='all'&&String(t.group_number||1)!==group)return false;
+   if(owner!=='all'&&(owner==='__unassigned__'?Boolean((t.owner||'').trim()):(t.owner||'').trim()!==owner))return false;
+   if(due==='overdue'&&!(t.due_date&&t.due_date<today&&t.status!=='Hoàn thành'))return false;
+   if(due==='today'&&t.due_date!==today)return false;
+   if(due==='upcoming'&&!(t.due_date&&t.due_date>=today&&t.due_date<=soon&&t.status!=='Hoàn thành'))return false;
+   if(due==='none'&&t.due_date)return false;
+   return true;
+  });
+  document.getElementById('taskFilterCount').textContent='Đang hiển thị '+data.length+' / '+cachedKanbanTasks.length+' công việc';
+  const root=el('taskList');root.replaceChildren();
+  statuses.forEach(status=>{
+   const lane=document.createElement('div');lane.className='kanban-lane';
+   const heading=document.createElement('h3');
+   const list=data.filter(t=>t.status===status);
+   heading.textContent=status+' ('+list.length+')';
+   lane.append(heading);
+   if(!list.length){const empty=document.createElement('p');empty.className='task-empty';empty.textContent='Không có công việc';lane.append(empty);}
+   list.forEach(task=>{
+     const card=document.createElement('div');card.className='kanban-item';
+     const name=document.createElement('b');name.textContent=task.title;
+     const owner=document.createElement('p');owner.textContent='Phụ trách: '+(task.owner||'Chưa giao');
+     const groupInfo=document.createElement('p');groupInfo.className='task-due';groupInfo.textContent='Nhóm '+(task.group_number||1);
+     const deadline=document.createElement('p');deadline.className='task-due';deadline.textContent='Hạn: '+labelDate(task.due_date);
+     if(task.due_date&&task.due_date<today&&status!=='Hoàn thành'){deadline.classList.add('task-overdue');deadline.textContent+=' · Quá hạn';}
+     const select=document.createElement('select');
+     statuses.forEach(value=>{const option=document.createElement('option');option.value=value;option.textContent=value;option.selected=value===task.status;select.append(option);});
+     select.disabled=!(adminEditingEnabled()||isMember);
+     select.onchange=async()=>{if(!(adminEditingEnabled()||isMember))return;select.disabled=true;await changeStatus(task.id,select.value);};
+     card.append(name,owner,groupInfo,deadline,select);
+     if(adminEditingEnabled()){
+       const edit=document.createElement('button');edit.textContent='Sửa / Giao';edit.onclick=()=>editTask(task.id);
+       const remove=document.createElement('button');remove.textContent='Xóa';remove.onclick=()=>deleteTask(task.id);
+       card.append(edit,remove);
+     }
+     lane.append(card);
+   });
+   root.append(lane);
+  });
+ }
  function labelDate(date){
    if(!date)return 'Chưa đặt hạn';
    const parts=date.split('-');
    return parts.length===3?parts.reverse().join('/'):date;
  }
  loadTasks=async function(){
-   const {data,error}=await db.from('group_tasks').select('*').order('created_at',{ascending:true});
-   const root=el('taskList');
-   if(error){root.textContent='Không tải được công việc: '+error.message;return;}
-   root.replaceChildren();
-   statuses.forEach(status=>{
-     const lane=document.createElement('div');lane.className='kanban-lane';
-     const heading=document.createElement('h3');
-     const list=(data||[]).filter(t=>t.status===status);
-     heading.textContent=status+' ('+list.length+')';
-     lane.append(heading);
-     list.forEach(task=>{
-       const card=document.createElement('div');card.className='kanban-item';
-       const name=document.createElement('b');name.textContent=task.title;
-       const owner=document.createElement('p');owner.textContent='Phụ trách: '+(task.owner||'Chưa giao');
-       const groupInfo=document.createElement('p');
-       groupInfo.className='task-due';groupInfo.textContent='Nhóm '+(task.group_number||1);
-       const deadline=document.createElement('p');
-       deadline.className='task-due';
-       deadline.textContent='Hạn: '+labelDate(task.due_date);
-       const today=new Date();const todayLocal=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-       if(task.due_date && task.due_date<todayLocal && status!=='Hoàn thành'){
-         deadline.classList.add('task-overdue');
-         deadline.textContent+=' · Quá hạn';
-       }
-       const select=document.createElement('select');
-       statuses.forEach(value=>{
-         const option=document.createElement('option');
-         option.value=value;option.textContent=value;
-         option.selected=value===task.status;
-         select.append(option);
-       });
-       select.disabled=!(adminEditingEnabled()||isMember);
-       select.onchange=async()=>{
-         if(!(adminEditingEnabled()||isMember))return;
-         select.disabled=true;
-         await changeStatus(task.id,select.value);
-       };
-       card.append(name,owner,groupInfo,deadline,select);
-       if(adminEditingEnabled()){
-         const edit=document.createElement('button');edit.textContent='Sửa / Giao';
-         edit.onclick=()=>editTask(task.id);
-         const remove=document.createElement('button');remove.textContent='Xóa';
-         remove.onclick=()=>deleteTask(task.id);
-         card.append(edit,remove);
-       }
-       lane.append(card);
-     });
-     root.append(lane);
-   });
+  const {data,error}=await db.from('group_tasks').select('*').order('created_at',{ascending:true});
+  if(error){el('taskList').textContent='Không tải được công việc: '+error.message;return;}
+  cachedKanbanTasks=data||[];
+  updateTaskDashboard();
+  renderTaskBoard();
  };
  addTask=async function(){
-   if(!isAdmin)return;
+   if(!adminEditingEnabled())return;
    const title=el('taskTitle').value.trim();
    if(!title)return alert('Hãy nhập tên công việc.');
    const {error}=await db.from('group_tasks').insert({
@@ -1205,7 +1260,7 @@ initialize = async function() {
    await loadTasks();
  };
  editTask=async function(id){
-   if(!isAdmin)return;
+   if(!adminEditingEnabled())return;
    const {data,error}=await db.from('group_tasks').select('*').eq('id',id).single();
    if(error)return alert(error.message);
    const title=prompt('Tên công việc:',data.title);
