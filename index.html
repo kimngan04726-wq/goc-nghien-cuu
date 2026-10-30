@@ -34,7 +34,7 @@ nav button {background:#e6e0d5;color:#19364e}
 
 <main>
 <section id="login">
-<h2>Đăng nhập</h2>
+<h2>Đăng nhập quản trị</h2><p>Khách có thể xem nội dung và cập nhật trạng thái công việc mà không cần đăng nhập.</p>
 <input id="email" type="email" placeholder="Email">
 <input id="password" type="password" placeholder="Mật khẩu">
 <button onclick="signIn()">Đăng nhập</button>
@@ -44,7 +44,7 @@ nav button {background:#e6e0d5;color:#19364e}
 <div id="app" class="hidden">
 <section>
 <p id="account"></p>
-<button onclick="signOut()">Đăng xuất</button>
+<button id="logoutButton" onclick="signOut()">Đăng xuất</button>
 </section>
 
 <nav>
@@ -158,15 +158,14 @@ async function signIn() {
 
 async function signOut() {
   await db.auth.signOut();
-  el("app").classList.add("hidden");
-  el("login").classList.remove("hidden");
+  await enterGuestMode();
 }
 
 async function initialize() {
   const {data:{user},error:userError} =
     await db.auth.getUser();
 
-  if (userError || !user) return;
+  if (userError || !user) { await enterGuestMode(); return; }
 
   const {data:profile,error:profileError} = await db
     .from("group_profiles")
@@ -177,6 +176,7 @@ async function initialize() {
   if (profileError) {
     el("error").textContent =
       "Lỗi đọc quyền: " + profileError.message;
+    await enterGuestMode();
     return;
   }
 
@@ -188,6 +188,7 @@ async function initialize() {
   el("adminControls").classList.toggle("hidden",!isAdmin);
   el("login").classList.add("hidden");
   el("app").classList.remove("hidden");
+  el("logoutButton").classList.remove("hidden");
 
   await loadTasks();
 }
@@ -294,17 +295,35 @@ window.addEventListener("load",async () => {
 
     db = window.supabase.createClient(
       SUPABASE_URL,
-      SUPABASE_KEY
+      SUPABASE_KEY,
+      {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
     );
 
     const {data:{session}} = await db.auth.getSession();
     if (session) await initialize();
+    else await enterGuestMode();
   } catch (err) {
     el("error").textContent = err.message;
   }
 });
-</script> 
-  
+</script>
+<script>
+async function enterGuestMode(){
+ isAdmin=false;
+ el("account").textContent="Đang xem với tư cách Khách";
+ el("adminControls").classList.add("hidden");
+ el("logoutButton").classList.add("hidden");
+ el("app").classList.remove("hidden");
+ el("login").classList.remove("hidden");
+ try{await loadTasks();await loadResearch();}
+ catch(error){console.error("Guest data load:",error);}
+}
+</script>
+<style>
+#login{padding:16px 24px}
+#login h2{font-size:21px;margin:4px 0}
+#login p{margin:7px 0}
+</style>
 <style>
 .research-edit-button {
   display: none;
