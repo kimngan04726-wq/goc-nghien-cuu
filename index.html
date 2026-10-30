@@ -992,5 +992,130 @@ initialize = async function() {
 })();
 </script>
 
+
+<!-- KANBAN V2 -->
+<style>
+#taskList{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}
+.kanban-lane{background:#f5f0e7;border:1px solid #ded4c6;border-radius:10px;padding:13px;min-height:220px}
+.kanban-lane h3{font-size:19px;margin:4px 0 14px}
+.kanban-item{background:white;border:1px solid #ddd4c7;border-radius:9px;padding:13px;margin:10px 0;overflow-wrap:anywhere}
+.kanban-item b{display:block;font-size:18px}
+.kanban-item p{margin:8px 0}
+.kanban-item select{width:100%;max-width:100%}
+.kanban-item button{margin-top:8px;margin-right:5px}
+.task-due{font-size:15px;color:#586779}
+.task-overdue{color:#a22d2d;font-weight:bold}
+#adminControls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#adminControls.hidden{display:none}
+#taskDue{max-width:190px}
+#taskGroup{max-width:150px}
+@media(max-width:1000px){#taskList{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){#taskList{grid-template-columns:1fr}}
+</style>
+<script>
+(function(){
+ const statuses=['Chưa làm','Đang làm','Chờ rà soát','Hoàn thành'];
+ const adminControls=document.getElementById('adminControls');
+ const group=document.createElement('select');
+ group.id='taskGroup';
+ group.innerHTML='<option value="1">Nhóm 1</option><option value="2">Nhóm 2</option>';
+ const due=document.createElement('input');
+ due.id='taskDue';due.type='date';due.title='Hạn hoàn thành';
+ adminControls.insertBefore(group,adminControls.lastElementChild);
+ adminControls.insertBefore(due,adminControls.lastElementChild);
+
+ function labelDate(date){
+   if(!date)return 'Chưa đặt hạn';
+   const parts=date.split('-');
+   return parts.length===3?parts.reverse().join('/'):date;
+ }
+ loadTasks=async function(){
+   const {data,error}=await db.from('group_tasks').select('*').order('created_at',{ascending:true});
+   const root=el('taskList');
+   if(error){root.textContent='Không tải được công việc: '+error.message;return;}
+   root.replaceChildren();
+   statuses.forEach(status=>{
+     const lane=document.createElement('div');lane.className='kanban-lane';
+     const heading=document.createElement('h3');
+     const list=(data||[]).filter(t=>t.status===status);
+     heading.textContent=status+' ('+list.length+')';
+     lane.append(heading);
+     list.forEach(task=>{
+       const card=document.createElement('div');card.className='kanban-item';
+       const name=document.createElement('b');name.textContent=task.title;
+       const owner=document.createElement('p');owner.textContent='Phụ trách: '+(task.owner||'Chưa giao');
+       const groupInfo=document.createElement('p');
+       groupInfo.className='task-due';groupInfo.textContent='Nhóm '+(task.group_number||1);
+       const deadline=document.createElement('p');
+       deadline.className='task-due';
+       deadline.textContent='Hạn: '+labelDate(task.due_date);
+       const today=new Date();const todayLocal=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+       if(task.due_date && task.due_date<todayLocal && status!=='Hoàn thành'){
+         deadline.classList.add('task-overdue');
+         deadline.textContent+=' · Quá hạn';
+       }
+       const select=document.createElement('select');
+       statuses.forEach(value=>{
+         const option=document.createElement('option');
+         option.value=value;option.textContent=value;
+         option.selected=value===task.status;
+         select.append(option);
+       });
+       select.onchange=async()=>{
+         select.disabled=true;
+         await changeStatus(task.id,select.value);
+       };
+       card.append(name,owner,groupInfo,deadline,select);
+       if(isAdmin){
+         const edit=document.createElement('button');edit.textContent='Sửa / Giao';
+         edit.onclick=()=>editTask(task.id);
+         const remove=document.createElement('button');remove.textContent='Xóa';
+         remove.onclick=()=>deleteTask(task.id);
+         card.append(edit,remove);
+       }
+       lane.append(card);
+     });
+     root.append(lane);
+   });
+ };
+ addTask=async function(){
+   if(!isAdmin)return;
+   const title=el('taskTitle').value.trim();
+   if(!title)return alert('Hãy nhập tên công việc.');
+   const {error}=await db.from('group_tasks').insert({
+     title,owner:el('taskOwner').value.trim(),
+     group_number:Number(group.value),
+     due_date:due.value||null
+   });
+   if(error)return alert('Không thêm được: '+error.message);
+   el('taskTitle').value='';el('taskOwner').value='';due.value='';
+   await loadTasks();
+ };
+ editTask=async function(id){
+   if(!isAdmin)return;
+   const {data,error}=await db.from('group_tasks').select('*').eq('id',id).single();
+   if(error)return alert(error.message);
+   const title=prompt('Tên công việc:',data.title);
+   if(title===null)return;
+   if(!title.trim())return alert('Tên không được để trống.');
+   const owner=prompt('Người phụ trách:',data.owner||'');
+   if(owner===null)return;
+   const date=prompt('Hạn hoàn thành (YYYY-MM-DD, để trống nếu không có):',data.due_date||'');
+   if(date===null)return;
+   if(date.trim()&&!/^\d{4}-\d{2}-\d{2}$/.test(date.trim()))
+     return alert('Nhập ngày theo dạng YYYY-MM-DD.');
+   const groupNo=prompt('Nhóm nội dung (1 hoặc 2):',String(data.group_number||1));
+   if(groupNo===null)return;
+   if(!['1','2'].includes(groupNo.trim()))return alert('Nhóm phải là 1 hoặc 2.');
+   const result=await db.from('group_tasks').update({
+     title:title.trim(),owner:owner.trim(),
+     due_date:date.trim()||null,group_number:Number(groupNo.trim())
+   }).eq('id',id);
+   if(result.error)alert('Không lưu được: '+result.error.message);
+   await loadTasks();
+ };
+})();
+</script>
+
 </body>
 </html>
