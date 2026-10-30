@@ -69,7 +69,7 @@ input,select,textarea{max-width:100%}
 .task-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
 .task-filters label{font-size:14px;display:flex;flex-direction:column;gap:4px;flex:1 1 160px}
 .task-filters select{width:100%;margin:0;font-size:14px}
-.task-filters .task-reset{margin:0;font-size:14px;background:#e9e5dc;color:#19364e}
+.task-filters button{margin:0;font-size:14px;white-space:nowrap}.task-filters .task-reset{background:#e9e5dc;color:#19364e}
 .task-filter-count{color:#596a75;font-size:14px;margin:12px 0}
 .task-empty{font-size:14px;color:#7c858a}
 @media(max-width:700px){.task-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.task-stat:last-child{grid-column:span 2}.task-stat strong{font-size:21px}}
@@ -156,10 +156,11 @@ button,select{touch-action:manipulation}
  <div class="task-stats" id="taskStats" aria-live="polite"></div>
  <div class="task-progress-track" aria-label="Tiến độ hoàn thành"><div id="taskProgressFill"></div></div>
  <div class="task-filters">
-  <label>Nhóm <select id="taskFilterGroup" onchange="renderTaskBoard()"><option value="all">Tất cả nhóm</option><option value="1">Nhóm 1</option><option value="2">Nhóm 2</option></select></label>
-  <label>Người phụ trách <select id="taskFilterOwner" onchange="renderTaskBoard()"><option value="all">Tất cả</option></select></label>
-  <label>Hạn nộp <select id="taskFilterDue" onchange="renderTaskBoard()"><option value="all">Tất cả</option><option value="overdue">Quá hạn</option><option value="today">Hôm nay</option><option value="upcoming">Sắp đến hạn (7 ngày)</option><option value="none">Chưa đặt hạn</option></select></label>
-  <button type="button" class="task-reset" onclick="resetTaskFilters()">Xóa bộ lọc</button>
+  <label>Nhóm <select id="taskFilterGroup" ><option value="all">Tất cả nhóm</option><option value="1">Nhóm 1</option><option value="2">Nhóm 2</option></select></label>
+  <label>Người phụ trách <select id="taskFilterOwner" ><option value="all">Tất cả</option></select></label>
+  <label>Hạn nộp <select id="taskFilterDue" ><option value="all">Tất cả</option><option value="overdue">Quá hạn</option><option value="today">Hôm nay</option><option value="upcoming">Sắp đến hạn (7 ngày)</option><option value="none">Chưa đặt hạn</option></select></label>
+  <button type="button" id="taskApplyFilter">Lọc</button>
+  <button type="button" class="task-reset" id="taskShowAll">Xem tất cả</button>
  </div>
  <p id="taskFilterCount" class="task-filter-count" aria-live="polite"></p>
 </div>
@@ -1221,7 +1222,10 @@ initialize = async function() {
   const due=document.getElementById('taskFilterDue').value;
   const data=cachedKanbanTasks.filter(t=>{
    if(group!=='all'&&String(t.group_number||1)!==group)return false;
-   if(owner!=='all'&&(owner==='__unassigned__'?Boolean((t.owner||'').trim()):(t.owner||'').trim()!==owner))return false;
+   if(owner!=='all'){
+    const assigned=(t.owner||'').trim();
+    if(owner==='__unassigned__' ? assigned!=='' : assigned!==owner)return false;
+   }
    if(due==='overdue'&&!(t.due_date&&t.due_date<today&&t.status!=='Hoàn thành'))return false;
    if(due==='today'&&t.due_date!==today)return false;
    if(due==='upcoming'&&!(t.due_date&&t.due_date>=today&&t.due_date<=soon&&t.status!=='Hoàn thành'))return false;
@@ -1260,6 +1264,8 @@ initialize = async function() {
   });
  }
  // Cho phép bộ lọc HTML gọi hàm nằm trong module Kanban.
+ document.getElementById("taskApplyFilter").addEventListener("click",renderTaskBoard);
+ document.getElementById("taskShowAll").addEventListener("click",resetTaskFilters);
  window.renderTaskBoard=renderTaskBoard;
  window.resetTaskFilters=resetTaskFilters;
  function labelDate(date){
