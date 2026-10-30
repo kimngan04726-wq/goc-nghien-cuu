@@ -492,6 +492,7 @@ function researchSetup() {
   document.getElementById("research").appendChild(editor);
 }
 
+let researchPageCache = [];
 async function loadResearch() {
   if (!db) return;
 
@@ -505,14 +506,16 @@ async function loadResearch() {
     return;
   }
 
-  for (const page of data || []) {
+  researchPageCache = data || [];
+  for (const page of researchPageCache) {
     const box = document.getElementById(
       "researchContent" + page.id
     );
 
     if (box) {
-      box.textContent = page.content ||
-        "Trang này chưa có nội dung.";
+      box.textContent = (page.content || "").startsWith("<!--RICH_RESEARCH_V1-->")
+        ? "Đang hiển thị bài viết…"
+        : (page.content || "Trang này chưa có nội dung.");
     }
   }
 
@@ -903,13 +906,8 @@ initialize = async function() {
 
     if (!db) return;
 
-    const {data, error} = await db
-      .from("research_pages")
-      .select("id,content");
-
-    if (error) return;
-
-    for (const page of data || []) {
+    // Dùng lại dữ liệu đã tải, tránh gọi Supabase hai lần và nháy HTML thô.
+    for (const page of researchPageCache) {
       const box = document.getElementById(
         "researchContent" + page.id
       );
