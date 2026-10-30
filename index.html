@@ -477,6 +477,70 @@ body.word-editor-open #researchEditor #richEditor{width:100%!important;max-width
 body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar .docs-table-menu{background:#fffaf3!important;border-color:#d7c5aa!important}
 @media(max-width:950px){body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{max-height:185px!important;min-height:165px!important;padding-bottom:70px!important;overflow-y:auto!important}body.word-editor-open #researchEditor .research-actions{top:132px!important}body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar #wordEditorSizeButton{right:170px!important}}
 @media(max-width:620px){body.word-editor-open #researchEditor{padding:5px!important}body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{padding:8px 8px 108px!important;max-height:230px!important;min-height:190px!important}body.word-editor-open #researchEditor .research-actions{top:calc(100% - 100px)!important;position:fixed!important;right:15px!important}body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar #wordEditorSizeButton{right:8px!important;bottom:56px!important}body.word-editor-open #researchEditor #richEditor{padding:16px!important}}
+</style><style id="editor-final-clean-layout">
+/* Single consistent layout; applies to both the fullscreen state and toolbar state. */
+#researchEditor:has(#richToolbar.docs-style-toolbar){background:#f8f4ed!important;box-sizing:border-box!important}
+#researchEditor:has(#richToolbar.docs-style-toolbar) #richToolbar.docs-style-toolbar{
+ display:flex!important;flex-wrap:wrap!important;align-items:center!important;align-content:flex-start!important;
+ gap:5px!important;position:relative!important;box-sizing:border-box!important;
+ width:100%!important;max-width:none!important;
+ padding:10px 10px 57px!important;margin:0!important;
+ min-height:111px!important;max-height:none!important;overflow:visible!important;
+ background:#f7f0e6!important;background-image:none!important;
+ border:1px solid #dac9b2!important;border-radius:10px 10px 0 0!important;
+ box-shadow:none!important;color:#173a59!important
+}
+#researchEditor #richToolbar.docs-style-toolbar>button,
+#researchEditor #richToolbar.docs-style-toolbar>select{
+ background:transparent!important;color:#173a59!important;border:1px solid transparent!important;
+ font-family:Arial,sans-serif!important;font-size:15px!important;
+ height:36px!important;min-height:36px!important;padding:5px 8px!important;border-radius:6px!important
+}
+#researchEditor #richToolbar.docs-style-toolbar>select{background:#fffaf3!important;border-color:#d8c6b0!important}
+#researchEditor #richToolbar.docs-style-toolbar>button:hover{background:#e9ddcc!important}
+#researchEditor #richToolbar.docs-style-toolbar>button.is-active{background:#d7e5ef!important;border-color:#91b0c5!important}
+#researchEditor #richToolbar.docs-style-toolbar>.docs-font-size-input{height:36px!important;width:58px!important;background:#fffaf3!important;border:1px solid #d8c6b0!important;color:#173a59!important}
+#researchEditor #richToolbar.docs-style-toolbar>button[title*="Tải ảnh"],
+#researchEditor #richToolbar.docs-style-toolbar>button[title*="ảnh từ máy"]{
+ position:absolute!important;left:10px!important;bottom:9px!important;top:auto!important;
+ background:#fff9f0!important;border:1px solid #d8c6b0!important;padding:6px 12px!important;
+ font:15px 'Times New Roman',serif!important;height:36px!important
+}
+#researchEditor #richToolbar.docs-style-toolbar #wordEditorSizeButton{
+ position:absolute!important;right:10px!important;bottom:9px!important;top:auto!important;
+ height:36px!important;background:#fff9f0!important;border:1px solid #d8c6b0!important;
+ font:15px 'Times New Roman',serif!important;padding:6px 10px!important
+}
+#researchEditor:has(#richToolbar.docs-style-toolbar) .research-actions{
+ position:absolute!important;top:6px!important;right:12px!important;z-index:90!important;
+ display:flex!important;gap:9px!important;align-items:center!important;
+ margin:0!important;padding:0!important;background:transparent!important
+}
+#researchEditor:has(#richToolbar.docs-style-toolbar) .research-actions button{
+ position:static!important;height:38px!important;min-width:65px!important;
+ background:#173a59!important;color:#fff!important;border:1px solid #173a59!important;
+ border-radius:7px!important;padding:6px 13px!important;margin:0!important;
+ font:700 16px 'Times New Roman',serif!important
+}
+body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar){
+ position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;
+ padding:56px 12px 10px!important;margin:0!important;display:flex!important;
+ flex-direction:column!important;overflow:hidden!important
+}
+body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #richEditor{
+ flex:1 1 auto!important;min-height:0!important;min-width:0!important;
+ width:100%!important;max-width:none!important;margin:0!important;
+ padding:25px 30px!important;box-sizing:border-box!important;
+ background:#fff!important;border:1px solid #dac9b2!important;border-top:0!important;
+ border-radius:0 0 9px 9px!important;overflow:auto!important
+}
+#researchEditor #richToolbar.docs-style-toolbar .docs-table-menu{background:#fffaf3!important;border:1px solid #cbb598!important}
+@media(max-width:760px){
+ body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar){padding:52px 6px 6px!important}
+ #researchEditor #richToolbar.docs-style-toolbar{padding-bottom:53px!important}
+ #researchEditor #richToolbar.docs-style-toolbar>select{max-width:145px!important}
+ body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #richEditor{padding:16px!important}
+}
 </style></head>
 <body>
 
