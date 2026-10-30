@@ -1478,6 +1478,45 @@ researchSetup();
     editor.setAttribute("role", "textbox");
     editor.setAttribute("aria-multiline", "true");
 
+    // Paste images from clipboard and drop images directly into the editor.
+    async function insertClipboardImage(file, rangeAtStart){
+      if(!file||!["image/png","image/jpeg","image/webp"].includes(file.type)){alert("Chỉ hỗ trợ ảnh PNG, JPG hoặc WebP.");return}
+      if(file.size>5*1024*1024){alert("Ảnh phải nhỏ hơn hoặc bằng 5 MB.");return}
+      if(editingPageId===null||!canEditResearch(editingPageId)){alert("Bạn không có quyền chỉnh sửa nội dung này.");return}
+      const pageId=editingPageId;
+      try{
+        const ext={"image/png":"png","image/jpeg":"jpg","image/webp":"webp"}[file.type];
+        const path="research/"+pageId+"/"+crypto.randomUUID()+"."+ext;
+        const {error}=await db.storage.from("research-images").upload(path,file,{contentType:file.type,upsert:false});
+        if(error)throw error;
+        const url=db.storage.from("research-images").getPublicUrl(path).data.publicUrl;
+        if(pageId!==editingPageId||!editor.isConnected){alert("Ảnh đã tải lên nhưng trang soạn thảo đã đóng.");return}
+        editor.focus();
+        const sel=window.getSelection(),range=rangeAtStart&&editor.contains(rangeAtStart.commonAncestorContainer)?rangeAtStart:document.createRange();
+        if(!rangeAtStart||!editor.contains(rangeAtStart.commonAncestorContainer)){range.selectNodeContents(editor);range.collapse(false)}
+        range.deleteContents();
+        const img=document.createElement("img");img.src=url;img.alt=file.name||"Ảnh được dán";img.style.maxWidth="100%";
+        range.insertNode(img);range.setStartAfter(img);range.collapse(true);sel.removeAllRanges();sel.addRange(range);
+      }catch(error){console.error("Không dán được ảnh:",error);alert("Không thể chèn ảnh: "+error.message)}
+    }
+    editor.addEventListener("paste",event=>{
+      const files=Array.from(event.clipboardData?.items||[]).filter(x=>x.kind==="file"&&x.type.startsWith("image/")).map(x=>x.getAsFile()).filter(Boolean);
+      if(files.length){
+        event.preventDefault();
+        const sel=window.getSelection(),range=sel?.rangeCount?sel.getRangeAt(0).cloneRange():null;
+        (async()=>{for(const file of files)await insertClipboardImage(file,range)})();
+        return;
+      }
+      // Let the browser preserve pasted text, hyperlinks and formatting.
+    });
+    editor.addEventListener("dragover",event=>{if(Array.from(event.dataTransfer?.items||[]).some(x=>x.kind==="file"&&x.type.startsWith("image/")))event.preventDefault()});
+    editor.addEventListener("drop",event=>{
+      const files=Array.from(event.dataTransfer?.files||[]).filter(f=>f.type.startsWith("image/"));
+      if(!files.length)return;
+      event.preventDefault();
+      const range=document.caretRangeFromPoint?.(event.clientX,event.clientY)||null;
+      (async()=>{for(const file of files)await insertClipboardImage(file,range)})();
+    });
     oldInput.parentNode.insertBefore(toolbar, oldInput);
     oldInput.parentNode.insertBefore(editor, oldInput);
   }
