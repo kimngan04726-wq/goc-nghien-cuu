@@ -514,7 +514,7 @@ body.site-pick-mode [data-site-edit-key]:hover{outline:3px solid #b58d42}
 <section id="tasks" class="hidden">
 <h2>Bảng công việc</h2>
 <div id="adminControls" class="hidden">
-<input id="taskTitle" placeholder="Tên công việc">
+<select id="taskTitle" required aria-label="Tên công việc"><option value="">Chọn nhiệm vụ từ Trang Nội dung</option></select><span id="taskTitleError" role="alert" style="color:#a22d2d;font-size:13px"></span>
 
 <button onclick="addTask()">Thêm công việc</button>
 </div>
@@ -660,6 +660,7 @@ function showPage(page) {
   });
   document.querySelectorAll("nav button").forEach((button,index)=>{const active=["home","research","tasks","library"][index]===page;button.classList.toggle("nav-active",active);button.setAttribute("aria-current",active?"page":"false");});
   if (page === "home") refreshDashboard();
+  if(page==='tasks'&&typeof window.syncTaskChoices==='function')window.syncTaskChoices();
   if (page === "tasks") loadTasks();
   if (page === "library") {populateQuickRelated();loadLibrary();const form=document.getElementById('referenceQuickForm');if(form)form.querySelectorAll('input,select,button').forEach(x=>x.disabled=!adminEditingEnabled());}
 }
@@ -1684,7 +1685,12 @@ researchSetup();
  const group=document.createElement('select');
  group.id='taskGroup';
  group.innerHTML='<option value="1">Nhóm 1</option><option value="2">Nhóm 2</option>';
- const due=document.createElement('input');
+ function availableResearchTasks(){return [...document.querySelectorAll('#researchGroup1 .card,#researchGroup2 .card')].map(card=>({title:card.querySelector('h3')?.textContent?.trim()||'',group:card.closest('#researchGroup1')?1:2})).filter(x=>x.title)}
+ function syncTaskChoices(){const select=el('taskTitle'),old=select.value;const choices=availableResearchTasks();select.replaceChildren(new Option('Chọn nhiệm vụ từ Trang Nội dung',''));choices.forEach(x=>{const option=new Option(x.title,x.title);option.dataset.group=String(x.group);select.add(option)});if(choices.some(x=>x.title===old))select.value=old;validateTaskChoice(false)}
+ function validateTaskChoice(showError=true){const select=el('taskTitle'),chosen=select.selectedOptions[0],selectedGroup=Number(group.value);const mismatch=!!chosen?.value&&Number(chosen.dataset.group)!==selectedGroup;const error=el('taskTitleError');error.textContent=mismatch?'Nhiệm vụ này thuộc Nhóm '+chosen.dataset.group+', không phải Nhóm '+selectedGroup+'.':'';select.setCustomValidity(mismatch?'Nhiệm vụ không thuộc nhóm đã chọn.':'');if(mismatch&&showError)alert(error.textContent);return !mismatch}
+ group.addEventListener('change',()=>validateTaskChoice(true));el('taskTitle').addEventListener('change',()=>validateTaskChoice(true));
+ window.syncTaskChoices=syncTaskChoices;
+  const due=document.createElement('input');
  due.id='taskDue';due.type='date';due.title='Hạn hoàn thành';
  adminControls.insertBefore(group,adminControls.lastElementChild);
  adminControls.insertBefore(due,adminControls.lastElementChild);
@@ -1781,7 +1787,7 @@ researchSetup();
  document.getElementById("taskFilterStatus").addEventListener("change",()=>{renderTaskBoard();enforceStatusLaneVisibility();});
  document.getElementById("taskFilterGroup").addEventListener("change",()=>{renderTaskBoard();enforceStatusLaneVisibility();});
  document.getElementById("taskShowAll").addEventListener("click",resetTaskFilters);
- window.renderTaskBoard=renderTaskBoard;
+ window.renderTaskBoard=renderTaskBoard;syncTaskChoices();
  window.resetTaskFilters=resetTaskFilters;
  function labelDate(date){
    if(!date)return 'Chưa đặt hạn';
@@ -1798,33 +1804,33 @@ researchSetup();
  };
  addTask=async function(){
    if(!adminEditingEnabled())return;
-   const title=el('taskTitle').value.trim();
-   if(!title)return alert('Hãy nhập tên công việc.');
+   syncTaskChoices();const title=el('taskTitle').value.trim();
+   if(!title)return alert('Hãy chọn nhiệm vụ từ Trang Nội dung.');
+   if(!validateTaskChoice(true))return;
    const {error}=await db.from('group_tasks').insert({
      title,
      group_number:Number(group.value),
      due_date:due.value||null
    });
    if(error)return alert('Không thêm được: '+error.message);
-   el('taskTitle').value='';due.value='';
+   el('taskTitle').value='';el('taskTitle').setCustomValidity('');due.value='';
    await loadTasks();
  };
  editTask=async function(id){
    if(!adminEditingEnabled())return;
    const {data,error}=await db.from('group_tasks').select('*').eq('id',id).single();
    if(error)return alert(error.message);
-   const title=prompt('Tên công việc:',data.title);
+   const choices=availableResearchTasks();const options=choices.filter(x=>x.group===Number(data.group_number||1));const title=prompt('Chọn đúng tên nhiệm vụ thuộc Nhóm '+(data.group_number||1)+':\n'+options.map(x=>'- '+x.title).join('\n'),data.title);
    if(title===null)return;
-   if(!title.trim())return alert('Tên không được để trống.');
+   const match=choices.find(x=>x.title===title.trim());
+   if(!match)return alert('Tên công việc phải trùng chính xác một tiêu đề tại Trang Nội dung.');
+   if(match.group!==Number(data.group_number||1))return alert('Sai nhóm! Nhiệm vụ này thuộc Nhóm '+match.group+'.');
    const date=prompt('Hạn hoàn thành (YYYY-MM-DD, để trống nếu không có):',data.due_date||'');
    if(date===null)return;
-   if(date.trim()&&!/^\d{4}-\d{2}-\d{2}$/.test(date.trim()))
-     return alert('Nhập ngày theo dạng YYYY-MM-DD.');
-   const groupNo=prompt('Nhóm nội dung (1 hoặc 2):',String(data.group_number||1));
-   if(groupNo===null)return;
-   if(!['1','2'].includes(groupNo.trim()))return alert('Nhóm phải là 1 hoặc 2.');
+   if(date.trim()&&!/^\\d{4}-\\d{2}-\\d{2}$/.test(date.trim()))return alert('Nhập ngày theo dạng YYYY-MM-DD.');
+   const groupNo=String(match.group);
    const result=await db.from('group_tasks').update({
-     title:title.trim(),
+     title:match.title,
      due_date:date.trim()||null,group_number:Number(groupNo.trim())
    }).eq('id',id);
    if(result.error)alert('Không lưu được: '+result.error.message);
