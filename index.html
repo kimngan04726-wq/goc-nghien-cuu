@@ -373,6 +373,21 @@ main{margin:0 0 0 218px!important;max-width:none!important;padding:18px 23px 45p
 /* Khóa các biểu mẫu và công cụ quản trị khi xem như khách */
 body.admin-guest-mode #profileEditButton,body.admin-guest-mode #profileEditView,body.admin-guest-mode #libraryAdmin,body.admin-guest-mode #libraryForm,body.admin-guest-mode #adminControls,body.admin-guest-mode #researchAddControls{display:none!important}
 
+</style><style id="site-editor-css">
+#siteEditorLaunch{position:fixed;right:18px;bottom:18px;z-index:90;background:#183c5e;color:white;border:1px solid #d8c49b;border-radius:25px;box-shadow:0 5px 20px #10263d44;padding:12px 20px}
+#siteEditorPanel{position:fixed;right:16px;top:20px;bottom:18px;width:min(350px,calc(100vw - 32px));z-index:100;background:#fffdf8;border:1px solid #d8c8ab;border-radius:13px;padding:18px;box-shadow:0 10px 35px #152f4d40;overflow:auto}
+#siteEditorPanel .site-editor-top{display:flex;align-items:center;justify-content:space-between;font-size:20px}
+#siteEditorPanel .site-editor-top button{font-size:25px;background:transparent;color:#19364e;border:0;margin:0}
+#siteEditorPanel p{font-size:14px;color:#4c6479}
+#siteEditorPanel label{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0;font-size:15px}
+#siteEditorPanel input[type=color]{width:76px;height:38px;padding:2px}
+#siteEditorPanel textarea,#siteEditorPanel input[type=url]{width:100%;margin:6px 0}
+#siteEditorPanel #siteSelectionFields label{display:block}
+#siteEditorPanel .site-editor-actions{display:flex;gap:7px}
+#siteEditorPanel .site-editor-actions button{font-size:13px;padding:9px}
+body.site-pick-mode [data-site-edit-key]{outline:1px dashed #b58d42;outline-offset:2px;cursor:crosshair}
+body.site-pick-mode [data-site-edit-key]:hover{outline:3px solid #b58d42}
+@media(max-width:700px){#siteEditorPanel{top:8px;bottom:8px;right:8px}}
 </style></head>
 <body>
 
@@ -518,7 +533,7 @@ body.admin-guest-mode #profileEditButton,body.admin-guest-mode #profileEditView,
 <div class="library-results-panel"><h3>📖 &nbsp; DANH MỤC TÀI LIỆU THAM KHẢO — APA 7</h3><div class="library-apa-tools"><button type="button" onclick="copyLibraryAPA()">▣ &nbsp; Sao chép danh mục</button><span>Danh mục tự cập nhật theo tài liệu đã lưu</span></div><div id="libraryAPAList" aria-live="polite"></div><div class="library-apa-warning">⚠ &nbsp; Trích dẫn tự động cần được kiểm tra và bổ sung thông tin theo APA 7 trước khi sử dụng chính thức.</div></div><div class="library-records-panel"><h3>▤ &nbsp; Tài liệu đã lưu <small>(nhấn Sửa để cập nhật)</small></h3><div id="libraryList"></div></div></div>
 </section>
 </div>
-</main>
+<aside id="siteEditorPanel" class="hidden" aria-label="Bảng chỉnh sửa giao diện"><div class="site-editor-top"><strong>✎ Tùy chỉnh website</strong><button type="button" id="siteEditorClose" aria-label="Đóng">×</button></div><p>Chọn một dòng chữ hoặc hình ảnh trên trang để sửa. Đây là bản nháp trên thiết bị này.</p><label>Màu nền <input type="color" id="siteColorBackground" value="#fbfaf7"></label><label>Màu chữ chính <input type="color" id="siteColorText" value="#10263d"></label><label>Màu nhấn <input type="color" id="siteColorAccent" value="#b58d42"></label><div id="siteSelectionFields" class="hidden"><label>Văn bản <textarea id="siteSelectedText" rows="3"></textarea></label><label>Đường dẫn ảnh (HTTPS) <input id="siteSelectedImage" type="url" placeholder="https://..."></label><button type="button" id="siteApplySelection">Áp dụng vào bản nháp</button></div><div class="site-editor-actions"><button type="button" id="siteSaveDraft">Lưu bản nháp</button><button type="button" id="siteResetDraft">Xóa bản nháp</button></div><p id="siteEditorMessage" role="status"></p></aside><button type="button" id="siteEditorLaunch" class="hidden">✎ Chỉnh giao diện</button></main>
 
 <script>
 const SUPABASE_URL =
@@ -1962,5 +1977,28 @@ function renderMemberProfile(){const n=currentMemberNumber,d=memberProfileData(n
 function toggleMemberProfileEdit(edit){if(!adminEditingEnabled()){document.getElementById('profileReadView').classList.remove('hidden');document.getElementById('profileEditView').classList.add('hidden');document.getElementById('profileEditButton').classList.add('hidden');return;}const on=typeof edit==='boolean'?edit:document.getElementById('profileEditView').classList.contains('hidden');document.getElementById('profileReadView').classList.toggle('hidden',on);document.getElementById('profileEditView').classList.toggle('hidden',!on);document.getElementById('profileEditButton').classList.toggle('hidden',on)}
 function saveMemberProfileDraft(e){e.preventDefault();if(!adminEditingEnabled())return alert('Chỉ quản trị viên được chỉnh sửa hồ sơ ở giai đoạn này.');const d={name:document.getElementById('profileInputName').value.trim(),className:document.getElementById('profileInputClass').value.trim(),role:document.getElementById('profileInputRole').value.trim(),birth:document.getElementById('profileInputBirth').value,intro:document.getElementById('profileInputIntro').value.trim()};try{localStorage.setItem(memberProfileKey(currentMemberNumber),JSON.stringify(d));renderMemberProfile()}catch(err){alert('Không lưu được bản nháp trên trình duyệt: '+err.message)}}
 window.addEventListener('load',()=>{document.getElementById('profileInputBirth')?.addEventListener('change',e=>document.getElementById('profileInputZodiac').value=memberZodiac(e.target.value))});
+</script><script>
+(function(){
+ const draftKey='research_site_design_draft_v1';
+ const editableSelectors=['#dashboardHome h1','#dashboardHome .dash-subtitle','#dashboardHome .dash-topic b','#dashboardHome .dash-panel h3','#dashboardHome .dash-panel p','#dashboardHome .dash-section h3','#research>h2','#research>p b','#research>h3','#tasks>h2','#library>h2','#library .library-subtitle','#memberProfile .profile-head h2','#app>nav>button','#dashboardHome .dash-panel.photo','#app>nav .sidebar-member-photo'];
+ let selected=null,draft={colors:{},texts:{},images:{}};
+ function get(id){return document.getElementById(id)}
+ function allowed(){return typeof adminEditingEnabled==='function'&&adminEditingEnabled()}
+ function elements(){return editableSelectors.flatMap(q=>[...document.querySelectorAll(q)])}
+ function assignKeys(){editableSelectors.forEach((q,qi)=>{document.querySelectorAll(q).forEach((node,ni)=>{node.dataset.siteEditKey=qi+'_'+ni})})}
+ function applyDraft(){assignKeys();for(const node of elements()){const key=node.dataset.siteEditKey;if(Object.hasOwn(draft.texts||{},key))node.textContent=draft.texts[key];if(Object.hasOwn(draft.images||{},key))node.style.backgroundImage='url("'+draft.images[key].replaceAll('"','%22')+'")'}const c=draft.colors||{};if(c.background)document.body.style.backgroundColor=c.background;if(c.text)document.documentElement.style.setProperty('--navy',c.text);if(c.accent)document.documentElement.style.setProperty('--gold',c.accent);['background','text','accent'].forEach(k=>{const inp=get('siteColor'+k[0].toUpperCase()+k.slice(1));if(inp&&c[k])inp.value=c[k]})}
+ function sync(){const ok=allowed();get('siteEditorLaunch').classList.toggle('hidden',!ok);if(!ok){get('siteEditorPanel').classList.add('hidden');document.body.classList.remove('site-pick-mode')}}
+ function message(t){get('siteEditorMessage').textContent=t}
+ window.addEventListener('load',()=>{try{draft=JSON.parse(localStorage.getItem(draftKey)||'{}')||{}}catch(e){draft={}}draft.colors ||= {};draft.texts ||= {};draft.images ||= {};applyDraft();sync();
+ get('siteEditorLaunch').onclick=()=>{if(!allowed())return;get('siteEditorPanel').classList.remove('hidden');document.body.classList.add('site-pick-mode');assignKeys()};
+ get('siteEditorClose').onclick=()=>{get('siteEditorPanel').classList.add('hidden');document.body.classList.remove('site-pick-mode')};
+ document.addEventListener('click',e=>{if(!allowed()||get('siteEditorPanel').classList.contains('hidden'))return;const node=e.target.closest('[data-site-edit-key]');if(!node||e.target.closest('#siteEditorPanel'))return;e.preventDefault();e.stopPropagation();selected=node;get('siteSelectionFields').classList.remove('hidden');get('siteSelectedText').value=node.matches('button')?node.textContent:node.textContent;get('siteSelectedImage').value=(draft.images||{})[node.dataset.siteEditKey]||''},true);
+ get('siteApplySelection').onclick=()=>{if(!allowed()||!selected)return;const key=selected.dataset.siteEditKey;const txt=get('siteSelectedText').value;draft.texts[key]=txt;selected.textContent=txt;const url=get('siteSelectedImage').value.trim();if(url){try{const u=new URL(url);if(u.protocol!=='https:')throw Error();draft.images[key]=url;selected.style.backgroundImage='url("'+url.replaceAll('"','%22')+'")'}catch(e){return message('Ảnh phải là đường dẫn HTTPS hợp lệ.')}}message('Đã áp dụng vào bản nháp. Nhấn Lưu bản nháp để giữ lại.')};
+ ['background','text','accent'].forEach(k=>{get('siteColor'+k[0].toUpperCase()+k.slice(1)).oninput=e=>{if(!allowed())return;draft.colors[k]=e.target.value;applyDraft()}});
+ get('siteSaveDraft').onclick=()=>{if(!allowed())return;try{localStorage.setItem(draftKey,JSON.stringify(draft));message('Đã lưu bản nháp trên thiết bị này. Chưa đồng bộ cho khách và thành viên.')}catch(e){message('Không lưu được: '+e.message)}};
+ get('siteResetDraft').onclick=()=>{if(!allowed()||!confirm('Xóa toàn bộ bản nháp tùy chỉnh trên thiết bị này?'))return;localStorage.removeItem(draftKey);location.reload()};
+ const observer=new MutationObserver(()=>{sync()});observer.observe(get('adminModeControls'),{attributes:true,subtree:true,attributeFilter:['class','aria-pressed']});
+ });
+})();
 </script></body>
 </html>
