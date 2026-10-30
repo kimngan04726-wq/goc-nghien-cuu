@@ -96,6 +96,7 @@ button,select{touch-action:manipulation}
 }
 </style>
 <style>#taskList.kanban-single-status{grid-template-columns:minmax(0,1fr)}#taskList.kanban-single-status .kanban-lane{min-height:180px;max-width:100%}</style>
+<style>#taskList .kanban-lane[hidden]{display:none!important}#taskList.kanban-single-status{grid-template-columns:minmax(0,1fr)!important}</style>
 </head>
 <body>
 
@@ -1231,6 +1232,7 @@ initialize = async function() {
   document.getElementById('taskFilterGroup').options[2].textContent='Nhóm 2 ('+g2+')';
   const root=el('taskList');root.replaceChildren();
   root.classList.toggle('kanban-single-status',statusFilter!=='all');
+  root.dataset.filteredStatus=statusFilter;
   statuses.filter(status=>statusFilter==='all'||status===statusFilter).forEach(status=>{
    const lane=document.createElement('div');lane.className='kanban-lane';
    const heading=document.createElement('h3');
@@ -1258,9 +1260,22 @@ initialize = async function() {
    });
    root.append(lane);
   });
+  enforceStatusLaneVisibility();
+ }
+ function enforceStatusLaneVisibility(){
+  const root=document.getElementById('taskList');
+  const chosen=document.getElementById('taskFilterStatus').value;
+  root.classList.toggle('kanban-single-status',chosen!=='all');
+  root.querySelectorAll('.kanban-lane').forEach(lane=>{
+   const heading=lane.querySelector('h3')?.textContent||'';
+   const name=heading.replace(/\\s*\\(\\d+\\)\\s*$/,'').trim();
+   lane.hidden=chosen!=='all'&&name!==chosen;
+   lane.style.display=lane.hidden?'none':'';
+  });
  }
  // Cho phép bộ lọc HTML gọi hàm nằm trong module Kanban.
- document.getElementById("taskApplyFilter").addEventListener("click",renderTaskBoard);
+ document.getElementById("taskApplyFilter").addEventListener("click",()=>{renderTaskBoard();enforceStatusLaneVisibility();});
+ document.getElementById("taskFilterStatus").addEventListener("change",()=>{renderTaskBoard();enforceStatusLaneVisibility();});
  document.getElementById("taskShowAll").addEventListener("click",resetTaskFilters);
  window.renderTaskBoard=renderTaskBoard;
  window.resetTaskFilters=resetTaskFilters;
