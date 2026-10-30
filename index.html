@@ -1955,7 +1955,7 @@ function refreshDashboard(){
    const img=document.createElement('img');img.src=dashImages[(group===1?0:3)+index]||dashImages[0];img.alt='Minh họa nghiên cứu';img.loading='lazy';
    const title=document.createElement('strong');title.textContent=card.querySelector('h3')?.textContent||'Nội dung nghiên cứu';
    const note=document.createElement('small');note.textContent='Nhấn để xem nội dung và bài làm';
-   b.append(img,title,note);b.onclick=()=>{showPage('research');card.click()};root.append(b);
+   b.append(img,title,note);const researchId=Number(card.querySelector('.research-content')?.id.replace('researchContent',''));b.dataset.researchId=String(researchId||'');b.setAttribute('aria-label','Mở bài nghiên cứu: '+title.textContent);b.onclick=()=>{if(!researchId)return showPage('research');showPage('research');const linked=document.getElementById('researchContent'+researchId)?.closest('.card');if(linked){linked.click();}else{alert('Chưa tìm thấy ô nghiên cứu này. Vui lòng tải lại trang.')}};root.append(b);
   });
  }
  const lib=document.getElementById('dashLibraryRows');if(lib){lib.replaceChildren();const items=typeof libraryItems!=='undefined'?libraryItems:[];if(!items.length){const tr=document.createElement('tr');const td=document.createElement('td');td.colSpan=3;td.textContent='Chưa có tài liệu';tr.append(td);lib.append(tr)}items.slice(0,4).forEach(item=>{const tr=document.createElement('tr');[item.title,item.authors,item.year].forEach(v=>{const td=document.createElement('td');td.textContent=v||'—';tr.append(td)});lib.append(tr)})}
