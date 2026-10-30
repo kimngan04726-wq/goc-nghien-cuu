@@ -217,11 +217,11 @@ function toggleAdminView(){
  // Không tải lại dữ liệu khi chuyển chế độ; ẩn các thao tác quản trị qua CSS.
  document.querySelectorAll("#taskList .kanban-item").forEach(card=>{
    card.querySelectorAll("button").forEach(btn=>btn.classList.toggle("hidden",!adminEditingEnabled()));
-   const status=card.querySelector("select");if(status)status.disabled=!(adminEditingEnabled()||isMember);
+   const status=card.querySelector("select");if(status)status.disabled=!(isAdmin||isMember);
  });
  document.querySelectorAll("#libraryList .reference-actions button").forEach(btn=>{
    if(btn.textContent.trim()==="Xóa")btn.classList.toggle("hidden",!adminEditingEnabled());
-   else btn.classList.toggle("hidden",!(adminEditingEnabled()||isMember));
+   else btn.classList.toggle("hidden",!(isAdmin||isMember));
  });
 }
 function applyAdminView(){
@@ -369,7 +369,7 @@ async function addTask() {
 }
 
 async function changeStatus(id,status) {
-  if(!(adminEditingEnabled()||isMember))return alert("Chỉ thành viên đăng nhập mới được cập nhật trạng thái.");
+  if(!(isAdmin||isMember))return alert("Chỉ thành viên đăng nhập mới được cập nhật trạng thái.");
   const {error} = await db.rpc("set_group_task_status",{
     p_task_id:id,
     p_status:status
@@ -1243,8 +1243,8 @@ researchSetup();
      if(task.due_date&&task.due_date<today&&status!=='Hoàn thành'){deadline.classList.add('task-overdue');deadline.textContent+=' · Quá hạn';}
      const select=document.createElement('select');
      statuses.forEach(value=>{const option=document.createElement('option');option.value=value;option.textContent=value;option.selected=value===task.status;select.append(option);});
-     select.disabled=!(adminEditingEnabled()||isMember);
-     select.onchange=async()=>{if(!(adminEditingEnabled()||isMember))return;select.disabled=true;await changeStatus(task.id,select.value);};
+     select.disabled=!(isAdmin||isMember);
+     select.onchange=async()=>{if(!(isAdmin||isMember))return;select.disabled=true;await changeStatus(task.id,select.value);};
      card.append(name,groupInfo,deadline,select);
      if(adminEditingEnabled()){
        const edit=document.createElement('button');edit.textContent='Sửa';edit.onclick=()=>editTask(task.id);
