@@ -283,6 +283,218 @@ window.addEventListener("load",async () => {
     el("error").textContent = err.message;
   }
 });
+</script> 
+  
+<style>
+.research-edit-button {
+  display: none;
+  margin-top: 12px;
+}
+#researchEditor {
+  display: none;
+  margin-top: 22px;
+  padding: 22px;
+  background: #f6f1e8;
+  border: 1px solid #d8cbbb;
+  border-radius: 10px;
+}
+#researchEditor textarea {
+  width: 100%;
+  min-height: 300px;
+  padding: 15px;
+  font-size: 17px;
+  line-height: 1.6;
+  resize: vertical;
+}
+#researchEditor input {
+  width: 100%;
+  margin: 8px 0 15px;
+}
+.research-content {
+  white-space: pre-wrap;
+  line-height: 1.7;
+  margin-top: 12px;
+}
+.research-actions {
+  margin-top: 12px;
+}
+</style>
+
+<script>
+const researchTitles = [
+  "Lý do chọn đề tài",
+  "Mục đích, mục tiêu và câu hỏi nghiên cứu",
+  "Cơ sở lý thuyết",
+  "Mô hình nghiên cứu và giả thuyết",
+  "Các biến nghiên cứu",
+  "Thang đo và phương án đo lường",
+  "Các nội dung khác"
+];
+
+let editingPageId = null;
+
+function researchSetup() {
+  const cards = document.querySelectorAll(
+    "#research .card"
+  );
+
+  cards.forEach((card, index) => {
+    const pageId = index + 1;
+
+    card.innerHTML = "";
+
+    const title = document.createElement("h3");
+    title.textContent = researchTitles[index];
+
+    const content = document.createElement("div");
+    content.className = "research-content";
+    content.id = "researchContent" + pageId;
+    content.textContent = "Đang tải nội dung...";
+
+    const button = document.createElement("button");
+    button.className = "research-edit-button";
+    button.textContent = "✎ Chỉnh sửa";
+    button.onclick = () => openResearchEditor(pageId);
+
+    card.append(title, content, button);
+  });
+
+  const editor = document.createElement("div");
+  editor.id = "researchEditor";
+  editor.innerHTML = `
+    <h2>Chỉnh sửa trang nghiên cứu</h2>
+    <label>Tiêu đề</label>
+    <input id="researchTitle" type="text">
+    <label>Nội dung</label>
+    <textarea id="researchText"
+      placeholder="Viết nội dung nghiên cứu tại đây...">
+    </textarea>
+    <div class="research-actions">
+      <button onclick="saveResearch()">Lưu & xong</button>
+      <button onclick="cancelResearch()">Hủy</button>
+    </div>
+    <p id="researchMessage"></p>
+  `;
+
+  document.getElementById("research").appendChild(editor);
+}
+
+async function loadResearch() {
+  if (!db) return;
+
+  const {data, error} = await db
+    .from("research_pages")
+    .select("id,title,content")
+    .order("id");
+
+  if (error) {
+    alert("Không tải được nghiên cứu: " + error.message);
+    return;
+  }
+
+  for (const page of data || []) {
+    const box = document.getElementById(
+      "researchContent" + page.id
+    );
+
+    if (box) {
+      box.textContent = page.content ||
+        "Trang này chưa có nội dung.";
+    }
+  }
+
+  document.querySelectorAll(
+    ".research-edit-button"
+  ).forEach(button => {
+    button.style.display = isAdmin
+      ? "inline-block"
+      : "none";
+  });
+}
+
+async function openResearchEditor(id) {
+  if (!isAdmin) return;
+
+  const {data, error} = await db
+    .from("research_pages")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  editingPageId = id;
+
+  document.getElementById("researchTitle").value =
+    data.title;
+
+  document.getElementById("researchText").value =
+    data.content || "";
+
+  document.getElementById("researchEditor").style.display =
+    "block";
+
+  document.getElementById("researchEditor")
+    .scrollIntoView({behavior:"smooth"});
+}
+
+async function saveResearch() {
+  if (!isAdmin || editingPageId === null) return;
+
+  const title = document.getElementById(
+    "researchTitle"
+  ).value.trim();
+
+  const content = document.getElementById(
+    "researchText"
+  ).value;
+
+  if (!title) {
+    alert("Vui lòng nhập tiêu đề.");
+    return;
+  }
+
+  const {error} = await db
+    .from("research_pages")
+    .update({
+      title,
+      content,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", editingPageId);
+
+  if (error) {
+    alert("Không lưu được: " + error.message);
+    return;
+  }
+
+  cancelResearch();
+  await loadResearch();
+  alert("Đã lưu nội dung thành công!");
+}
+
+function cancelResearch() {
+  editingPageId = null;
+  document.getElementById(
+    "researchEditor"
+  ).style.display = "none";
+}
+
+researchSetup();
+
+const previousInitialize = initialize;
+
+initialize = async function() {
+  await previousInitialize();
+  if (!document.getElementById("app")
+      .classList.contains("hidden")) {
+    await loadResearch();
+  }
+};
 </script>
+
 </body>
 </html>
