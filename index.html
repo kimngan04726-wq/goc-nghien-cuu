@@ -446,6 +446,19 @@ body.word-editor-open #researchEditor .research-actions button{position:static!i
 body.word-editor-open #researchEditor #richToolbar{padding-right:12px!important}
 body.word-editor-open #researchEditor #richToolbar #wordEditorSizeButton{right:8px!important;bottom:7px!important}
 @media(max-width:650px){body.word-editor-open #researchEditor{padding-top:54px!important}body.word-editor-open #researchEditor .research-actions{gap:8px!important;right:7px!important}}
+</style><style id="docs-theme-and-table-dimensions">
+#richToolbar.docs-style-toolbar{background:#f3eee6!important;border-color:#d9c7af!important}
+#richToolbar.docs-style-toolbar>button,#richToolbar.docs-style-toolbar>select{color:#153957!important}
+#richToolbar.docs-style-toolbar>button:hover,#richToolbar.docs-style-toolbar>select:hover{background:#eadfcf!important}
+#richToolbar.docs-style-toolbar>button.is-active{background:#d8e6ef!important;border:1px solid #8eafc4!important}
+#richToolbar.docs-style-toolbar .docs-table-menu{background:#fffaf2!important;border-color:#d3b994!important}
+#richToolbar.docs-style-toolbar .docs-table-cell.selected{background:#e3c891!important;border-color:#ae8544!important}
+#richToolbar.docs-style-toolbar .docs-table-grid{max-width:min(420px,85vw);max-height:260px;overflow:auto}
+#richToolbar.docs-style-toolbar .docs-table-dimensions{display:flex;align-items:center;gap:6px;font:13px Arial,sans-serif;margin-top:9px}
+#richToolbar.docs-style-toolbar .docs-table-dimensions input{width:53px;padding:5px;border:1px solid #c9b89e;border-radius:4px;background:white}
+#richToolbar.docs-style-toolbar .docs-table-insert{background:#173a59!important;color:white!important;border:0!important;border-radius:5px;padding:7px 10px!important}
+#richToolbar.docs-style-toolbar .docs-font-size-input{width:58px;height:35px;border:1px solid #cbbba6;border-radius:5px;background:white;color:#173a59;text-align:center;font:14px Arial,sans-serif}
+#richEditor{font-family:'Times New Roman',serif;font-size:13pt}
 </style></head>
 <body>
 
@@ -2473,6 +2486,7 @@ body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar #wordEdito
   const restore=()=>{editor.focus();if(saved&&editor.contains(saved.commonAncestorContainer)){const sel=window.getSelection();sel.removeAllRanges();sel.addRange(saved)}};
   const command=(cmd,val)=>{restore();document.execCommand(cmd,false,val===undefined?null:val);saved=selection()};
   bar.replaceChildren();
+  editor.style.fontFamily='Times New Roman, serif';editor.style.fontSize='13pt';
   function btn(label,title,fn,cmd){
    const el=document.createElement('button');el.type='button';el.textContent=label;el.title=title;el.setAttribute('aria-label',title);
    el.addEventListener('mousedown',e=>{e.preventDefault();saved=selection()});
@@ -2490,8 +2504,11 @@ body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar #wordEdito
   btn('⎙','In tài liệu',()=>window.print());
   dropdown('Thu phóng',[['100','100%'],['75','75%'],['90','90%'],['125','125%'],['150','150%']],v=>{editor.style.zoom=Number(v)/100});
   dropdown('Kiểu văn bản',[['p','Văn bản thường'],['h1','Tiêu đề 1'],['h2','Tiêu đề 2'],['h3','Tiêu đề 3']],v=>command('formatBlock',v));
-  dropdown('Phông chữ',[['Arial','Arial'],['Times New Roman','Times New Roman'],['Calibri','Calibri'],['Georgia','Georgia']],v=>command('fontName',v));
-  dropdown('Cỡ chữ',[['3','11'],['2','10'],['4','14'],['5','18'],['6','24'],['7','36']],v=>command('fontSize',v));
+  dropdown('Phông chữ',[['Times New Roman','Times New Roman'],['Arial','Arial'],['Calibri','Calibri'],['Georgia','Georgia']],v=>command('fontName',v));
+  const fontSize=document.createElement('input');fontSize.type='number';fontSize.min='6';fontSize.max='200';fontSize.step='1';fontSize.value='13';fontSize.title='Cỡ chữ (pt)';fontSize.setAttribute('aria-label','Cỡ chữ (pt)');fontSize.className='docs-font-size-input';
+  fontSize.addEventListener('focus',()=>saved=selection());
+  fontSize.addEventListener('change',()=>{const pt=Math.max(6,Math.min(200,Number(fontSize.value)||13));fontSize.value=pt;restore();document.execCommand('fontSize',false,'7');editor.querySelectorAll('font[size="7"]').forEach(el=>{el.removeAttribute('size');el.style.fontSize=pt+'pt'});saved=selection()});
+  bar.append(fontSize);
   btn('B','In đậm',()=>command('bold'),'bold');
   btn('𝑰','In nghiêng',()=>command('italic'),'italic');
   btn('U̲','Gạch chân',()=>command('underline'),'underline');
@@ -2516,15 +2533,31 @@ body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar #wordEdito
   const caption=document.createElement('div');caption.className='docs-table-caption';caption.textContent='1 × 1';
   const grid=document.createElement('div');grid.className='docs-table-grid';
   const cells=[];
-  function paint(rows,cols){caption.textContent=cols+' × '+rows;cells.forEach(({el,r,c})=>el.classList.toggle('selected',r<=rows&&c<=cols))}
-  for(let r=1;r<=8;r++)for(let c=1;c<=10;c++){
-   const cell=document.createElement('button');cell.type='button';cell.className='docs-table-cell';cell.title=c+' cột × '+r+' hàng';
-   cell.addEventListener('mouseenter',()=>paint(r,c));
-   cell.addEventListener('mousedown',e=>e.preventDefault());
-   cell.addEventListener('click',()=>{let html='<table><tbody>';for(let y=0;y<r;y++){html+='<tr>';for(let x=0;x<c;x++)html+='<td><br></td>';html+='</tr>'}html+='</tbody></table><p><br></p>';menu.hidden=true;command('insertHTML',html)});
-   grid.append(cell);cells.push({el:cell,r,c})
+  const dimension=document.createElement('div');dimension.className='docs-table-dimensions';
+  const rowInput=document.createElement('input');rowInput.type='number';rowInput.min='1';rowInput.max='100';rowInput.value='1';rowInput.title='Số hàng';rowInput.setAttribute('aria-label','Số hàng');
+  const colInput=document.createElement('input');colInput.type='number';colInput.min='1';colInput.max='100';colInput.value='1';colInput.title='Số cột';colInput.setAttribute('aria-label','Số cột');
+  const insert=document.createElement('button');insert.type='button';insert.textContent='Chèn bảng';insert.className='docs-table-insert';
+  dimension.append('Hàng ',rowInput,' Cột ',colInput,insert);
+  let selectedRows=1,selectedCols=1,gridRows=8,gridCols=10;
+  function paint(rows,cols){selectedRows=rows;selectedCols=cols;rowInput.value=rows;colInput.value=cols;caption.textContent=cols+' cột × '+rows+' hàng';cells.forEach(({el,r,c})=>el.classList.toggle('selected',r<=rows&&c<=cols))}
+  function createCells(rows,cols){
+   gridRows=rows;gridCols=cols;grid.style.gridTemplateColumns='repeat('+cols+',19px)';grid.replaceChildren();cells.length=0;
+   for(let r=1;r<=rows;r++)for(let c=1;c<=cols;c++){
+    const cell=document.createElement('button');cell.type='button';cell.className='docs-table-cell';cell.title=c+' cột × '+r+' hàng';
+    cell.addEventListener('mouseenter',()=>{if((r===gridRows||c===gridCols)&&(gridRows<20||gridCols<20)){const nr=Math.min(20,Math.max(gridRows,r+2)),nc=Math.min(20,Math.max(gridCols,c+2));if(nr!==gridRows||nc!==gridCols)createCells(nr,nc)}paint(r,c)});
+    cell.addEventListener('mousedown',e=>e.preventDefault());
+    cell.addEventListener('click',()=>insertTable(r,c));
+    grid.append(cell);cells.push({el:cell,r,c})
+   }
   }
-  menu.append(grid,caption);bar.append(menu);paint(1,1);
+  function insertTable(rows,cols){
+   rows=Math.max(1,Math.min(100,Math.floor(Number(rows)||1)));cols=Math.max(1,Math.min(100,Math.floor(Number(cols)||1)));
+   if(rows*cols>2000){alert('Bảng quá lớn. Vui lòng chọn tối đa 2.000 ô để tránh treo trình duyệt.');return}
+   let html='<table><tbody>';for(let y=0;y<rows;y++){html+='<tr>';for(let x=0;x<cols;x++)html+='<td><br></td>';html+='</tr>'}html+='</tbody></table><p><br></p>';
+   menu.hidden=true;command('insertHTML',html);
+  }
+  insert.addEventListener('click',()=>insertTable(rowInput.value,colInput.value));
+  createCells(8,10);menu.append(grid,caption,dimension);bar.append(menu);paint(1,1);
   document.addEventListener('pointerdown',e=>{if(!bar.contains(e.target))menu.hidden=true});
   document.addEventListener('selectionchange',()=>{const sel=window.getSelection();if(!sel?.anchorNode||!editor.contains(sel.anchorNode))return;bar.querySelectorAll('[data-docs-command]').forEach(el=>{let on=false;try{on=document.queryCommandState(el.dataset.docsCommand)}catch(e){}el.classList.toggle('is-active',on)})});
  }
