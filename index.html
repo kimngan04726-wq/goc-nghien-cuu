@@ -1259,6 +1259,9 @@ initialize = async function() {
    root.append(lane);
   });
  }
+ // Cho phép bộ lọc HTML gọi hàm nằm trong module Kanban.
+ window.renderTaskBoard=renderTaskBoard;
+ window.resetTaskFilters=resetTaskFilters;
  function labelDate(date){
    if(!date)return 'Chưa đặt hạn';
    const parts=date.split('-');
