@@ -117,7 +117,63 @@ body.admin-guest-mode #libraryAdmin,body.admin-guest-mode #researchEditor,body.a
 #research:not(.gallery-detail) .card{position:relative}
 #research:not(.gallery-detail) .card .research-rename-button{display:block!important;position:absolute;right:9px;bottom:9px;font-size:12px;padding:5px 9px;margin:0;background:#e6e0d5;color:#19364e;border:1px solid #cfc6b9}
 #research:not(.gallery-detail) .card .research-rename-button.hidden{display:none!important}
-</style><style>#researchAddControls{margin:14px 0 18px}#researchAddControls button{margin:0}#research.gallery-detail #researchAddControls{display:none!important}</style><style>#research:not(.gallery-detail) .card .research-delete-button{display:inline-block!important;position:absolute;left:9px;bottom:9px;font-size:12px;padding:5px 9px;margin:0;background:#f8e6e2;color:#8b302b;border:1px solid #dfbcb5}#research:not(.gallery-detail) .card .research-delete-button.hidden{display:none!important}</style><style>.research-task-box,.research-work-box{border:1px solid #e0d8cd;border-radius:12px;padding:20px 24px;margin-top:22px;background:#fcfaf6}.research-work-box{background:#fff}.research-task-text{white-space:pre-wrap;line-height:1.7;font-size:18px;margin:14px 0}.research-task-box h3,.research-work-box h3{margin:0 0 12px;color:#19364e}</style></head>
+</style><style>#researchAddControls{margin:14px 0 18px}#researchAddControls button{margin:0}#research.gallery-detail #researchAddControls{display:none!important}</style><style>#research:not(.gallery-detail) .card .research-delete-button{display:inline-block!important;position:absolute;left:9px;bottom:9px;font-size:12px;padding:5px 9px;margin:0;background:#f8e6e2;color:#8b302b;border:1px solid #dfbcb5}#research:not(.gallery-detail) .card .research-delete-button.hidden{display:none!important}</style><style>.research-task-box,.research-work-box{border:1px solid #e0d8cd;border-radius:12px;padding:20px 24px;margin-top:22px;background:#fcfaf6}.research-work-box{background:#fff}.research-task-text{white-space:pre-wrap;line-height:1.7;font-size:18px;margin:14px 0}.research-task-box h3,.research-work-box h3{margin:0 0 12px;color:#19364e}</style><style id="dashboard-redesign">
+:root{--navy:#10263d;--gold:#b58d42;--cream:#f7f4ed}
+body{background:#fbfaf7;color:var(--navy);font-size:15px}
+header{height:162px;margin-left:218px;padding:0;background:linear-gradient(90deg,rgba(10,29,45,.1),rgba(10,29,45,.06)),url('https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1800&q=85') center 53%/cover;position:relative}
+header h1,header p{display:none}
+body:before{content:"♟  Góc nghiên cứu\A     của nhóm";white-space:pre;position:fixed;z-index:11;top:24px;left:20px;width:177px;font-weight:bold;font-size:21px;line-height:1.2;color:var(--navy);text-align:center;pointer-events:none}
+main{margin:0 0 0 218px!important;max-width:none!important;padding:18px 23px 45px!important}
+#app{display:flex;flex-direction:column}
+#app.hidden{display:none}
+#app>section:first-child{order:-2;padding:9px 16px;margin-bottom:12px;border-radius:10px;background:#f4f0e8;box-shadow:none}
+#app>nav{position:fixed;z-index:10;top:0;bottom:0;left:0;width:218px;background:linear-gradient(150deg,#faf9f4,#f1ece2);border-right:1px solid #e4dfd5;padding:148px 9px 24px;display:flex;flex-direction:column;flex-wrap:nowrap;gap:6px;overflow:auto;margin:0}
+#app>nav button{width:100%;text-align:left;background:transparent;border:0;color:var(--navy);font-size:16px;padding:13px 15px;margin:0;border-radius:7px}
+#app>nav button:hover,#app>nav button.nav-active{background:#e7e2d8;color:#142d43;border-left:3px solid #284d69}
+#app>nav button:nth-child(1):before{content:"▣  "}
+#app>nav button:nth-child(2):before{content:"☷  "}
+#app>nav button:nth-child(3):before{content:"▤  "}
+#app>nav:after{content:"THÀNH VIÊN NHÓM\A\A ◉  Thành viên 1\A\A ◉  Thành viên 2\A\A ◉  Thành viên 3";white-space:pre-wrap;color:#33475b;font-size:14px;line-height:1.5;border-top:1px solid #ddd6ca;margin:20px 12px;padding-top:22px}
+#login{max-width:650px;margin:20px auto}
+#dashboardHome{order:-1;display:block}
+#dashboardHome.hidden{display:none}
+#dashboardHome .dash-heading{display:flex;align-items:center;gap:16px;margin:0 0 4px}
+#dashboardHome .dash-book{font-size:54px;color:var(--gold);line-height:1}
+#dashboardHome h1{font-size:clamp(25px,3vw,41px);line-height:1.05;letter-spacing:.015em;margin:0}
+#dashboardHome .dash-subtitle{font-size:16px;margin:2px 0 16px}
+#dashboardHome .dash-topic{border:1px solid #e9e2d5;border-radius:12px;background:#f7f3e9;padding:14px 19px;margin:12px 0 16px;font-size:17px}
+#dashboardHome .dash-topic small{display:block;font-weight:bold;font-size:14px}
+#dashboardHome .dash-panels{display:grid;grid-template-columns:1.2fr 1.2fr 1.3fr;gap:17px;margin-bottom:17px}
+#dashboardHome .dash-panel{border:1px solid #e9e2d7;border-radius:11px;background:#fffdf9;padding:15px;min-height:145px}
+#dashboardHome .dash-panel.photo{background:url('https://images.unsplash.com/photo-1456324504439-367cee3b3c32?w=700&q=80') center/cover}
+#dashboardHome .dash-panel h3{margin:0 0 8px;font-size:17px}
+#dashboardHome .dash-panel p{margin:6px 0}
+#dashboardHome .dash-panels ul{padding-left:20px;margin:8px 0}
+#dashboardHome .dash-panels li{margin:4px 0}
+#dashboardHome .dash-columns{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+#dashboardHome .dash-section{background:white;border:1px solid #ebe5db;border-radius:13px;padding:12px;margin-bottom:15px;min-width:0;box-shadow:0 3px 14px rgba(22,45,64,.035)}
+#dashboardHome .dash-section h3{font-size:19px;margin:0 0 11px}
+#dashboardHome .dash-section h3 button{float:right;background:transparent;border:0;color:#345a7a;font-size:12px;padding:4px}
+#dashboardHome .dash-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#dashboardHome .dash-section.group-two .dash-cards{grid-template-columns:repeat(4,minmax(0,1fr))}
+#dashboardHome .dash-card{cursor:pointer;min-width:0;background:#fff;border:1px solid #eee8df;border-radius:8px;overflow:hidden;text-align:left;padding:0;color:var(--navy);margin:0;display:block}
+#dashboardHome .dash-card img{display:block;width:100%;height:94px;object-fit:cover}
+#dashboardHome .dash-card strong{display:block;font-size:13px;line-height:1.25;padding:10px 9px 5px;min-height:49px}
+#dashboardHome .dash-card small{display:block;font-size:12px;color:#536475;padding:0 9px 12px}
+#dashboardHome .dash-table{width:100%;border-collapse:collapse;font-size:13px}
+#dashboardHome .dash-table td,#dashboardHome .dash-table th{border-bottom:1px solid #eee9e2;text-align:left;padding:9px 6px}
+#dashboardHome .dash-mini-kanban{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+#dashboardHome .dash-lane{border-radius:7px;padding:8px 5px;min-height:120px;font-size:12px;background:#f9e6e4}
+#dashboardHome .dash-lane:nth-child(2){background:#fff4d9}#dashboardHome .dash-lane:nth-child(3){background:#e2f2fb}#dashboardHome .dash-lane:nth-child(4){background:#e5f5e7}
+#dashboardHome .dash-lane b{display:block;font-size:12px;margin-bottom:8px}
+#dashboardHome .dash-lane span{display:block;background:white;padding:7px 5px;margin:5px 0;border-radius:5px;overflow-wrap:anywhere}
+#research,#tasks,#library{border-radius:13px}
+#research .grid{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+#research:not(.gallery-detail) .card{min-height:170px;background:#fffdf8;border:1px solid #e9e2d7}
+#taskList{overflow-x:auto}
+@media(max-width:1100px){#dashboardHome .dash-columns{grid-template-columns:1fr}#dashboardHome .dash-panels{grid-template-columns:1fr 1fr}#dashboardHome .dash-panels .photo{display:none}}
+@media(max-width:700px){header{margin-left:0;height:120px}body:before{position:absolute;top:12px;left:10px;width:160px;font-size:16px;background:#faf8f1cc;border-radius:8px;padding:5px}main{margin:0!important;padding:12px!important}#app>nav{position:static;order:-1;width:100%;padding:8px;flex-direction:row;overflow-x:auto;gap:3px}#app>nav button{min-width:110px;font-size:13px;padding:10px 8px;text-align:center}#app>nav:after{display:none}#dashboardHome .dash-panels{grid-template-columns:1fr}#dashboardHome .dash-panels .photo{display:block;min-height:130px}#dashboardHome .dash-columns{grid-template-columns:1fr}#dashboardHome .dash-cards,#dashboardHome .dash-section.group-two .dash-cards{grid-template-columns:repeat(2,minmax(0,1fr))}#dashboardHome .dash-mini-kanban{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style></head>
 <body>
 
 <header>
@@ -141,7 +197,13 @@ body.admin-guest-mode #libraryAdmin,body.admin-guest-mode #researchEditor,body.a
 <button id="logoutButton" onclick="signOut()">Đăng xuất</button>
 </section>
 
-<nav aria-label="Điều hướng chính">
+<section id="dashboardHome" class="hidden" aria-label="Trang chủ">
+<div class="dash-heading"><span class="dash-book">📖</span><div><h1>GÓC NGHIÊN CỨU CỦA NHÓM</h1><div class="dash-subtitle">Tìm tài liệu · Phát triển mô hình · Cùng viết và hoàn thiện nghiên cứu</div></div></div>
+<div class="dash-topic"><small>▤ &nbsp; Đề tài nghiên cứu</small><b>Tác động của kiến thức tài chính số và thói quen bảo mật đến khả năng nhận diện rủi ro lừa đảo deepfake trong giao dịch ngân hàng.</b></div>
+<div class="dash-panels"><div class="dash-panel photo" aria-label="Ảnh sổ tay nghiên cứu"></div><div class="dash-panel"><h3>💡 &nbsp; Trọng tâm hiện tại</h3><b>Tìm tài liệu và củng cố hướng nghiên cứu</b><ul><li>Hoàn thiện cơ sở lý thuyết</li><li>Phát triển mô hình nghiên cứu</li><li>Tổng hợp tài liệu tham khảo</li></ul></div><div class="dash-panel"><h3>🎯 &nbsp; Hướng tới</h3><p>☐ &nbsp; Tổng quan tài liệu liên quan</p><p>☐ &nbsp; Làm rõ cơ sở lý thuyết và mô hình</p><p>☐ &nbsp; Xây dựng và hoàn thiện nghiên cứu</p><p>☐ &nbsp; Phân công và theo dõi tiến độ</p></div></div>
+<div class="dash-columns"><div class="dash-section"><h3>📖 &nbsp; Nhóm 1 — Lý thuyết và định hướng nghiên cứu <button onclick="showPage('research')">Xem tất cả →</button></h3><div class="dash-cards" id="dashGroup1"></div></div><div class="dash-section group-two"><h3>▥ &nbsp; Nhóm 2 — Mô hình và triển khai nghiên cứu <button onclick="showPage('research')">Xem tất cả →</button></h3><div class="dash-cards" id="dashGroup2"></div></div><div class="dash-section"><h3>📁 &nbsp; Kho tài liệu tham khảo <button onclick="showPage('library')">Xem tất cả →</button></h3><table class="dash-table"><thead><tr><th>Tên tài liệu</th><th>Tác giả</th><th>Năm</th></tr></thead><tbody id="dashLibraryRows"><tr><td colspan="3">Đang tải tài liệu…</td></tr></tbody></table></div><div class="dash-section"><h3>☑ &nbsp; Công việc của nhóm <button onclick="showPage('tasks')">Xem tất cả →</button></h3><div class="dash-mini-kanban" id="dashTaskPreview"></div></div></div>
+</section><nav aria-label="Điều hướng chính">
+<button onclick="showPage('home')">⌂ Trang chủ</button>
 <button onclick="showPage('research')">Nghiên cứu</button>
 <button onclick="showPage('tasks')">Công việc</button>
 <button onclick="showPage('library')">Tài liệu</button>
@@ -290,10 +352,11 @@ function escapeHTML(value) {
 }
 
 function showPage(page) {
-  ["research","tasks","library"].forEach(id => {
-    el(id).classList.toggle("hidden", id !== page);
+  ["research","tasks","library","dashboardHome"].forEach(id => {
+    el(id).classList.toggle("hidden", (id === "dashboardHome" ? "home" : id) !== page);
   });
-  document.querySelectorAll("nav button").forEach((button,index)=>{const active=["research","tasks","library"][index]===page;button.classList.toggle("nav-active",active);button.setAttribute("aria-current",active?"page":"false");});
+  document.querySelectorAll("nav button").forEach((button,index)=>{const active=["home","research","tasks","library"][index]===page;button.classList.toggle("nav-active",active);button.setAttribute("aria-current",active?"page":"false");});
+  if (page === "home") refreshDashboard();
   if (page === "tasks") loadTasks();
   if (page === "library") loadLibrary();
 }
@@ -1590,5 +1653,31 @@ async function deleteLibraryReference(id){
 }
 </script>
 
-</body>
+<script>
+const dashImages=[
+'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=500&q=80',
+'https://images.unsplash.com/photo-1456324504439-367cee3b3c32?w=500&q=80',
+'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=500&q=80',
+'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=500&q=80',
+'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&q=80',
+'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500&q=80',
+'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=500&q=80'];
+function refreshDashboard(){
+ for(const group of [1,2]){
+  const root=document.getElementById('dashGroup'+group);if(!root)return;
+  root.replaceChildren();
+  const cards=[...document.querySelectorAll('#researchGroup'+group+' .card')];
+  cards.slice(0,group===1?3:4).forEach((card,index)=>{
+   const b=document.createElement('button');b.className='dash-card';b.type='button';
+   const img=document.createElement('img');img.src=dashImages[(group===1?0:3)+index]||dashImages[0];img.alt='Minh họa nghiên cứu';img.loading='lazy';
+   const title=document.createElement('strong');title.textContent=card.querySelector('h3')?.textContent||'Nội dung nghiên cứu';
+   const note=document.createElement('small');note.textContent='Nhấn để xem nội dung và bài làm';
+   b.append(img,title,note);b.onclick=()=>{showPage('research');card.click()};root.append(b);
+  });
+ }
+ const lib=document.getElementById('dashLibraryRows');if(lib){lib.replaceChildren();const items=typeof libraryItems!=='undefined'?libraryItems:[];if(!items.length){const tr=document.createElement('tr');const td=document.createElement('td');td.colSpan=3;td.textContent='Chưa có tài liệu';tr.append(td);lib.append(tr)}items.slice(0,4).forEach(item=>{const tr=document.createElement('tr');[item.title,item.authors,item.year].forEach(v=>{const td=document.createElement('td');td.textContent=v||'—';tr.append(td)});lib.append(tr)})}
+ const kan=document.getElementById('dashTaskPreview');if(kan){kan.replaceChildren();const labels=['Chưa làm','Đang làm','Chờ rà soát','Hoàn thành'];labels.forEach((label,i)=>{const lane=document.createElement('div');lane.className='dash-lane';const h=document.createElement('b');h.textContent=label;lane.append(h);const all=[...document.querySelectorAll('#taskList .kanban-lane')];const source=all.find(el=>el.textContent.includes(label));if(source){[...source.querySelectorAll('.kanban-item')].slice(0,2).forEach(item=>{const p=document.createElement('span');p.textContent=item.querySelector('h3,h4,strong')?.textContent||item.textContent.trim().slice(0,75);lane.append(p)})}kan.append(lane)})}
+}
+window.addEventListener('load',()=>{const original=window.showPage;if(typeof original==='function'){window.showPage=function(page){original(page);if(page==='home')refreshDashboard()}};const observer=new MutationObserver(()=>{if(!document.getElementById('dashboardHome').classList.contains('hidden'))refreshDashboard()});['researchGroup1','researchGroup2'].forEach(id=>{const el=document.getElementById(id);if(el)observer.observe(el,{childList:true,subtree:true,characterData:true})});});
+</script></body>
 </html>
