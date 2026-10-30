@@ -175,17 +175,14 @@ async function initialize() {
     .from("group_profiles")
     .select("role")
     .eq("user_id",user.id)
-    .single();
+.maybeSingle();
 
   if (profileError) {
-    el("error").textContent =
-      "Lỗi đọc quyền: " + profileError.message;
-    await enterGuestMode();
-    return;
+    el("error").textContent = "Không xác minh được quyền: " + profileError.message;
   }
 
-  isAdmin = profile.role === "admin";
-  isMember = profile.role === "member";
+  isAdmin = !profileError && profile?.role === "admin";
+  isMember = !profileError && profile?.role === "member";
   assignedResearchPages = new Set();
   if(isMember){
     const {data:assignments,error:assignmentError}=await db.from("research_page_assignments").select("page_id").eq("user_id",user.id);
@@ -202,6 +199,7 @@ async function initialize() {
   el("logoutButton").classList.remove("hidden");
 
   await loadTasks();
+  await loadResearch();
 }
 
 async function loadTasks() {
