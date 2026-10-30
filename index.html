@@ -577,9 +577,7 @@ function researchSetup() {
   const editor = document.createElement("div");
   editor.id = "researchEditor";
   editor.innerHTML = `
-    <h2>Chỉnh sửa trang nghiên cứu</h2>
-    <label>Tiêu đề</label>
-    <input id="researchTitle" type="text">
+    <h2>Chỉnh sửa bài làm</h2>
     <label>Nội dung</label>
     <textarea id="researchText"
       placeholder="Viết nội dung nghiên cứu tại đây...">
@@ -733,8 +731,6 @@ async function openResearchEditor(id) {
 
   editingPageId = id;
 
-  document.getElementById("researchTitle").value =
-    data.title;
 
   document.getElementById("researchText").value =
     data.content || "";
@@ -749,23 +745,13 @@ async function openResearchEditor(id) {
 async function saveResearch() {
   if (editingPageId === null || !canEditResearch(editingPageId)) return;
 
-  const title = document.getElementById(
-    "researchTitle"
-  ).value.trim();
-
   const content = document.getElementById(
     "researchText"
   ).value;
 
-  if (!title) {
-    alert("Vui lòng nhập tiêu đề.");
-    return;
-  }
-
   const {error} = await db
     .from("research_pages")
     .update({
-      title,
       content,
       updated_at: new Date().toISOString()
     })
@@ -1149,16 +1135,7 @@ researchSetup();
   saveResearch = async function () {
     if (editingPageId === null || !canEditResearch(editingPageId)) return;
 
-    const title = document.getElementById(
-      "researchTitle"
-    ).value.trim();
-
     const editor = document.getElementById("richEditor");
-
-    if (!title) {
-      alert("Vui lòng nhập tiêu đề.");
-      return;
-    }
 
     const clean = safeHTML(editor.innerHTML);
 
