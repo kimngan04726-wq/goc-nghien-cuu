@@ -1,11 +1,113 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Góc nghiên cứu - Bản thử nghiệm</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Góc nghiên cứu của nhóm - Bản nâng cấp</title>
+<style>
+* {
+  box-sizing: border-box;
+  font-family: "Times New Roman", serif;
+}
+body {
+  margin: 0;
+  background: #f6f1e9;
+  color: #19354d;
+}
+header {
+  padding: 55px 25px;
+  background: #19354d;
+  color: white;
+  text-align: center;
+}
+header h1 {
+  margin: 0 0 12px;
+  font-size: 36px;
+}
+main {
+  max-width: 1200px;
+  margin: 25px auto;
+  padding: 0 16px;
+}
+.panel {
+  padding: 25px;
+  background: white;
+  border: 1px solid #ded8cd;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit, minmax(220px, 1fr)
+  );
+  gap: 15px;
+}
+.card {
+  padding: 22px;
+  background: #faf7f1;
+  border: 1px solid #e0d6c8;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.card:hover {
+  box-shadow: 0 4px 14px #19354d22;
+}
+button {
+  padding: 10px 15px;
+  background: #19354d;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 16px;
+}
+.hidden {
+  display: none;
+}
+</style>
 </head>
 <body>
-  <h1>Góc nghiên cứu của nhóm</h1>
-  <p>Đang chuẩn bị phiên bản nâng cấp.</p>
+
+<header>
+  <h1>GÓC NGHIÊN CỨU CỦA NHÓM</h1>
+  <p>Không gian học thuật và làm việc chung</p>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>Đề tài nghiên cứu</h2>
+    <p>
+      Tác động của kiến thức tài chính số và
+      thói quen bảo mật đến khả năng nhận diện
+      rủi ro lừa đảo deepfake trong giao dịch ngân hàng
+    </p>
+  </section>
+
+  <section class="panel">
+    <h2>Nhóm nội dung 1</h2>
+    <div class="gallery">
+      <div class="card">01. Lý do chọn đề tài</div>
+      <div class="card">
+        02. Mục đích, mục tiêu và câu hỏi nghiên cứu
+      </div>
+      <div class="card">03. Cơ sở lý thuyết</div>
+    </div>
+
+    <h2>Nhóm nội dung 2</h2>
+    <div class="gallery">
+      <div class="card">
+        04. Mô hình nghiên cứu và giả thuyết
+      </div>
+      <div class="card">05. Các biến nghiên cứu</div>
+      <div class="card">
+        06. Thang đo và phương án đo lường
+      </div>
+      <div class="card">07. Các nội dung khác</div>
+    </div>
+  </section>
+</main>
+
 </body>
 </html>
