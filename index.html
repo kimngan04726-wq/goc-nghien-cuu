@@ -496,5 +496,338 @@ initialize = async function() {
 };
 </script>
 
+<!-- TRÌNH SOẠN THẢO NÂNG CAO -->
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+
+<style>
+#richToolbar {
+  display: none;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px;
+  margin-top: 12px;
+  background: #eee8de;
+  border: 1px solid #d5c9ba;
+  border-radius: 9px 9px 0 0;
+}
+
+#richToolbar button {
+  min-width: 40px;
+  margin: 0;
+  padding: 8px 11px;
+  background: white;
+  color: #19364e;
+  border: 1px solid #c9bfb2;
+}
+
+#richToolbar button:hover {
+  background: #dbe5ed;
+}
+
+#richEditor {
+  display: none;
+  width: 100%;
+  min-height: 320px;
+  padding: 18px;
+  background: white;
+  border: 1px solid #d5c9ba;
+  border-radius: 0 0 9px 9px;
+  outline-color: #19364e;
+  font-family: "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+#richEditor img,
+.research-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+#richEditor table,
+.research-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+}
+
+#richEditor td,
+.research-content td {
+  border: 1px solid #a7a7a7;
+  padding: 9px;
+}
+
+.research-content.rich-format {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+
+#researchEditor #researchText {
+  display: none;
+}
+</style>
+
+<script>
+(function () {
+  const FORMAT_MARKER = "<!--RICH_RESEARCH_V1-->";
+
+  const oldLoadResearch = loadResearch;
+  const oldOpenResearchEditor = openResearchEditor;
+
+  function safeHTML(html) {
+    if (!window.DOMPurify) return null;
+
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: [
+        "p", "div", "br", "b", "strong",
+        "i", "em", "u", "h1", "h2", "h3",
+        "ul", "ol", "li", "blockquote",
+        "table", "tbody", "thead", "tr",
+        "td", "th", "a", "img"
+      ],
+      ALLOWED_ATTR: [
+        "href", "src", "alt", "title",
+        "colspan", "rowspan", "target"
+      ]
+    });
+  }
+
+  function textToHTML(text) {
+    const div = document.createElement("div");
+    div.textContent = text || "";
+    return div.innerHTML.replace(/\n/g, "<br>");
+  }
+
+  function makeToolbar() {
+    const oldInput = document.getElementById("researchText");
+    if (!oldInput || document.getElementById("richEditor")) return;
+
+    const toolbar = document.createElement("div");
+    toolbar.id = "richToolbar";
+
+    const buttons = [
+      ["B", "bold"],
+      ["I", "italic"],
+      ["U", "underline"],
+      ["H1", "formatBlock", "h1"],
+      ["H2", "formatBlock", "h2"],
+      ["• Danh sách", "insertUnorderedList"],
+      ["1. Danh sách", "insertOrderedList"],
+      ["Trích dẫn", "formatBlock", "blockquote"],
+      ["Bảng", "table"],
+      ["Hình ảnh", "image"],
+      ["Liên kết", "link"]
+    ];
+
+    buttons.forEach(([label, command, value]) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = label;
+      button.title = label;
+
+      button.addEventListener("mousedown", event => {
+        event.preventDefault();
+      });
+
+      button.addEventListener("click", () => {
+        const editor = document.getElementById("richEditor");
+        editor.focus();
+
+        if (command === "table") {
+          const html =
+            '<table><tbody>' +
+            '<tr><td>Ô 1</td><td>Ô 2</td></tr>' +
+            '<tr><td>Ô 3</td><td>Ô 4</td></tr>' +
+            '</tbody></table><p><br></p>';
+
+          document.execCommand("insertHTML", false, html);
+          return;
+        }
+
+        if (command === "image") {
+          const url = prompt(
+            "Dán đường dẫn HTTPS trực tiếp đến hình ảnh:"
+          );
+
+          if (!url) return;
+
+          try {
+            const parsed = new URL(url);
+            if (parsed.protocol !== "https:") {
+              throw new Error("URL không hợp lệ");
+            }
+
+            const img = document.createElement("img");
+            img.src = parsed.href;
+            img.alt = "Hình minh họa nghiên cứu";
+
+            document.execCommand(
+              "insertHTML", false, img.outerHTML
+            );
+          } catch {
+            alert("Vui lòng dùng đường dẫn ảnh bắt đầu bằng https://");
+          }
+          return;
+        }
+
+        if (command === "link") {
+          const url = prompt("Dán đường dẫn HTTPS:");
+          if (!url) return;
+
+          try {
+            const parsed = new URL(url);
+            if (parsed.protocol !== "https:") {
+              throw new Error("URL không hợp lệ");
+            }
+            document.execCommand(
+              "createLink", false, parsed.href
+            );
+          } catch {
+            alert("Đường dẫn phải bắt đầu bằng https://");
+          }
+          return;
+        }
+
+        document.execCommand(command, false, value || null);
+      });
+
+      toolbar.appendChild(button);
+    });
+
+    const editor = document.createElement("div");
+    editor.id = "richEditor";
+    editor.contentEditable = "true";
+    editor.setAttribute("role", "textbox");
+    editor.setAttribute("aria-multiline", "true");
+
+    oldInput.parentNode.insertBefore(toolbar, oldInput);
+    oldInput.parentNode.insertBefore(editor, oldInput);
+  }
+
+  loadResearch = async function () {
+    await oldLoadResearch();
+
+    if (!db) return;
+
+    const {data, error} = await db
+      .from("research_pages")
+      .select("id,content");
+
+    if (error) return;
+
+    for (const page of data || []) {
+      const box = document.getElementById(
+        "researchContent" + page.id
+      );
+
+      if (!box) continue;
+
+      if ((page.content || "").startsWith(FORMAT_MARKER)) {
+        const html = page.content.slice(FORMAT_MARKER.length);
+        const clean = safeHTML(html);
+
+        if (clean !== null) {
+          box.innerHTML = clean;
+          box.classList.add("rich-format");
+        } else {
+          box.textContent =
+            "Không thể hiển thị định dạng. " +
+            "Thư viện bảo mật chưa tải được.";
+        }
+      } else {
+        box.classList.remove("rich-format");
+      }
+    }
+  };
+
+  openResearchEditor = async function (id) {
+    await oldOpenResearchEditor(id);
+
+    if (editingPageId !== id) return;
+
+    makeToolbar();
+
+    const raw = document.getElementById(
+      "researchText"
+    ).value || "";
+
+    const editor = document.getElementById("richEditor");
+
+    if (raw.startsWith(FORMAT_MARKER)) {
+      const clean = safeHTML(raw.slice(FORMAT_MARKER.length));
+
+      if (clean === null) {
+        alert("Chưa tải được thư viện bảo mật. Không thể chỉnh sửa.");
+        cancelResearch();
+        return;
+      }
+
+      editor.innerHTML = clean;
+    } else {
+      editor.innerHTML = textToHTML(raw);
+    }
+
+    document.getElementById("richToolbar").style.display =
+      "flex";
+
+    editor.style.display = "block";
+  };
+
+  saveResearch = async function () {
+    if (!isAdmin || editingPageId === null) return;
+
+    const title = document.getElementById(
+      "researchTitle"
+    ).value.trim();
+
+    const editor = document.getElementById("richEditor");
+
+    if (!title) {
+      alert("Vui lòng nhập tiêu đề.");
+      return;
+    }
+
+    const clean = safeHTML(editor.innerHTML);
+
+    if (clean === null) {
+      alert("Chưa tải được thư viện bảo mật. Chưa lưu nội dung.");
+      return;
+    }
+
+    const {error} = await db
+      .from("research_pages")
+      .update({
+        title: title,
+        content: FORMAT_MARKER + clean,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", editingPageId);
+
+    if (error) {
+      alert("Không lưu được: " + error.message);
+      return;
+    }
+
+    cancelResearch();
+    await loadResearch();
+    alert("Đã lưu và trở về chế độ xem!");
+  };
+
+  const oldCancelResearch = cancelResearch;
+
+  cancelResearch = function () {
+    oldCancelResearch();
+
+    const toolbar = document.getElementById("richToolbar");
+    const editor = document.getElementById("richEditor");
+
+    if (toolbar) toolbar.style.display = "none";
+    if (editor) editor.style.display = "none";
+  };
+})();
+</script>
+
 </body>
 </html>
