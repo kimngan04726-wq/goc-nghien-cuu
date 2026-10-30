@@ -1,0 +1,288 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Góc nghiên cứu của nhóm</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* {box-sizing:border-box;font-family:"Times New Roman",serif}
+body {margin:0;background:#f6f1e8;color:#233b50}
+header {background:#19364e;color:white;padding:55px 20px;text-align:center}
+h1 {font-size:36px;margin:0 0 12px}
+main {max-width:1100px;margin:25px auto;padding:0 16px}
+section {background:white;border:1px solid #ded8cd;border-radius:12px;padding:24px;margin-bottom:20px}
+h2 {color:#19364e}
+input,button,select {font-size:16px;padding:10px;margin:5px;border-radius:6px;border:1px solid #ccc}
+button {background:#19364e;color:white;cursor:pointer}
+input {max-width:100%}
+.hidden {display:none}
+.grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.card {padding:18px;background:#faf7f1;border:1px solid #e2d9ca;border-radius:8px}
+.task {padding:15px;border-bottom:1px solid #ddd}
+nav button {background:#e6e0d5;color:#19364e}
+#error {color:#b42318}
+</style>
+</head>
+<body>
+
+<header>
+<h1>GÓC NGHIÊN CỨU CỦA NHÓM</h1>
+<p>Không gian làm việc nghiên cứu chung</p>
+</header>
+
+<main>
+<section id="login">
+<h2>Đăng nhập</h2>
+<input id="email" type="email" placeholder="Email">
+<input id="password" type="password" placeholder="Mật khẩu">
+<button onclick="signIn()">Đăng nhập</button>
+<p id="error"></p>
+</section>
+
+<div id="app" class="hidden">
+<section>
+<p id="account"></p>
+<button onclick="signOut()">Đăng xuất</button>
+</section>
+
+<nav>
+<button onclick="showPage('research')">Nghiên cứu</button>
+<button onclick="showPage('tasks')">Công việc</button>
+<button onclick="showPage('library')">Tài liệu</button>
+</nav>
+
+<section id="research">
+<h2>Đề tài nghiên cứu</h2>
+<p><b>Tác động của kiến thức tài chính số và thói quen bảo mật đến khả năng nhận diện rủi ro lừa đảo deepfake trong giao dịch ngân hàng</b></p>
+
+<h3>Nhóm nội dung 1</h3>
+<div class="grid">
+<div class="card">01. Lý do chọn đề tài</div>
+<div class="card">02. Mục đích, mục tiêu và câu hỏi nghiên cứu</div>
+<div class="card">03. Cơ sở lý thuyết</div>
+</div>
+
+<h3>Nhóm nội dung 2</h3>
+<div class="grid">
+<div class="card">04. Mô hình nghiên cứu và giả thuyết</div>
+<div class="card">05. Các biến nghiên cứu</div>
+<div class="card">06. Thang đo và phương án đo lường</div>
+<div class="card">07. Các nội dung khác</div>
+</div>
+</section>
+
+<section id="tasks" class="hidden">
+<h2>Bảng công việc</h2>
+<div id="adminControls" class="hidden">
+<input id="taskTitle" placeholder="Tên công việc">
+<input id="taskOwner" placeholder="Người phụ trách">
+<button onclick="addTask()">Thêm công việc</button>
+</div>
+<div id="taskList"></div>
+</section>
+
+<section id="library" class="hidden">
+<h2>Thư viện tài liệu tham khảo</h2>
+<p>Nơi tổng hợp các nguồn tài liệu nghiên cứu của nhóm.</p>
+</section>
+</div>
+</main>
+
+<script>
+const SUPABASE_URL =
+  "https://rewsbvzgivjtyghxlqih.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable__IWY2-eriqR1KcJVzBEkaw_hmplsJeU";
+
+let db;
+let isAdmin = false;
+
+function el(id) {
+  return document.getElementById(id);
+}
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[c]));
+}
+
+function showPage(page) {
+  ["research","tasks","library"].forEach(id => {
+    el(id).classList.toggle("hidden", id !== page);
+  });
+  if (page === "tasks") loadTasks();
+}
+
+async function signIn() {
+  el("error").textContent = "Đang đăng nhập...";
+  try {
+    const {error} = await db.auth.signInWithPassword({
+      email: el("email").value.trim(),
+      password: el("password").value
+    });
+    if (error) throw error;
+    el("error").textContent = "";
+    await initialize();
+  } catch (err) {
+    el("error").textContent = err.message;
+  }
+}
+
+async function signOut() {
+  await db.auth.signOut();
+  el("app").classList.add("hidden");
+  el("login").classList.remove("hidden");
+}
+
+async function initialize() {
+  const {data:{user},error:userError} =
+    await db.auth.getUser();
+
+  if (userError || !user) return;
+
+  const {data:profile,error:profileError} = await db
+    .from("group_profiles")
+    .select("role")
+    .eq("user_id",user.id)
+    .single();
+
+  if (profileError) {
+    el("error").textContent =
+      "Lỗi đọc quyền: " + profileError.message;
+    return;
+  }
+
+  isAdmin = profile.role === "admin";
+
+  el("account").textContent =
+    user.email + (isAdmin ? " — Admin" : " — Thành viên");
+
+  el("adminControls").classList.toggle("hidden",!isAdmin);
+  el("login").classList.add("hidden");
+  el("app").classList.remove("hidden");
+
+  await loadTasks();
+}
+
+async function loadTasks() {
+  const {data,error} = await db
+    .from("group_tasks")
+    .select("*")
+    .order("created_at",{ascending:true});
+
+  if (error) {
+    el("taskList").textContent = error.message;
+    return;
+  }
+
+  el("taskList").innerHTML = (data || []).map(task => `
+    <div class="task">
+      <b>${escapeHTML(task.title)}</b>
+      <p>Phụ trách: ${escapeHTML(task.owner || "Chưa giao")}</p>
+      <select onchange="changeStatus('${task.id}',this.value)">
+        ${["Chưa làm","Đang làm","Chờ rà soát","Hoàn thành"]
+          .map(status => `
+            <option value="${status}"
+              ${task.status === status ? "selected" : ""}>
+              ${status}
+            </option>
+          `).join("")}
+      </select>
+      ${isAdmin ? `
+        <button onclick="editTask('${task.id}')">Sửa</button>
+        <button onclick="deleteTask('${task.id}')">Xóa</button>
+      ` : ""}
+    </div>
+  `).join("") || "<p>Chưa có công việc.</p>";
+}
+
+async function addTask() {
+  const title = el("taskTitle").value.trim();
+  if (!title) return alert("Hãy nhập tên công việc.");
+
+  const {error} = await db.from("group_tasks").insert({
+    title,
+    owner: el("taskOwner").value.trim(),
+    group_number: 1
+  });
+
+  if (error) return alert(error.message);
+
+  el("taskTitle").value = "";
+  el("taskOwner").value = "";
+  await loadTasks();
+}
+
+async function changeStatus(id,status) {
+  const {error} = await db.rpc("set_group_task_status",{
+    p_task_id:id,
+    p_status:status
+  });
+
+  if (error) alert(error.message);
+  await loadTasks();
+}
+
+async function editTask(id) {
+  const {data,error} = await db
+    .from("group_tasks")
+    .select("*")
+    .eq("id",id)
+    .single();
+
+  if (error) return alert(error.message);
+
+  const title = prompt("Tên công việc:",data.title);
+  if (title === null) return;
+
+  const owner = prompt("Người phụ trách:",data.owner || "");
+  if (owner === null) return;
+
+  const result = await db.from("group_tasks")
+    .update({title:title.trim(),owner:owner.trim()})
+    .eq("id",id);
+
+  if (result.error) alert(result.error.message);
+  await loadTasks();
+}
+
+async function deleteTask(id) {
+  if (!confirm("Xóa công việc này?")) return;
+
+  const {error} = await db
+    .from("group_tasks")
+    .delete()
+    .eq("id",id);
+
+  if (error) alert(error.message);
+  await loadTasks();
+}
+
+window.addEventListener("load",async () => {
+  try {
+    if (!window.supabase) {
+      throw new Error("Không tải được thư viện Supabase.");
+    }
+
+    db = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const {data:{session}} = await db.auth.getSession();
+    if (session) await initialize();
+  } catch (err) {
+    el("error").textContent = err.message;
+  }
+});
+</script>
+</body>
+</html>
