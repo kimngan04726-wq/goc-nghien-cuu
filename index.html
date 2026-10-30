@@ -590,6 +590,8 @@ async function loadResearch() {
     );
 
     if (box) {
+      const heading=box.closest(".card")?.querySelector("h3");
+      if(heading)heading.textContent=page.title?.trim() || researchTitles[Number(page.id)-1] || "Trang nghiên cứu";
       box.textContent = (page.content || "").startsWith("<!--RICH_RESEARCH_V1-->")
         ? "Đang hiển thị bài viết…"
         : (page.content || "Trang này chưa có nội dung.");
