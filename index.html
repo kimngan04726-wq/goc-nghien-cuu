@@ -642,7 +642,36 @@ body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>button[tit
 position:static!important;inset:auto!important;height:31px!important;min-height:31px!important;margin:0!important
 }
 body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #richEditor{margin-top:0!important}
-</style><style>.research-draft-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.research-draft-card{min-width:0}.research-draft-owner{font-size:14px;color:#667}.research-draft-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:14px 0}.research-draft-result{background:#fffaf1;border:1px solid #e4d0b1;border-radius:12px;padding:18px;white-space:normal}.research-draft-card .detail-content{max-height:260px;overflow:auto;white-space:pre-wrap}@media(max-width:700px){.research-draft-grid{grid-template-columns:1fr}}</style></head>
+</style><style>.research-draft-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.research-draft-card{min-width:0}.research-draft-owner{font-size:14px;color:#667}.research-draft-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:14px 0}.research-draft-result{background:#fffaf1;border:1px solid #e4d0b1;border-radius:12px;padding:18px;white-space:normal}.research-draft-card .detail-content{max-height:260px;overflow:auto;white-space:pre-wrap}@media(max-width:700px){.research-draft-grid{grid-template-columns:1fr}}</style><style>
+#dashSharedSources{margin:20px 0 28px;padding:20px;border:1px solid #e4d5c6;border-radius:16px;background:#fff}
+#dashSharedSources .shared-heading h3{font-size:24px;margin:0;color:#12385d}
+#dashSharedSources .shared-heading p{margin:5px 0 14px;color:#65748a}
+.shared-link-form{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0}
+.shared-link-form input{flex:1 1 200px;min-width:0;border:1px solid #e2d9cf;border-radius:9px;padding:11px}
+.shared-link-form input:nth-child(2){flex:2 1 300px}
+.shared-link-form button{border-radius:9px}
+.shared-status{font-size:13px;color:#66778b;margin:7px 0}
+.shared-layout{display:grid;grid-template-columns:minmax(230px,34%) minmax(0,1fr);min-height:390px;border:1px solid #e4dcd4;border-radius:12px;overflow:hidden}
+.shared-sidebar{padding:12px;border-right:1px solid #e4dcd4;min-width:0}
+#sharedLinkSearch{width:100%;box-sizing:border-box;border:1px solid #e4dcd4;border-radius:8px;padding:10px}
+.shared-filters{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0}
+.shared-filters button{padding:6px 10px;border:1px solid #e4dcd4;background:#fff;color:#12385d;border-radius:18px;font-size:12px}
+.shared-filters button.active{background:#173c5a;color:#fff}
+.shared-link-list{display:grid;gap:6px;max-height:450px;overflow:auto}
+.shared-link-entry{display:flex;align-items:center;gap:5px;border-radius:9px;padding:5px}
+.shared-link-entry.selected{background:#e5f2fc}
+.shared-link-entry>button:first-child{background:transparent;color:#173c5a;border:0;flex:1;min-width:0;text-align:left;padding:8px;overflow-wrap:anywhere}
+.shared-link-entry>button:last-child{background:transparent;color:#a34c43;border:0;padding:6px}
+.shared-viewer{min-width:0;position:relative;background:#f6f7f9}
+.shared-viewer-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;background:white;border-bottom:1px solid #e4dcd4}
+.shared-viewer-top strong{overflow-wrap:anywhere}
+.shared-viewer-top a{white-space:nowrap;color:#173c5a}
+.shared-viewer-empty{display:grid;place-content:center;text-align:center;min-height:320px;color:#687b91}
+#sharedViewerFrame{width:100%;height:440px;border:0;background:white}
+.shared-viewer-hint{font-size:12px;padding:8px 12px;color:#64748b}
+@media(max-width:720px){.shared-layout{grid-template-columns:1fr}.shared-sidebar{border-right:0;border-bottom:1px solid #e4dcd4}#sharedViewerFrame{height:360px}}
+</style>
+</head>
 <body>
 
 <header>
@@ -671,6 +700,19 @@ body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #rich
 <div class="dash-topic"><small>▤ &nbsp; Đề tài nghiên cứu</small><b>Tác động của kiến thức tài chính số và thói quen bảo mật đến khả năng nhận diện rủi ro lừa đảo deepfake trong giao dịch ngân hàng.</b></div>
 <div class="dash-panels"><div class="dash-panel photo" aria-label="Ảnh sổ tay nghiên cứu"></div><div class="dash-panel"><h3>💡 &nbsp; Trọng tâm hiện tại</h3><b>Tìm tài liệu và củng cố hướng nghiên cứu</b><ul><li>Hoàn thiện cơ sở lý thuyết</li><li>Phát triển mô hình nghiên cứu</li><li>Tổng hợp tài liệu tham khảo</li></ul></div><div class="dash-panel"><h3>🎯 &nbsp; Hướng tới</h3><p>☐ &nbsp; Tổng quan tài liệu liên quan</p><p>☐ &nbsp; Làm rõ cơ sở lý thuyết và mô hình</p><p>☐ &nbsp; Xây dựng và hoàn thiện nghiên cứu</p><p>☐ &nbsp; Phân công và theo dõi tiến độ</p></div></div>
 <div class="dash-columns"><div class="dash-section"><h3><span class="dash-section-icon" aria-hidden="true">📖</span><span class="dash-section-title">Nhóm 1 — Lý thuyết và định hướng nghiên cứu</span> <button onclick="showPage('research')">Xem tất cả →</button></h3><div class="dash-cards" id="dashGroup1"></div></div><div class="dash-section group-two"><h3><span class="dash-section-icon" aria-hidden="true">▥</span><span class="dash-section-title">Nhóm 2 — Mô hình và triển khai nghiên cứu</span> <button onclick="showPage('research')">Xem tất cả →</button></h3><div class="dash-cards" id="dashGroup2"></div></div><div class="dash-section"><h3>📁 &nbsp; Kho tài liệu tham khảo <button onclick="openAllReferences()">Xem tất cả →</button></h3><table class="dash-table"><thead><tr><th>Tên tài liệu</th><th>Tác giả</th><th>Năm</th></tr></thead><tbody id="dashLibraryRows"><tr><td colspan="3">Đang tải tài liệu…</td></tr></tbody></table></div><div class="dash-section"><h3>☑ &nbsp; Công việc của nhóm <button onclick="showAllTaskProgress()">Xem tất cả →</button></h3><div class="dash-mini-kanban" id="dashTaskPreview"></div></div></div>
+<section class="dash-shared" id="dashSharedSources">
+ <div class="shared-heading"><div><h3>📁 Nguồn thông tin chung</h3><p>Lưu liên kết Google Docs, Drive và các website để nhóm cùng tham khảo</p></div></div>
+ <form id="sharedLinkForm" class="shared-link-form" hidden>
+  <input id="sharedLinkTitle" maxlength="160" placeholder="Tên nguồn thông tin" aria-label="Tên nguồn thông tin" required>
+  <input id="sharedLinkUrl" type="url" maxlength="2048" placeholder="Dán liên kết Google Docs, Drive hoặc website..." aria-label="Liên kết nguồn" required>
+  <button type="submit">＋ Thêm liên kết</button>
+ </form>
+ <p id="sharedLinkStatus" role="status" class="shared-status"></p>
+ <div class="shared-layout">
+  <div class="shared-sidebar"><input id="sharedLinkSearch" type="search" placeholder="🔎 Tìm nguồn..." aria-label="Tìm nguồn"><div id="sharedLinkFilters" class="shared-filters"><button type="button" data-filter="all" class="active">Tất cả</button><button type="button" data-filter="drive">Drive / Docs</button><button type="button" data-filter="web">Website</button></div><div id="sharedLinkList" class="shared-link-list"></div></div>
+  <div class="shared-viewer"><div class="shared-viewer-top"><strong id="sharedViewerTitle">Chọn nguồn để xem</strong><a id="sharedViewerOpen" target="_blank" rel="noopener noreferrer" hidden>Mở tab mới ↗</a></div><div id="sharedViewerEmpty" class="shared-viewer-empty">📄<p>Chọn một liên kết bên trái để xem nội dung tại đây.</p></div><iframe id="sharedViewerFrame" title="Xem trước nguồn thông tin" referrerpolicy="no-referrer" loading="lazy" hidden></iframe><p id="sharedViewerHint" class="shared-viewer-hint" hidden>Nếu khung trống hoặc báo từ chối kết nối, nguồn này không cho phép nhúng hoặc chưa cấp quyền xem. Hãy chọn “Mở tab mới”.</p></div>
+ </div>
+</section>
 </section><nav aria-label="Điều hướng chính">
 <button class="sidebar-main-link" onclick="showPage('home')"><span class="sidebar-nav-icon" aria-hidden="true">⌂</span><span>Trang chủ</span></button>
 <button class="sidebar-main-link" onclick="showPage('research')"><span class="sidebar-nav-icon" aria-hidden="true">▣</span><span>Nội dung</span></button>
@@ -3301,6 +3343,79 @@ body:not(.word-editor-open) #researchEditor .research-actions button{display:inl
     pendingButton=button;
     if(!dialog.open)dialog.showModal();
   },true);
+})();
+</script>
+<script>
+(function(){
+ const root=document.getElementById('dashSharedSources');
+ if(!root)return;
+ const $=id=>document.getElementById(id);
+ let items=[],chosen=null,filter='all',loaded=false;
+ const category=url=>/^(docs|drive)\.google\.com$/i.test(new URL(url).hostname)?'drive':'web';
+ const preview=url=>{
+  const u=new URL(url),h=u.hostname;
+  if(h==='docs.google.com'){
+   const m=u.pathname.match(/^\/document\/d\/([\w-]+)/);
+   if(m)return 'https://docs.google.com/document/d/'+m[1]+'/preview';
+   const sh=u.pathname.match(/^\/spreadsheets\/d\/([\w-]+)/);
+   if(sh)return 'https://docs.google.com/spreadsheets/d/'+sh[1]+'/preview';
+   const sl=u.pathname.match(/^\/presentation\/d\/([\w-]+)/);
+   if(sl)return 'https://docs.google.com/presentation/d/'+sl[1]+'/preview';
+  }
+  if(h==='drive.google.com'){
+   const m=u.pathname.match(/^\/file\/d\/([\w-]+)/);
+   const id=m?.[1]||(u.pathname==='/open'?u.searchParams.get('id'):null);
+   if(id&&/^[\w-]+$/.test(id))return 'https://drive.google.com/file/d/'+id+'/preview';
+  }
+  return url;
+ };
+ function render(){
+  const list=$('sharedLinkList');list.replaceChildren();
+  const search=$('sharedLinkSearch').value.trim().toLocaleLowerCase('vi');
+  const visible=items.filter(x=>(filter==='all'||category(x.url)===filter)&&x.title.toLocaleLowerCase('vi').includes(search));
+  if(!visible.length){const p=document.createElement('p');p.textContent='Chưa có liên kết phù hợp.';list.append(p);}
+  visible.forEach(x=>{
+   const row=document.createElement('div');row.className='shared-link-entry'+(chosen===x.id?' selected':'');
+   const button=document.createElement('button');button.type='button';button.textContent=(category(x.url)==='drive'?'📄 ':'🔗 ')+x.title;
+   button.onclick=()=>{chosen=x.id;$('sharedViewerTitle').textContent=x.title;const link=$('sharedViewerOpen');link.href=x.url;link.hidden=false;$('sharedViewerEmpty').hidden=true;const frame=$('sharedViewerFrame');frame.src=preview(x.url);frame.hidden=false;$('sharedViewerHint').hidden=false;render();};
+   row.append(button);
+   if(isAdmin&&adminMode==='edit'){
+    const del=document.createElement('button');del.type='button';del.textContent='Xóa';del.title='Xóa liên kết';
+    del.onclick=async()=>{
+     if(!confirm('Xóa liên kết '+x.title+' khỏi Nguồn thông tin chung?'))return;
+     const {error}=await db.from('research_shared_links').delete().eq('id',x.id);
+     if(error)return alert('Không xóa được: '+error.message);
+     if(chosen===x.id){chosen=null;$('sharedViewerFrame').src='about:blank';$('sharedViewerFrame').hidden=true;$('sharedViewerOpen').hidden=true;$('sharedViewerEmpty').hidden=false;$('sharedViewerHint').hidden=true;$('sharedViewerTitle').textContent='Chọn nguồn để xem';}
+     await load();
+    };row.append(del);
+   }
+   list.append(row);
+  });
+ }
+ async function load(){
+  if(!db)return;
+  $('sharedLinkForm').hidden=!(isAdmin&&adminMode==='edit');
+  const {data,error}=await db.from('research_shared_links').select('id,title,url,created_at').order('created_at',{ascending:false}).limit(200);
+  if(error){$('sharedLinkStatus').textContent='Cần chạy SQL thiết lập Nguồn thông tin chung trong Supabase: '+error.message;return;}
+  items=(data||[]).filter(x=>{try{return ['https:','http:'].includes(new URL(x.url).protocol)}catch{return false}});
+  $('sharedLinkStatus').textContent=items.length+' nguồn đã lưu';
+  loaded=true;render();
+ }
+ $('sharedLinkForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!(isAdmin&&adminMode==='edit'))return;
+  const title=$('sharedLinkTitle').value.trim(),raw=$('sharedLinkUrl').value.trim();
+  let url;try{url=new URL(raw);if(!['http:','https:'].includes(url.protocol))throw Error();}catch{return alert('Vui lòng nhập liên kết http hoặc https hợp lệ.');}
+  if(!title)return;
+  const button=$('sharedLinkForm').querySelector('button');button.disabled=true;
+  try{const {error}=await db.from('research_shared_links').insert({title,url:url.href});if(error)throw error;$('sharedLinkForm').reset();await load();}
+  catch(err){alert('Không lưu được liên kết: '+(err.message||err));}finally{button.disabled=false;}
+ });
+ $('sharedLinkSearch').addEventListener('input',render);
+ $('sharedLinkFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;filter=b.dataset.filter;$('sharedLinkFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));render();});
+ const oldShowPage=showPage;
+ showPage=function(page){oldShowPage(page);if(page==='home')load();};
+ window.refreshSharedSources=load;
 })();
 </script>
 </body>
