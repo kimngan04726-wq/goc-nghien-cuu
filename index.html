@@ -2524,10 +2524,13 @@ researchSetup();
     if(selected===null)return null;
     const page=researchPageCache.find(p=>Number(p.id)===selected);
     if(!page)return null;
-    const {data,error}=await db.from('group_tasks').select('id,title,status').eq('title',page.title);
+    const {data,error}=await db.from('group_tasks').select('id,title,status,group_number').eq('group_number',Number(page.group_number||1));
     if(error)throw error;
-    if(data.length!==1)return null; // Không cập nhật nhầm khi tiêu đề trùng.
-    return data[0];
+    const normalize=value=>String(value||'').normalize('NFC').trim().replace(/\\s+/g,' ').toLocaleLowerCase('vi');
+    const matches=(data||[]).filter(task=>normalize(task.title)===normalize(page.title));
+    if(matches.length>1)throw Error('Có nhiều nhiệm vụ cùng tên trong Nhóm '+(page.group_number||1)+'. Hãy đổi tên để phân biệt.');
+    if(matches.length===0)throw Error('Chưa có nhiệm vụ tương ứng trong Công việc nhóm '+(page.group_number||1)+': '+page.title+'. Hãy thêm nhiệm vụ này trước khi xuất.');
+    return matches[0];
   };
   // Tính 0/50 theo ba ô văn bản, chỉ thay đổi sau khi lưu thành công.
   window.syncResearchWritingProgress=async(pageId)=>{
