@@ -1968,7 +1968,20 @@ researchSetup();
         backupStatus.textContent='Đang xem lần '+(i+1)+'. Bạn có thể chọn Chỉnh sửa để sửa phiên bản này rồi Lưu bài làm thành lần lưu mới.';
         workBox.scrollIntoView({behavior:'smooth',block:'start'});
       };
-      cell.append(btn);tr.append(count,date,cell);backupRows.append(tr);
+      const del=document.createElement('button');
+      del.textContent='Xóa';
+      del.style.cssText='margin-left:8px;background:#9b453c;color:white';
+      del.onclick=async()=>{
+        if(!canEditResearch(pageId))return alert('Bạn không có quyền xóa lần lưu này.');
+        if(!confirm('Xóa vĩnh viễn lần '+(i+1)+' đã lưu lúc '+date.textContent+'? Thao tác này không thể hoàn tác.'))return;
+        del.disabled=true;
+        const {error:deleteError}=await db.from('research_page_backups').delete().eq('id',item.id).eq('page_id',pageId);
+        if(deleteError){del.disabled=false;return alert('Không xóa được: '+deleteError.message);}
+        if(selectedSaved?.id===item.id){selectedSaved=null;showSaved('');}
+        await loadBackups();
+        alert('Đã xóa lần lưu được chọn.');
+      };
+      cell.append(btn,del);tr.append(count,date,cell);backupRows.append(tr);
     });
   }
   historyButton.onclick=async()=>{
