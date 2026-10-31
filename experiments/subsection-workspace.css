@@ -21,3 +21,5 @@
 .subsection-workspace .sw-conflict-compare section{min-width:0}
 .subsection-workspace .sw-conflict-compare pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:340px;overflow:auto;background:#fff;padding:12px;border:1px solid #d9e0e8;border-radius:8px;font:inherit}
 @media(max-width:620px){.subsection-workspace .sw-conflict-compare{grid-template-columns:1fr}}
+
+.subsection-workspace .sw-diff-changed{display:inline;background:#fff0b8;box-decoration-break:clone;-webkit-box-decoration-break:clone}
