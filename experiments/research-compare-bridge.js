@@ -28,13 +28,15 @@ function createResearchCompareBridge({db,pageId,subId,canMerge=()=>false}){
   if(latest.version!==preview.expectedVersion)throw Error('Bài tổng hợp đã thay đổi; tải lại trước khi lưu');
   // A merge must never silently overwrite an existing consolidated article.
   if(latest.content.trim()&&!global.confirm('Bài tổng hợp đã có nội dung. Bạn có chắc muốn thay thế bằng các ý đã chọn?'))return false;
-  const {data,error}=await db.rpc('save_research_subsection_document',{
-   p_page_id:pageId,p_sub_id:subId,p_slot:0,
-   p_expected_version:preview.expectedVersion,p_content:preview.text
+  const {data,error}=await db.rpc('merge_research_subsection_drafts',{
+   p_page_id:pageId,p_sub_id:subId,
+   p_draft1_version:preview.sourceVersions[0],p_draft2_version:preview.sourceVersions[1],
+   p_merged_version:preview.expectedVersion,p_merged_content:preview.text
   });
   if(error)throw error;
   const saved=Array.isArray(data)?data[0]:data;
-  baseVersion=Number(saved.saved_version);preview=null;return true;
+  if(!Number.isSafeInteger(Number(saved)))throw Error('Server did not return merged version');
+  baseVersion=Number(saved);preview=null;return true;
  }
  return {loadDrafts,onMerge,confirmSave,get preview(){return preview}};
 }
