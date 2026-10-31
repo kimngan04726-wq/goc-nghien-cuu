@@ -3759,6 +3759,16 @@ body:not(.word-editor-open) #researchEditor .research-actions button{display:inl
  const $=id=>document.getElementById(id);
  let items=[],chosen=null,filter='all',loaded=false;
  const category=url=>/^(docs|drive)\.google\.com$/i.test(new URL(url).hostname)?'drive':'web';
+ const sourceIcon=url=>{
+  const u=new URL(url),h=u.hostname,path=u.pathname;
+  const type=h==='docs.google.com'?(path.startsWith('/spreadsheets/')?'sheets':path.startsWith('/presentation/')?'slides':'docs')
+    :h==='drive.google.com'?(path.includes('/folders/')?'folder':path.includes('/file/')?'file':'drive'):'web';
+  const palette={docs:'#4285f4',sheets:'#0f9d58',slides:'#f4b400',folder:'#f4b400',file:'#4285f4',drive:'#34a853',web:'#59758b'};
+  const glyph={docs:'▤',sheets:'▦',slides:'▣',folder:'▰',file:'▤',drive:'▲',web:'↗'};
+  const icon=document.createElement('span');icon.textContent=glyph[type];icon.setAttribute('aria-hidden','true');
+  icon.style.cssText='display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px;width:22px;height:24px;border-radius:4px;background:'+palette[type]+';color:white;font:700 16px Arial,sans-serif;margin-right:9px;vertical-align:middle';
+  return icon;
+ };
  const fallbackTitle=url=>{
   const u=new URL(url),name=decodeURIComponent(u.pathname.split('/').filter(Boolean).pop()||'').replace(/[-_]+/g,' ').trim();
   if(u.hostname==='docs.google.com')return 'Google Docs (chưa lấy được tên)';
@@ -3821,7 +3831,7 @@ body:not(.word-editor-open) #researchEditor .research-actions button{display:inl
   if(!visible.length){const p=document.createElement('p');p.textContent='Chưa có liên kết phù hợp.';list.append(p);}
   visible.forEach(x=>{
    const row=document.createElement('div');row.className='shared-link-entry'+(chosen===x.id?' selected':'');
-   const button=document.createElement('button');button.type='button';button.textContent=(category(x.url)==='drive'?'📄 ':'🔗 ')+x.title;
+   const button=document.createElement('button');button.type='button';button.textContent='';button.append(sourceIcon(x.url),document.createTextNode(x.title));
    button.onclick=()=>{chosen=x.id;$('sharedViewerTitle').textContent=x.title;const link=$('sharedViewerOpen');link.href=x.url;link.hidden=false;$('sharedViewerEmpty').hidden=true;const frame=$('sharedViewerFrame');frame.src=preview(x.url);frame.hidden=false;$('sharedViewerHint').hidden=false;render();};
    row.append(button);
    if(canManageSources()){
