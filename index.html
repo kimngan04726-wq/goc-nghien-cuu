@@ -1449,6 +1449,34 @@ body:has(#research:not(.gallery-detail):not(.hidden)) main{height:100dvh!importa
 #research:not(.gallery-detail) .grid .card .research-delete-button,#research:not(.gallery-detail) .grid .card .research-rename-button{bottom:5px!important;padding:3px 6px!important;font-size:11px!important}
 }
 </style>
+<style id="research-gallery-left-and-readable-2026">
+@media(min-width:1001px) and (min-height:650px){
+#research:not(.gallery-detail) #researchGroup1,
+#research:not(.gallery-detail) #researchGroup2{
+ justify-content:flex-start!important;align-content:flex-start!important;
+ margin-left:0!important;margin-right:0!important;
+ padding-left:0!important;padding-right:0!important;
+ column-gap:12px!important;
+}
+#research:not(.gallery-detail) #researchGroup1>.card,
+#research:not(.gallery-detail) #researchGroup2>.card{
+ margin-left:0!important;margin-right:0!important;
+ align-self:flex-start!important;flex-grow:0!important;
+}
+#research:not(.gallery-detail) .grid .card h3{
+ font-size:clamp(14px,1.9vh,17px)!important;
+ line-height:1.18!important;margin:6px 8px 0!important;
+ max-height:2.5em!important;
+}
+#research:not(.gallery-detail) .grid .card:after{
+ font-size:13px!important;bottom:31px!important;right:8px!important;
+}
+#research:not(.gallery-detail) .grid .card .research-delete-button,
+#research:not(.gallery-detail) .grid .card .research-rename-button{
+ font-size:12px!important;padding:3px 6px!important;
+}
+}
+</style>
 </head>
 <body>
 
