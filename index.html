@@ -2001,7 +2001,7 @@ researchSetup();
     editor.style.display = "block";
   };
 
-  saveResearch = async function () {
+  saveResearch = async function (silentDone = false) {
     if (editingPageId === null || !canEditResearch(editingPageId)) return;
 
     const editor = document.getElementById("richEditor");
@@ -2028,7 +2028,7 @@ researchSetup();
 
     cancelResearch();
     await loadResearch();
-    alert("Đã lưu và trở về chế độ xem!");
+    if (!silentDone) alert("Đã lưu và trở về chế độ xem!");
   };
 
   const oldCancelResearch = cancelResearch;
@@ -2239,7 +2239,7 @@ researchSetup();
     if(selected===null||!canEditResearch(selected))return;
     if(document.getElementById('researchEditor')?.style.display==='block')return alert('Hãy lưu nội dung đang chỉnh sửa trước.');
     const pageId=selected;
-    const content=selectedSaved?.pageId===pageId?selectedSaved.content:(researchPageCache.find(p=>Number(p.id)===pageId)?.content||'');
+    const content=researchPageCache.find(p=>Number(p.id)===pageId)?.content||'';
     if(!content.trim())return alert('Chưa có nội dung để lưu. Hãy chọn Chỉnh sửa và nhập bài trước.');
     if(!confirm('Lưu nội dung đang chọn thành một phiên bản mới? Phiên bản cũ sẽ được giữ nguyên.'))return;
     saveVersion.disabled=true;
@@ -2415,8 +2415,8 @@ researchSetup();
     if(heading){heading.dataset.originalDraftHeading=heading.textContent;heading.textContent='Bản nháp '+slot;}
     panel.scrollIntoView({behavior:'smooth'});
   }
-  saveResearch=async function(){
-    if(!activeDraft)return originalSaveResearch();
+  saveResearch=async function(silentDone=false){
+    if(!activeDraft)return originalSaveResearch(silentDone);
     const {pageId,slot}=activeDraft;
     if(!canEditResearch(pageId))return alert('Bạn không có quyền chỉnh sửa.');
     if(!window.DOMPurify)return alert('Chưa tải được thư viện bảo mật. Chưa lưu nội dung.');
@@ -2435,7 +2435,7 @@ researchSetup();
     activeDraft=null;
     cancelResearch();
     await loadDrafts();
-    alert('Đã lưu Bản nháp '+slot+'. Bài tổng hợp không thay đổi.');
+    if(!silentDone)alert('Đã cập nhật Bản nháp '+slot+'. Bài tổng hợp không thay đổi.');
   };
   cancelResearch=function(){
     activeDraft=null;
@@ -3316,7 +3316,7 @@ body.word-editor-open #researchEditor #researchMessage{flex:none;margin:0!import
  cancelResearch=function(){setWordEditorExpanded(false);return priorCancel()};
  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.body.classList.contains('word-editor-open')){event.preventDefault();setWordEditorExpanded(false)}});
 })();
-</script><script>(function(){const a=document.querySelector('#researchEditor .research-actions');if(!a)return;const b=a.querySelectorAll('button');if(b.length<2)return;b[0].textContent='Xong';b[0].setAttribute('title','Hoàn tất chỉnh sửa');b[0].onclick=async function(event){event.preventDefault();if(b[0].disabled)return;b[0].disabled=true;try{await saveResearch()}finally{b[0].disabled=false}};b[1].remove();})();</script><style id="compact-docs-toolbar-v4">
+</script><script>(function(){const a=document.querySelector('#researchEditor .research-actions');if(!a)return;const b=a.querySelectorAll('button');if(b.length<2)return;b[0].textContent='Xong';b[0].setAttribute('title','Hoàn tất chỉnh sửa');b[0].onclick=async function(event){event.preventDefault();if(b[0].disabled)return;b[0].disabled=true;try{await saveResearch(true)}finally{b[0].disabled=false}};b[1].remove();})();</script><style id="compact-docs-toolbar-v4">
 body.word-editor-open #researchEditor>h2{display:none!important}
 body.word-editor-open #researchEditor{padding:5px 8px!important}
 body.word-editor-open #researchEditor .research-actions{top:7px!important;right:10px!important}
