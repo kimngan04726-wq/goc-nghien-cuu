@@ -689,6 +689,22 @@ body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #rich
 .research-history-actions button{margin:0!important;padding:9px 12px;border-radius:9px;font-size:13px;white-space:nowrap}
 .research-history-actions .research-history-delete{background:#fff0ef!important;color:#a33632!important;border:1px solid #f2c8c5}
 @media(max-width:650px){.research-history-panel{padding:12px}.research-history-table{min-width:540px}}
+
+/* Lịch sử lưu bài gọn trong chiều rộng thẻ bản nháp */
+.research-history-draft{width:100%;max-width:100%;box-sizing:border-box;padding:14px 12px}
+.research-history-draft .research-history-toolbar{align-items:flex-start}
+.research-history-draft .research-history-scroll{overflow-x:visible}
+.research-history-draft .research-history-table{width:100%;min-width:0;table-layout:fixed;font-size:12px;border-spacing:0 6px}
+.research-history-draft .research-history-table th,.research-history-draft .research-history-table td{padding:9px 5px;overflow:hidden}
+.research-history-draft .research-history-table th:nth-child(1){width:14%}
+.research-history-draft .research-history-table th:nth-child(2){width:24%}
+.research-history-draft .research-history-table th:nth-child(3){width:28%}
+.research-history-draft .research-history-table th:nth-child(4){width:34%}
+.research-history-draft .research-history-preview{min-width:0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.research-history-draft .research-history-actions{gap:5px;justify-content:flex-start}
+.research-history-draft .research-history-actions button{padding:7px 8px;font-size:12px}
+.research-history-draft .research-history-toolbar h3{font-size:20px}
+@media(max-width:650px){.research-history-draft .research-history-table{min-width:0}.research-history-draft .research-history-table th,.research-history-draft .research-history-table td{font-size:11px;padding:7px 3px}.research-history-draft .research-history-actions button{padding:6px 5px;font-size:11px}}
 </style>
 </head>
 <body>
@@ -1998,7 +2014,7 @@ researchSetup();
     node.innerHTML=window.DOMPurify?DOMPurify.sanitize(raw.slice(marker.length)):raw.slice(marker.length).replace(/<[^>]+>/g,' ');
     return node.textContent||'';
   };
-  const historyPreview=raw=>savedText(raw).replace(/\s+/g,' ').trim().slice(0,110)||'Không có nội dung xem trước';
+  const historyPreview=raw=>{const value=savedText(raw).replace(/\s+/g,' ').trim();return value.length>42?value.slice(0,42).trimEnd()+'…':value||'Không có nội dung';};
   function historyToolbar(heading,subtitle,onSort){
     const bar=document.createElement('div');bar.className='research-history-toolbar';
     const info=document.createElement('div');const title=document.createElement('h3');title.textContent=heading;
@@ -2097,7 +2113,7 @@ researchSetup();
     const controls=document.createElement('div');controls.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:10px';
     const save=document.createElement('button');save.textContent='💾 Lưu bài làm';
     const history=document.createElement('button');history.textContent='🗂 Lịch sử lưu bài';
-    const historyBox=document.createElement('div');historyBox.style.cssText='display:none;margin-top:12px;overflow-x:auto';
+    const historyBox=document.createElement('div');historyBox.style.cssText='display:none;margin-top:12px;width:100%;min-width:0';
     controls.append(save,history);
     panel.append(h,owner,preview,button,controls,historyBox);draftCards.append(panel);
     return {panel,owner,preview,button,save,history,historyBox};
@@ -2144,7 +2160,7 @@ researchSetup();
     x.historyBox.replaceChildren();
     if(error){x.historyBox.textContent='Chưa kết nối lịch sử bản nháp: '+error.message;return;}
     if(!data.length){x.historyBox.textContent='Chưa có lần lưu nào.';return;}
-    const panel=document.createElement('div');panel.className='research-history-panel';
+    const panel=document.createElement('div');panel.className='research-history-panel research-history-draft';
     let direction='new';
     const list=document.createElement('div');list.className='research-history-scroll';
     const bar=historyToolbar('🗂 Lịch sử lưu bài','Các phiên bản đã lưu của Bản nháp '+slot,v=>{direction=v;render();});
