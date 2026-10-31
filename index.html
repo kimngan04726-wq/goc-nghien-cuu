@@ -690,6 +690,12 @@ body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #rich
 .research-history-actions .research-history-delete{background:#fff0ef!important;color:#a33632!important;border:1px solid #f2c8c5}
 @media(max-width:650px){.research-history-panel{padding:12px}.research-history-table{min-width:540px}}
 
+/* Bản nháp: không chừa khoảng trống 190px của nút Chỉnh sửa cho toàn bộ nội dung */
+@media(min-width:651px){#researchDetail .research-draft-card.research-work-box{padding-right:28px!important}}
+#researchDetail .research-draft-card .detail-content,#researchDetail .research-draft-card>div{max-width:100%;box-sizing:border-box}
+#researchDetail .research-draft-card .research-history-panel{width:100%;max-width:none;box-sizing:border-box}
+#researchDetail .research-draft-card .research-history-table th{white-space:normal;overflow-wrap:anywhere}
+#researchDetail .research-draft-card .research-history-actions button{max-width:100%}
 /* Lịch sử lưu bài gọn trong chiều rộng thẻ bản nháp */
 .research-history-draft{width:100%;max-width:100%;box-sizing:border-box;padding:14px 12px}
 .research-history-draft .research-history-toolbar{align-items:flex-start}
