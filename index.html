@@ -857,6 +857,15 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
 #dashSharedSources textarea {font-family:"Times New Roman",Times,serif!important}
 #dashSharedSources .shared-viewer-top, #dashSharedSources .shared-link-entry {font-family:"Times New Roman",Times,serif!important}
 </style>
+
+<style id="dashboard-research-card-hover-motion">
+/* Hiệu ứng nổi/rung nhẹ cho thẻ nghiên cứu trang chủ, tương ứng thẻ ở trang nội dung. */
+#dashboardHome .dash-card{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;transform-origin:center;will-change:transform}
+#dashboardHome .dash-card:hover{transform:translateY(-5px) rotate(-.6deg);box-shadow:0 12px 25px rgba(26,54,80,.18);border-color:#aac7db;animation:dashCardWiggle .42s ease-in-out 1}
+#dashboardHome .dash-card:focus-visible{outline:3px solid #3a86b5;outline-offset:3px;transform:translateY(-3px)}
+@keyframes dashCardWiggle{0%,100%{transform:translateY(-5px) rotate(-.6deg)}30%{transform:translateY(-5px) rotate(1.2deg)}65%{transform:translateY(-5px) rotate(-1.1deg)}}
+@media(prefers-reduced-motion:reduce){#dashboardHome .dash-card{transition:none!important;animation:none!important}#dashboardHome .dash-card:hover{transform:none}}
+</style>
 </head>
 <body>
 
