@@ -1117,6 +1117,51 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
  #tasks .task-list-column #taskList.task-compact-root{max-height:calc(65dvh - 60px)!important}
 }
 </style>
+
+<style id="task-three-rows-pagination-final">
+/* Tối đa ba nhiệm vụ mỗi trang, nút trang luôn ở dưới, không chồng lấn. */
+#tasks .task-visual-layout,
+#tasks .task-visual-layout.has-selection{
+ height:auto!important;max-height:none!important;min-height:0!important;
+ overflow:visible!important;align-items:start!important;
+}
+#tasks .task-list-column{
+ display:flex!important;flex-direction:column!important;
+ height:auto!important;max-height:none!important;min-height:0!important;
+ overflow:visible!important;position:relative!important;
+}
+#tasks .task-list-column #taskList.task-compact-root,
+#tasks .task-list-column #taskList.task-compact-root.with-detail{
+ display:flex!important;flex-direction:column!important;flex:0 0 auto!important;
+ height:auto!important;max-height:none!important;min-height:0!important;
+ overflow:visible!important;gap:8px!important;
+}
+#tasks .task-compact-row{height:65px!important;min-height:65px!important;max-height:65px!important;box-sizing:border-box!important}
+#tasks .task-list-column .task-compact-pages:not([hidden]){
+ display:flex!important;flex:0 0 auto!important;position:static!important;
+ inset:auto!important;transform:none!important;clear:both!important;
+ margin:14px auto 6px!important;padding:6px 12px!important;
+ width:max-content!important;height:auto!important;min-height:46px!important;
+ visibility:visible!important;opacity:1!important;z-index:1!important;
+ background:#fffcf8!important;border:1px solid #eee3d9!important;
+ border-radius:12px!important;box-shadow:none!important;
+}
+#tasks .task-list-column .task-compact-pages[hidden]{display:none!important}
+#tasks .task-compact-detail:not([hidden]){
+ height:auto!important;min-height:270px!important;max-height:calc(100dvh - 330px)!important;
+ overflow-y:auto!important;align-self:start!important;
+}
+@media(min-width:1000px) and (min-height:650px){
+ #tasks{height:auto!important;max-height:none!important;overflow:visible!important}
+ #tasks .task-visual-layout{height:auto!important;max-height:none!important;overflow:visible!important}
+ #tasks .task-list-column{height:auto!important;max-height:none!important}
+}
+@media(max-width:999px){
+ #tasks .task-visual-layout.has-selection{grid-template-columns:1fr!important}
+ #tasks .task-list-column{max-height:none!important}
+ #tasks .task-list-column #taskList.task-compact-root{max-height:none!important}
+}
+</style>
 </head>
 <body>
 
@@ -3239,7 +3284,7 @@ researchSetup();
   renderTaskBoard();
  }
  let taskSearch='',taskPage=1,taskSelectedId=null;
- const taskPageSize=5;
+ const taskPageSize=3;
  const taskRoot=document.getElementById('taskList');
  taskRoot.classList.add('task-compact-root');
  const taskSection=document.getElementById('tasks');
