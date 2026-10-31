@@ -2226,7 +2226,8 @@ researchSetup();
         if(deleteError){del.disabled=false;return alert('Không xóa được: '+deleteError.message);}
         if(selectedSaved?.id===item.id){selectedSaved=null;showSaved('');}
         backupData=backupData.filter(saved=>saved.id!==item.id);
-        renderBackups();
+        tr.remove();
+        backupStatus.textContent=backupData.length+' lần lưu.';
       };
       cell.append(btn,del);tr.append(count,date,excerpt,cell);backupRows.append(tr);
     });
@@ -2247,7 +2248,7 @@ researchSetup();
     try{
       const {error}=await db.from('research_page_backups').insert({page_id:pageId,content,note:'Lưu bài làm'});
       if(error)throw error;
-      backupPanel.style.display='block';await loadBackups();
+      if(backupPanel.style.display==='block')await loadBackups();
       alert('Đã lưu thêm một phiên bản mới.');
     }catch(e){alert('Không lưu được: '+(e.message||e));}
     finally{saveVersion.disabled=false;}
@@ -2357,7 +2358,8 @@ researchSetup();
           if(draftSelections[slot]?.id===item.id){draftSelections[slot]=null;x.preview.textContent='Chưa chọn phiên bản.';}
           const removedIndex=data.findIndex(saved=>saved.id===item.id);
           if(removedIndex!==-1)data.splice(removedIndex,1);
-          render();
+          tr.remove();
+          if(!data.length){x.historyBox.textContent='Chưa có lần lưu nào.';}
         };
         actions.append(view,del);tr.append(number,date,excerpt,actions);table.append(tr);
       });
@@ -2383,7 +2385,7 @@ researchSetup();
       const {error}=await db.from('research_draft_backups').insert({page_id:pageId,slot,content});
       x.save.disabled=false;
       if(error)return alert('Không lưu được: '+error.message);
-      x.historyBox.style.display='block';await draftHistory(slot);
+      if(x.historyBox.style.display==='block')await draftHistory(slot);
       alert('Đã lưu phiên bản mới cho Bản nháp '+slot+'.');
     };
   });
