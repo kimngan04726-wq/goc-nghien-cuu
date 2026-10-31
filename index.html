@@ -2065,9 +2065,11 @@ researchSetup();
       const h=document.createElement('h3');
       h.textContent=mode==='merge'?'Bài tổng hợp đề xuất':'Kết quả so sánh và lọc ý';
       result.append(h);
-      const stats=document.createElement('p');
-      stats.textContent='Hai bản nháp có '+common.length+' câu trùng nguyên văn, '+uniqueA.length+' câu riêng ở bản 1 và '+uniqueB.length+' câu riêng ở bản 2.';
-      result.append(stats);
+      if(mode==='compare'){
+        const stats=document.createElement('p');
+        stats.textContent='Hai bản nháp có '+common.length+' câu trùng nguyên văn, '+uniqueA.length+' câu riêng ở bản 1 và '+uniqueB.length+' câu riêng ở bản 2.';
+        result.append(stats);
+      }
       const add=(title,items)=>{
         const label=document.createElement('h4');label.textContent=title;result.append(label);
         const p=document.createElement('div');p.style.whiteSpace='pre-wrap';
