@@ -16,7 +16,7 @@ const pending=()=>dirty||loading||conflictOpen;
 window.addEventListener('beforeunload',e=>{if(pending()){e.preventDefault();e.returnValue=''}});
 function ensure(){
  if($('mvpA'))return;
- const css=document.createElement('link');css.rel='stylesheet';css.href=(document.querySelector('script[src*="trang-a.js"]')?.src||'mvp/trang-a.js').replace(/trang-a\\.js(?:\\?.*)?$/,'trang-a.css');document.head.append(css);
+ const css=document.createElement('link');css.rel='stylesheet';css.href=new URL('trang-a.css',document.querySelector('script[src*="trang-a.js"]')?.src||new URL('mvp/trang-a.js',location.href).href).href;document.head.append(css);
  const box=document.createElement('div');box.id='mvpA';box.hidden=true;box.innerHTML=`
  <header class="mvpA-top"><div><h2>📚 Nơi làm việc</h2><p>Quản lý, theo dõi tiến độ và phối hợp nghiên cứu theo từng nhóm nội dung.</p></div><div class="mvpA-illustration" aria-label="Minh họa sách và cây">🌿📚</div><button class="mvpA-btn" id="mvpClose">✕ Đóng</button></header>
  <p id="mvpInfo" class="mvpA-muted" role="status"></p>
@@ -42,7 +42,7 @@ function ensure(){
  $('mvpOwner').onchange=assignOwner;
  $('mvpRetry').onclick=()=>{if(dirty&&!loading)save()};
 }
-const wordCount=text=>String(text||'').trim().split(/\\s+/).filter(Boolean).length;
+const wordCount=text=>String(text||'').trim().split(String.fromCharCode(32)).filter(Boolean).length;
 let mvpView='workspace',mvpTask=1;
 function showView(view){if(view==='workspace'&&pending()){message('Có nội dung chưa lưu; hãy xử lý trước khi quay lại.');return}if(view==='detail'&&pending()){message('Có nội dung chưa lưu; hãy xử lý trước khi quay lại.');return}mvpView=view;['mvpWorkspace','mvpDetail','mvpEditor','mvpCompareView'].forEach((id,i)=>$(id).hidden!==undefined&&($(id).hidden=['workspace','detail','editor','compare'][i]!==view));if(view==='detail')renderDetail();if(view==='compare')renderCompare()}
 function renderCards(){
