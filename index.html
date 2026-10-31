@@ -2919,5 +2919,58 @@ html body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) 
  flex-basis:auto!important;padding-bottom:40px!important
  }
 }
-</style></body>
+</style>
+<style id="research-editor-safety-fix">
+/* Lưu/Hủy luôn hiển thị khi trình soạn thảo thu nhỏ, không che nội dung. */
+body:not(.word-editor-open) #researchEditor{position:relative!important;padding-bottom:84px!important}
+body:not(.word-editor-open) #researchEditor .research-actions{
+ position:sticky!important;top:8px!important;right:auto!important;left:auto!important;
+ width:max-content!important;max-width:100%!important;margin:12px 12px 10px auto!important;
+ display:flex!important;visibility:visible!important;opacity:1!important;z-index:100!important;
+ justify-content:flex-end!important;background:#f8f2e9!important;padding:7px!important;
+ border:1px solid #e1cdb1!important;border-radius:10px!important;
+}
+body:not(.word-editor-open) #researchEditor .research-actions button{display:inline-block!important;visibility:visible!important;opacity:1!important}
+</style>
+<script>
+(function(){
+  // Không cho chuyển bài khi đang có thay đổi chưa lưu.
+  const panel=()=>document.getElementById('researchEditor');
+  const rich=()=>document.getElementById('richEditor');
+  let snapshot=null;
+  let currentLabel='';
+  function visible(){return panel()&&getComputedStyle(panel()).display!=='none';}
+  function remember(){
+    if(!visible())return;
+    snapshot=rich()?.innerHTML??'';
+    currentLabel=panel()?.querySelector('h2')?.textContent||'bài đang sửa';
+  }
+  document.addEventListener('click',function(event){
+    const btn=event.target.closest('button');
+    if(!btn||!visible())return;
+    const label=(btn.textContent||'').trim();
+    // Chỉ chặn khi người dùng chọn một nút chỉnh sửa bài khác.
+    if(!/Chỉnh sửa/.test(label)||btn.closest('#researchEditor'))return;
+    if(snapshot!==null&&rich()&&rich().innerHTML!==snapshot){
+      if(!confirm('Bạn có thay đổi chưa lưu trong '+currentLabel+'. Chuyển sang bài khác sẽ mất các thay đổi đó. Bạn muốn HỦY thay đổi và chuyển bài?')){
+        event.preventDefault();event.stopImmediatePropagation();return;
+      }
+    }
+    snapshot=null;
+  },true);
+  const observer=new MutationObserver(()=>{
+    if(!visible()){snapshot=null;return;}
+    // Sau khi editor mở hoặc thay bài, ghi nhận nội dung ban đầu.
+    if(snapshot===null)setTimeout(remember,180);
+  });
+  document.addEventListener('DOMContentLoaded',()=>{
+    if(panel())observer.observe(panel(),{attributes:true,attributeFilter:['style']});
+    const actions=panel()?.querySelector('.research-actions');
+    actions?.addEventListener('click',e=>{
+      if(e.target.closest('button'))setTimeout(()=>{if(!visible())snapshot=null;},200);
+    });
+  });
+})();
+</script>
+</body>
 </html>
