@@ -4,6 +4,7 @@
 const results=[];
 function check(name,condition){results.push({name,passed:!!condition});if(!condition)console.error('FAIL:',name)}
 function run(){
+ results.length=0;
  check('Editor UI available',typeof window.createResearchSubsectionUI==='function');
  check('Comparison UI available',typeof window.createResearchCompareUI==='function');
  check('Merge bridge available',typeof window.createResearchCompareBridge==='function');
