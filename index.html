@@ -2600,6 +2600,8 @@ researchSetup();
               }
               const {error:saveError}=await db.from('research_pages').update({content:combined,updated_at:new Date().toISOString()}).eq('id',pageId);
               if(saveError)throw saveError;
+              // Dán chỉ cập nhật bản làm việc hiện tại; không tạo bản lưu lịch sử.
+              selectedSaved=null;
               close();
               await loadResearch();
               if(typeof refresh==='function')refresh();
@@ -2649,6 +2651,8 @@ researchSetup();
       if(window.DOMPurify)body.innerHTML=DOMPurify.sanitize(source.innerHTML);
       else body.textContent=source.textContent;
     }else body.textContent=source.textContent;
+    // Khi mở lại, luôn hiển thị bản làm việc mới nhất, không lấy từ lịch sử.
+    selectedSaved=null;
     showSaved(researchPageCache.find(p=>Number(p.id)===selected)?.content||'');
     edit.style.display=canEditResearch(selected)?'inline-block':'none';
     saveVersion.style.display=canEditResearch(selected)?'inline-block':'none';
