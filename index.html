@@ -642,6 +642,18 @@ body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>button[tit
 position:static!important;inset:auto!important;height:31px!important;min-height:31px!important;margin:0!important
 }
 body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #richEditor{margin-top:0!important}
+</style><style id="toolbar-compact-final-fix">
+/* Toolbar hugs its controls without reserving a blank lower row. */
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{
+  height:fit-content!important;min-height:0!important;max-height:none!important;
+  padding:4px 6px!important;row-gap:3px!important;align-content:flex-start!important;
+  flex:0 0 auto!important;overflow:visible!important;
+}
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>button,
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>select,
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>.docs-font-size-input{
+  margin-top:0!important;margin-bottom:0!important;
+}
 </style><style>.research-draft-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.research-draft-card{min-width:0}.research-draft-owner{font-size:14px;color:#667}.research-draft-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:14px 0}.research-draft-result{background:#fffaf1;border:1px solid #e4d0b1;border-radius:12px;padding:18px;white-space:normal}.research-draft-card .detail-content{max-height:260px;overflow:auto;white-space:pre-wrap}@media(max-width:700px){.research-draft-grid{grid-template-columns:1fr}}</style><style>
 #dashSharedSources{margin:20px 0 28px;padding:20px;border:1px solid #e4d5c6;border-radius:16px;background:#fff}
 #dashSharedSources .shared-heading h3{font-size:24px;margin:0;color:#12385d}
