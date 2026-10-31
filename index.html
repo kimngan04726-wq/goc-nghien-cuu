@@ -849,6 +849,14 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
 #researchDetail .research-history-toolbar-actions[data-tooltip]:has(select:focus-visible)::before{opacity:1;visibility:visible}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<style id="shared-sources-times-new-roman">
+/* Font nhất quán cho mọi thành phần do website kiểm soát. Nội dung iframe Google thuộc miền khác. */
+#dashSharedSources, #dashSharedSources :not(iframe),
+#dashSharedSources button, #dashSharedSources input, #dashSharedSources select,
+#dashSharedSources textarea {font-family:"Times New Roman",Times,serif!important}
+#dashSharedSources .shared-viewer-top, #dashSharedSources .shared-link-entry {font-family:"Times New Roman",Times,serif!important}
+</style>
 </head>
 <body>
 
