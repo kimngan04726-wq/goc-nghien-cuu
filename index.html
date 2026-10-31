@@ -4941,5 +4941,20 @@ body.word-editor-open #researchEditor #richEditor{flex:1 1 0!important;min-heigh
 body.word-editor-open #researchEditor .research-actions{position:static!important;order:20!important}
 body.word-editor-open #researchEditor #researchMessage{flex:0 0 auto!important;margin:2px 20px!important}
 </style>
+<style id="research-allow-page-scroll-20261101">
+html:has(#research.gallery-detail:not(.hidden)),body:has(#research.gallery-detail:not(.hidden)){height:auto!important;min-height:100%!important;overflow-y:auto!important;overflow-x:auto!important}
+#research.gallery-detail{height:auto!important;max-height:none!important;min-height:100dvh!important;overflow:visible!important;display:block!important}
+#research.gallery-detail #researchDetail{height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;display:flex!important;flex-direction:column!important;gap:clamp(9px,1.4vh,18px)!important;padding:clamp(14px,2vh,28px) 0 clamp(24px,4vh,48px)!important}
+#researchDetail .research-task-box{flex:0 0 auto!important;max-height:none!important;min-height:0!important;grid-template-rows:auto auto!important;overflow:visible!important}
+#researchDetail .research-task-box .research-task-text{max-height:none!important;min-height:0!important;overflow:visible!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important}
+#researchDetail .research-drafts-area{flex:0 0 auto!important;min-height:0!important}
+#researchDetail .research-draft-grid{flex:0 0 auto!important;min-height:0!important;align-items:stretch!important}
+#researchDetail .research-draft-card.research-work-box{height:auto!important;min-height:0!important;overflow:visible!important}
+#researchDetail .research-draft-card .detail-content{flex:0 0 auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important}
+#researchDetail .research-work-box:not(.research-draft-card):not(.research-history-panel){flex:0 0 auto!important;min-height:0!important;overflow:visible!important}
+#researchDetail .research-work-box:not(.research-draft-card):not(.research-history-panel)>.detail-content{flex:0 0 auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;overflow-wrap:anywhere!important}
+#researchDetail .research-draft-result:not([hidden]){flex:0 0 auto!important;max-height:none!important;overflow:visible!important}
+@media(max-width:900px){#research.gallery-detail #researchDetail{width:calc(100% - 20px)!important}#researchDetail .research-draft-grid{grid-template-columns:1fr!important}#researchDetail .research-task-box{grid-template-columns:minmax(0,1fr)!important}#researchDetail .research-task-box>button{grid-column:1!important;grid-row:auto!important;justify-self:start!important}}
+</style>
 </body>
 </html>
