@@ -2301,13 +2301,8 @@ researchSetup();
       draftState[slot]=row?.content||'';
       const x=draftNodes[slot-1];
       x.owner.textContent=row?.author_id?'Đã có người phụ trách':'Chưa phân công thành viên';
-      const {data:versions,error:historyError}=await db.from('research_draft_backups').select('id,content').eq('page_id',id).eq('slot',slot).order('created_at',{ascending:false}).order('id',{ascending:false}).limit(1);
       if(selected!==id)return;
-      if(draftSelections[slot]?.pageId!==id){
-        const latest=!historyError?versions?.[0]:null;
-        draftSelections[slot]=latest?{id:latest.id,content:latest.content,pageId:id}:null;
-      }
-      const display=draftSelections[slot]?.pageId===id?draftSelections[slot].content:draftState[slot];
+      const display=draftState[slot];
       x.preview.textContent=stripText(display.startsWith('<!--RICH_RESEARCH_V1-->')?display.slice('<!--RICH_RESEARCH_V1-->'.length):display)||'Chưa có nội dung.';
       x.button.disabled=!(isAdmin&&adminMode==='edit'||isMember&&assignedResearchPages.has(id));
     }
@@ -2378,7 +2373,7 @@ researchSetup();
       if(selected===null||!canEditResearch(selected))return;
       if(document.getElementById('researchEditor')?.style.display==='block')return alert('Hãy lưu hoặc đóng trình soạn thảo trước.');
       const pageId=selected;
-      const content=draftSelections[slot]?.pageId===pageId?draftSelections[slot].content:draftState[slot];
+      const content=draftState[slot];
       if(!content?.trim())return alert('Chưa có nội dung bản nháp để lưu.');
       if(!confirm('Lưu Bản nháp '+slot+' thành phiên bản mới?'))return;
       x.save.disabled=true;
@@ -2413,7 +2408,7 @@ researchSetup();
     // Khi chuyển sang bản nháp, trả nút đó về trạng thái bình thường.
     edit.style.display=canEditResearch(selected)?'inline-block':'none';
     const rich=document.getElementById('richEditor');
-    const source=draftSelections[slot]?.pageId===selected?draftSelections[slot].content:draftState[slot];
+    const source=draftState[slot];
     rich.innerHTML=DOMPurify.sanitize(draftHtml(source||''));
     document.getElementById('researchText').value=source||'';
     const heading=panel.querySelector('h2');
@@ -2485,8 +2480,8 @@ researchSetup();
         node.querySelectorAll('p,div,li,h1,h2,h3,h4,h5,h6').forEach(el=>el.append(document.createTextNode('\n')));
         return node.textContent||'';
       };
-      const a=sentences(plain(draftSelections[1]?.pageId===pageId?draftSelections[1].content:draftState[1]));
-      const b=sentences(plain(draftSelections[2]?.pageId===pageId?draftSelections[2].content:draftState[2]));
+      const a=sentences(plain(draftState[1]));
+      const b=sentences(plain(draftState[2]));
       if(!a.length||!b.length){
         result.textContent='Cần có nội dung ở cả hai bản nháp. Bản nháp 1: '+a.length+' câu; Bản nháp 2: '+b.length+' câu.';
         return;
@@ -2575,18 +2570,19 @@ researchSetup();
           if(editorPanel&&getComputedStyle(editorPanel).display!=='none')return alert('Bạn đang mở trình soạn thảo. Hãy lưu hoặc đóng bài đang sửa trước khi dán để tránh mất thay đổi.');
           const dialog=document.createElement('dialog');
           dialog.style.cssText='max-width:min(470px,calc(100vw - 32px));border:1px solid #d7c4ac;border-radius:14px;padding:24px;box-shadow:0 16px 50px #0004';
-          const title=document.createElement('h3');title.textContent='Xác nhận lưu bài làm';
-          const description=document.createElement('p');description.textContent='Bạn có chắc chắn muốn lưu bài tổng hợp vào Bài tổng hợp không? Nội dung hiện tại sẽ được thay thế, hai bản nháp vẫn giữ nguyên.';
+          const title=document.createElement('h3');title.textContent='Dán bài tổng hợp';
+          const description=document.createElement('p');description.textContent='Chọn cách dán vào Bài tổng hợp. Hai bản nháp sẽ không thay đổi.';
           const buttons=document.createElement('div');buttons.style.cssText='display:flex;flex-wrap:wrap;gap:9px;margin-top:18px';
-          const replace=document.createElement('button');replace.textContent='OK';
-          const cancel=document.createElement('button');cancel.textContent='Cancel';
-          buttons.append(replace,cancel);dialog.append(title,description,buttons);
+          const replace=document.createElement('button');replace.textContent='Thay thế nội dung';
+          const append=document.createElement('button');append.textContent='Dán sau văn bản có sẵn';
+          const cancel=document.createElement('button');cancel.textContent='Hủy';
+          buttons.append(replace,append,cancel);dialog.append(title,description,buttons);
           document.body.append(dialog);
           const close=()=>{dialog.close();dialog.remove();};
           cancel.onclick=close;
           dialog.addEventListener('cancel',()=>setTimeout(()=>dialog.remove(),0),{once:true});
-          const apply=async()=>{
-            replace.disabled=true;cancel.disabled=true;
+          const apply=async(mode)=>{
+            replace.disabled=true;append.disabled=true;cancel.disabled=true;
             try{
               if(selected!==pageId)throw new Error('Bạn đã chuyển sang bài khác.');
               const marker='<!--RICH_RESEARCH_V1-->';
@@ -2594,16 +2590,24 @@ researchSetup();
               if(!clean)throw new Error('Thư viện bảo mật chưa tải. Vui lòng thử lại.');
               const asHtml=text=>text.split(/\\n\\s*\\n/).map(p=>'<p>'+p.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\n/g,'<br>')+'</p>').join('');
               const newHtml=asHtml(article);
-              const combined=marker+clean.sanitize(newHtml);
+              let combined=marker+clean.sanitize(newHtml);
+              if(mode==='append'){
+                const {data:current,error:readError}=await db.from('research_pages').select('content').eq('id',pageId).single();
+                if(readError)throw readError;
+                const raw=current?.content||'';
+                const oldHtml=raw.startsWith(marker)?raw.slice(marker.length):asHtml(raw);
+                combined=marker+clean.sanitize(oldHtml+newHtml);
+              }
               const {error:saveError}=await db.from('research_pages').update({content:combined,updated_at:new Date().toISOString()}).eq('id',pageId);
               if(saveError)throw saveError;
               close();
               await loadResearch();
               if(typeof refresh==='function')refresh();
-              alert('Đã lưu bài tổng hợp vào Bài tổng hợp.');
-            }catch(err){alert('Chưa dán được: '+(err?.message||'Lỗi không xác định'));replace.disabled=false;cancel.disabled=false;}
+              alert(mode==='append'?'Đã dán thêm vào Bài tổng hợp.':'Đã thay thế nội dung Bài tổng hợp.');
+            }catch(err){alert('Chưa dán được: '+(err?.message||'Lỗi không xác định'));replace.disabled=false;append.disabled=false;cancel.disabled=false;}
           };
-          replace.onclick=()=>apply();
+          replace.onclick=()=>apply('replace');
+          append.onclick=()=>apply('append');
           dialog.showModal();
         };
         result.append(paste);
@@ -2645,8 +2649,7 @@ researchSetup();
       if(window.DOMPurify)body.innerHTML=DOMPurify.sanitize(source.innerHTML);
       else body.textContent=source.textContent;
     }else body.textContent=source.textContent;
-    if(selectedSaved?.pageId===selected)showSaved(selectedSaved.content);
-    else loadLatestUnified(selected);
+    showSaved(researchPageCache.find(p=>Number(p.id)===selected)?.content||'');
     edit.style.display=canEditResearch(selected)?'inline-block':'none';
     saveVersion.style.display=canEditResearch(selected)?'inline-block':'none';
     loadDrafts();
@@ -3313,7 +3316,7 @@ body.word-editor-open #researchEditor #researchMessage{flex:none;margin:0!import
  cancelResearch=function(){setWordEditorExpanded(false);return priorCancel()};
  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.body.classList.contains('word-editor-open')){event.preventDefault();setWordEditorExpanded(false)}});
 })();
-</script><script>(function(){const a=document.querySelector('#researchEditor .research-actions');if(!a)return;const b=a.querySelectorAll('button');if(b.length<2)return;b[0].textContent='Xong';b[0].setAttribute('title','Thoát chế độ chỉnh sửa (không lưu)');b[0].onclick=function(event){event.preventDefault();cancelResearch()};b[1].remove();})();</script><style id="compact-docs-toolbar-v4">
+</script><script>(function(){const a=document.querySelector('#researchEditor .research-actions');if(!a)return;const b=a.querySelectorAll('button');if(b.length<2)return;b[0].textContent='Xong';b[0].setAttribute('title','Hoàn tất chỉnh sửa');b[0].onclick=async function(event){event.preventDefault();if(b[0].disabled)return;b[0].disabled=true;try{await saveResearch()}finally{b[0].disabled=false}};b[1].remove();})();</script><style id="compact-docs-toolbar-v4">
 body.word-editor-open #researchEditor>h2{display:none!important}
 body.word-editor-open #researchEditor{padding:5px 8px!important}
 body.word-editor-open #researchEditor .research-actions{top:7px!important;right:10px!important}
