@@ -3434,30 +3434,39 @@ researchSetup();
      const nameText=document.createElement('span');nameText.className='task-preview-name';nameText.textContent=name;
      const statusIcon=document.createElement('span');statusIcon.className='task-preview-check';statusIcon.textContent='○';
      summary.append(fileIcon,nameText,statusIcon);
-     const updatePreviewCheck=()=>{
-      const raw=index===2?String(page.content||''):String((window.researchDraftCache||{})[page.id+'-'+(index+1)]||'');
-      const node=document.createElement('div');node.innerHTML=raw.replace(/^<!--RICH_RESEARCH_V1-->/,'');
-      const hasContent=!!node.textContent?.trim();
-      statusIcon.textContent=hasContent?'✓':'○';statusIcon.classList.toggle('filled',hasContent);
-     };updatePreviewCheck();
      const preview=document.createElement('div');preview.className='task-draft-text';
+     const plainText=raw=>{
+      const node=document.createElement('div');
+      node.innerHTML=String(raw||'').replace(/^<!--RICH_RESEARCH_V1-->/,'');
+      return (node.textContent||'').trim();
+     };
+     const setStatus=raw=>{
+      const filled=!!plainText(raw);
+      statusIcon.textContent=filled?'✓':'○';
+      statusIcon.classList.toggle('filled',filled);
+     };
      if(index===2){
-      const plain=document.createElement('div');plain.innerHTML=String(value||'').replace(/^<!--RICH_RESEARCH_V1-->/,'');
-      preview.textContent=plain.textContent?.trim()||'Chưa có nội dung.';
+      const raw=String(page.content||'');
+      setStatus(raw);
+      preview.textContent=plainText(raw)||'Chưa có nội dung.';
      }else{
       preview.textContent='Đang tải bản nháp...';
-      details.addEventListener('toggle',async()=>{
-       if(!details.open||details.dataset.loaded)return;
-       details.dataset.loaded='1';
+      statusIcon.textContent='…';
+      const loadDraft=async()=>{
        try{
         const {data,error}=await db.from('research_drafts').select('*').eq('page_id',page.id);
         if(error)throw error;
         const draft=(data||[]).find(d=>Number(d.draft_number||d.draft_index||d.slot||0)===index+1);
         const raw=String(draft?.content||'');
-        const node=document.createElement('div');node.innerHTML=raw.replace(/^<!--RICH_RESEARCH_V1-->/,'');
-        preview.textContent=node.textContent?.trim()||'Chưa có nội dung.';
-       }catch(e){preview.textContent='Không tải được bản nháp. Hãy mở trang nghiên cứu để xem.';}
-      });
+        setStatus(raw);
+        preview.textContent=plainText(raw)||'Chưa có nội dung.';
+       }catch(e){
+        statusIcon.textContent='?';
+        statusIcon.classList.remove('filled');
+        preview.textContent='Không tải được bản nháp. Hãy mở trang nghiên cứu để xem.';
+       }
+      };
+      loadDraft();
      }
      details.append(summary,preview);container.append(details);
     });
