@@ -725,6 +725,29 @@ body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #rich
 #researchDetail .research-history-actions .research-icon-button{width:34px;height:34px;min-width:34px;min-height:34px;padding:5px!important;font-size:17px!important}
 #researchDetail .research-history-actions{flex-wrap:nowrap;align-items:center;gap:6px}
 #researchDetail .research-icon-button:focus-visible{outline:3px solid #e6b45e;outline-offset:3px}
+
+/* Lịch sử gọn: tối đa ba dòng; xem tất cả trong cửa sổ giữa màn hình */
+#researchDetail .research-history-panel{min-height:0!important;padding:14px 16px!important}
+#researchDetail .research-history-panel .research-history-toolbar{margin-bottom:8px;gap:8px}
+#researchDetail .research-history-panel .research-history-toolbar h3{font-size:19px!important;margin:0 0 4px!important}
+#researchDetail .research-history-panel .research-history-toolbar p{font-size:12px}
+#researchDetail .research-history-panel .research-history-table{border-spacing:0 3px}
+#researchDetail .research-history-panel .research-history-table td{padding-top:5px;padding-bottom:5px}
+#researchDetail .research-history-panel .research-history-table th{padding-top:6px;padding-bottom:6px}
+#researchDetail .research-history-panel .research-history-actions button{height:30px;min-height:30px;width:30px;min-width:30px;padding:4px!important}
+.research-history-expand-button{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;padding:5px!important;font-size:20px!important}
+.research-history-modal{position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(980px,calc(100vw - 28px));max-width:980px;max-height:88vh;overflow:auto;border:1px solid #e8d8c7;border-radius:18px;padding:18px;background:#fffdfb;color:#17364e;box-shadow:0 20px 65px #0004}
+.research-history-modal::backdrop{background:rgba(12,29,45,.55)}
+.research-history-modal-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.research-history-modal-top h3{margin:0;font-size:22px}
+.research-history-modal .research-history-panel,.research-history-modal #researchDetail .research-history-panel{width:100%!important;max-width:none!important;min-height:0!important;padding:12px!important;margin:0!important;box-sizing:border-box!important;box-shadow:none!important}
+.research-history-modal .research-history-table{width:100%!important;min-width:0!important;table-layout:auto!important}
+.research-history-modal .research-history-scroll{overflow-x:auto!important}
+.research-history-modal .research-history-table td{padding:8px!important}
+.research-history-modal .research-history-actions{display:flex;flex-wrap:nowrap}
+.research-history-modal .research-history-preview{max-width:300px}
+.research-history-modal .research-history-expand-button{display:none!important}
+@media(max-width:650px){.research-history-modal{padding:10px}.research-history-modal .research-history-table{min-width:520px!important}}
 </style>
 </head>
 <body>
@@ -2018,6 +2041,8 @@ researchSetup();
   const backupRows=document.createElement('tbody');backupTable.append(backupHead,backupRows);
   const backupScroll=document.createElement('div');backupScroll.className='research-history-scroll';backupScroll.append(backupTable);
   const backupToolbar=historyToolbar('🗂 Lịch sử lưu bài','Xem lại các phiên bản đã lưu và chọn nội dung cần xem.',v=>{backupSort=v;renderBackups();});
+  const backupExpand=historyExpandButton(()=>historyExpand(backupPanel,renderBackups));
+  backupToolbar.append(backupExpand);
   backupPanel.append(backupToolbar,backupStatus,backupScroll);
   const workActions=document.createElement('div');
   workActions.style.cssText='display:flex;flex-wrap:wrap;gap:10px;margin:12px 0';
@@ -2035,6 +2060,36 @@ researchSetup();
     return node.textContent||'';
   };
   const iconOnly=(button,icon,label)=>{button.textContent=icon;button.title=label;button.setAttribute('aria-label',label);button.classList.add('research-icon-button');return button;};
+  function historyExpand(panel,render){
+    const dialog=document.createElement('dialog');dialog.className='research-history-modal';
+    const top=document.createElement('div');top.className='research-history-modal-top';
+    const heading=document.createElement('h3');heading.textContent='🗂 Tất cả lịch sử lưu bài';
+    const close=document.createElement('button');iconOnly(close,'✕','Đóng danh sách lịch sử');
+    top.append(heading,close);
+    const placeholder=document.createComment('history-original-position');
+    panel.parentNode.insertBefore(placeholder,panel);
+    const previousDisplay=panel.style.display;
+    panel.classList.add('research-history-expanded');
+    dialog.append(top,panel);document.body.append(dialog);
+    const restore=()=>{
+      panel.classList.remove('research-history-expanded');
+      panel.style.display=previousDisplay;
+      placeholder.parentNode?.replaceChild(panel,placeholder);
+      dialog.remove();render();
+    };
+    dialog.addEventListener('close',restore,{once:true});
+    close.onclick=()=>dialog.close();
+    dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
+    render();
+    try{dialog.showModal();}catch{restore();}
+  }
+  function historyExpandButton(onClick){
+    const button=document.createElement('button');
+    iconOnly(button,'⤢','Xem tất cả lịch sử lưu bài');
+    button.classList.add('research-history-expand-button');
+    button.onclick=onClick;
+    return button;
+  }
   const historyPreview=raw=>{const value=savedText(raw).replace(/\s+/g,' ').trim();return value.length>42?value.slice(0,42).trimEnd()+'…':value||'Không có nội dung';};
   function historyToolbar(heading,subtitle,onSort){
     const bar=document.createElement('div');bar.className='research-history-toolbar';
@@ -2068,7 +2123,7 @@ researchSetup();
     backupStatus.textContent=backupData.length+' lần lưu.';
     const indexed=backupData.map((item,i)=>({item,i}));
     if(backupSort==='new')indexed.reverse();
-    indexed.forEach(({item,i})=>{
+    (backupPanel.classList.contains('research-history-expanded')?indexed:indexed.slice(0,3)).forEach(({item,i})=>{
       const tr=document.createElement('tr');
       const count=document.createElement('td');count.textContent='Lần '+(i+1);
       const date=document.createElement('td');date.textContent=new Date(item.created_at).toLocaleString('vi-VN');
@@ -2185,6 +2240,8 @@ researchSetup();
     let direction='new';
     const list=document.createElement('div');list.className='research-history-scroll';
     const bar=historyToolbar('🗂 Lịch sử lưu bài','Các phiên bản đã lưu của Bản nháp '+slot,v=>{direction=v;render();});
+    const expand=historyExpandButton(()=>historyExpand(panel,render));
+    bar.append(expand);
     panel.append(bar,list);x.historyBox.append(panel);
     function render(){
       list.replaceChildren();
@@ -2194,7 +2251,7 @@ researchSetup();
       table.append(head);
       const indexed=data.map((item,i)=>({item,i}));
       if(direction==='new')indexed.reverse();
-      indexed.forEach(({item,i})=>{
+      (panel.classList.contains('research-history-expanded')?indexed:indexed.slice(0,3)).forEach(({item,i})=>{
         const tr=document.createElement('tr');
         const number=document.createElement('td');number.textContent='Lần '+(i+1);
         const date=document.createElement('td');date.textContent=new Date(item.created_at).toLocaleString('vi-VN');
