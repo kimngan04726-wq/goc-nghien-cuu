@@ -1504,6 +1504,27 @@ main .card{padding:clamp(12px,1.2vw,16px)}
  #research:not(.gallery-detail) .card .research-rename-button,#research:not(.gallery-detail) .card .research-delete-button{bottom:4px!important;padding:3px 6px!important;min-height:22px!important}
 }
 </style>
+<style id="research-all-tasks-reference-ui-2026">
+/* Shared presentation for every research task; do not modify event handlers or data. */
+#research.gallery-detail #researchDetail{max-width:1500px!important;padding:16px 22px 24px!important;color:#123656!important}
+#researchDetail>button:first-child{border-radius:13px!important;background:#fff7ed!important;border:1px solid #e7c6a0!important;padding:9px 17px!important;margin:0 0 10px!important}
+#researchDetail>h2{font-size:clamp(27px,3vw,40px)!important;line-height:1.15!important;margin:5px 0 17px!important;padding-left:54px!important}
+#researchDetail .research-task-box{background:linear-gradient(120deg,#fff8f0,#fffdfb)!important;border:1px solid #e7c5a1!important;border-radius:17px!important;padding:17px 22px!important;margin:12px 0 20px!important;box-shadow:0 7px 18px #19364e0b!important;min-height:0!important}
+#researchDetail .research-task-box h3{font-size:clamp(21px,2vw,27px)!important;margin:0 0 7px!important}
+#researchDetail .research-task-text{font-size:clamp(15px,1.2vw,18px)!important;line-height:1.5!important;min-height:0!important;margin:6px 0!important}
+#researchDetail .research-draft-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:18px!important}
+#researchDetail .research-draft-card.research-work-box{background:linear-gradient(165deg,#fff 78%,#f4f9ff)!important;border:1px solid #e6c7a8!important;border-radius:17px!important;box-shadow:0 9px 22px #1736510e!important;padding:17px 22px!important;min-height:225px!important;display:flex!important;flex-direction:column!important}
+#researchDetail .research-draft-card h3{font-size:clamp(21px,2vw,27px)!important;margin:0 0 10px!important}
+#researchDetail .research-draft-owner{font-size:15px!important;border-bottom:1px solid #d9e0e5!important;padding-bottom:9px!important}
+#researchDetail .research-draft-card .detail-content{font-size:16px!important;line-height:1.5!important;min-height:48px!important;max-height:170px!important;margin:9px 0!important;overflow:auto!important}
+#researchDetail .research-draft-card .research-draft-actions{margin-top:auto!important;padding-top:8px!important;display:flex!important;justify-content:flex-start!important;gap:9px!important}
+#researchDetail .research-draft-actions button{border-radius:9px!important;padding:8px 12px!important;min-height:38px!important}
+#researchDetail .research-work-box:not(.research-draft-card){border:1px solid #e6c7a8!important;border-radius:17px!important;background:linear-gradient(165deg,#fff 80%,#f4f9ff)!important;box-shadow:0 8px 20px #1736510d!important;padding:17px 22px!important;min-height:160px!important}
+#researchDetail .research-work-box:not(.research-draft-card) h3{font-size:clamp(21px,2vw,27px)!important;margin:0 0 10px!important}
+body.word-editor-open #researchEditor{position:fixed!important;inset:50% auto auto 50%!important;transform:translate(-50%,-50%)!important;width:min(1080px,94vw)!important;max-width:94vw!important;height:min(740px,88dvh)!important;max-height:88dvh!important;overflow:auto!important;border-radius:18px!important;background:#fffaf5!important;box-shadow:0 24px 75px #071b3290!important;z-index:10050!important;padding:17px 22px!important}
+body.word-editor-open #researchEditor #richEditor{background:white!important;border:1px solid #cbd1d8!important;box-shadow:0 5px 18px #152f4614!important;min-height:240px!important}
+@media(max-width:700px){#research.gallery-detail #researchDetail{padding:12px!important}#researchDetail .research-draft-grid{grid-template-columns:1fr!important}#researchDetail .research-draft-card.research-work-box{min-height:190px!important}body.word-editor-open #researchEditor{width:98vw!important;max-width:98vw!important;padding:12px!important}}
+</style>
 </head>
 <body>
 
