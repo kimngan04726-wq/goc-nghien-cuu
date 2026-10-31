@@ -2297,13 +2297,37 @@ researchSetup();
     const content=(/<[a-z][^>]*>/i.test(raw)?parsed.body.textContent:raw).trim();
     if(!content)return alert('Bài tổng hợp chưa có nội dung.');
     const title=(page.title||'Nhiệm vụ '+page.id).trim();
-    // Dùng confirm đồng bộ: lựa chọn được xác định trước khi kích hoạt popup OAuth.
-    const mode=confirm('XUẤT GOOGLE DOCS — '+title+'\n\nOK: THAY nội dung cũ của thẻ nhiệm vụ.\nHủy: chọn THÊM vào cuối thẻ hoặc không xuất.');
-    let exportMode=mode?'replace':null;
-    if(!exportMode){
-      if(!confirm('Bạn có muốn THÊM nội dung vào cuối thẻ "'+title+'" không?\n\nOK: Thêm vào cuối thẻ.\nHủy: Không xuất.'))return;
-      exportMode='append';
+    // Hộp chọn HTML thay cho confirm(): không làm mất user activation của popup Google.
+    const existing=document.getElementById('google-docs-export-choice');
+    if(existing)existing.remove();
+    const overlay=document.createElement('div');
+    overlay.id='google-docs-export-choice';
+    overlay.style.cssText='position:fixed;inset:0;background:#0008;z-index:2147483646;display:flex;align-items:center;justify-content:center;padding:18px';
+    const dialog=document.createElement('div');
+    dialog.style.cssText='background:white;color:#243047;border-radius:16px;padding:24px;max-width:440px;width:100%;box-shadow:0 16px 50px #0004;font-family:inherit';
+    const heading=document.createElement('h3');heading.textContent='Xuất Google Docs — '+title;heading.style.margin='0 0 12px';
+    const description=document.createElement('p');description.textContent='Chọn cách xuất vào thẻ mang tên nhiệm vụ. Hệ thống sẽ sao lưu tài liệu trước khi cập nhật.';
+    const actions=document.createElement('div');actions.style.cssText='display:flex;flex-direction:column;gap:10px;margin-top:18px';
+    for(const [mode,label] of [['replace','Thay nội dung thẻ'],['append','Thêm vào cuối thẻ']]){
+      const choice=document.createElement('button');choice.type='button';choice.textContent=label;
+      choice.style.cssText='padding:12px;border:1px solid #b9c7d6;border-radius:9px;background:#eef5fc;color:#173e65;cursor:pointer;font-weight:600';
+      choice.onclick=()=>{overlay.remove();runGoogleDocsExport(mode);};
+      actions.append(choice);
     }
+    const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Hủy';
+    cancel.style.cssText='padding:10px;border:0;background:transparent;cursor:pointer';
+    cancel.onclick=()=>overlay.remove();actions.append(cancel);
+    dialog.append(heading,description,actions);overlay.append(dialog);document.body.append(overlay);
+    return;
+  };
+  const runGoogleDocsExport=async(exportMode)=>{
+    const page=researchPageCache.find(p=>Number(p.id)===selected);
+    if(!page)return;
+    const title=(page.title||'Nhiệm vụ '+page.id).trim();
+    const raw=String(page.content||'').replace(/^<!--RICH_RESEARCH_V1-->/,'');
+    const parsed=new DOMParser().parseFromString(raw,'text/html');
+    parsed.querySelectorAll('script,style,iframe').forEach(node=>node.remove());
+    const content=(/<[a-z][^>]*>/i.test(raw)?parsed.body.textContent:raw).trim();
     if(!window.google?.accounts?.oauth2)return alert('Google chưa sẵn sàng. Hãy tải lại trang.');
     docsButton.disabled=true;
     try{
