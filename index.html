@@ -2280,7 +2280,8 @@ researchSetup();
     try{
       const {error}=await db.from('research_page_backups').insert({page_id:pageId,content,note:'Lưu bài làm'});
       if(error)throw error;
-      // Lưu phiên bản không thay đổi trạng thái hoặc dựng lại bảng lịch sử.
+      // Bài tổng hợp: sau khi lưu, luôn đóng lịch sử và không tải lại bảng.
+      backupPanel.style.display='none';
       alert('Đã lưu thêm một phiên bản mới.');
     }catch(e){alert('Không lưu được: '+(e.message||e));}
     finally{saveVersion.disabled=false;}
