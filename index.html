@@ -1202,6 +1202,17 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
 #tasks .task-review-notice{font-size:14px!important;color:#6b6f76!important;line-height:1.4!important;margin:0 0 11px!important}
 #tasks .task-detail-review-actions button:disabled{opacity:.48!important;cursor:not-allowed!important;filter:grayscale(.35)!important}
 </style>
+<style id='task-info-panel-2026'>
+#tasks .task-info-panel{padding:14px;border:1px solid #e7dbce;border-radius:14px;background:#fffcf8;font-family:'Times New Roman',serif;color:#103451}
+#tasks .task-info-header{padding:0 0 12px;margin:0 0 12px;border-bottom:1px solid #e8ddd2}
+#tasks .task-info-header small{font-size:12px;letter-spacing:1px;color:#79838c;font-weight:bold}
+#tasks .task-info-header h4{font-size:21px;line-height:1.2;margin:6px 0 0;color:#103451}
+#tasks .task-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#tasks .task-info-cell{display:flex;flex-direction:column;gap:5px;padding:11px;border:1px solid #e7dbce;border-radius:10px;background:#fff;min-width:0}
+#tasks .task-info-cell small{font-size:13px;color:#737d85}
+#tasks .task-info-cell strong{font-size:16px;color:#103451;overflow-wrap:anywhere}
+@media(max-width:430px){#tasks .task-info-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 
@@ -3452,10 +3463,23 @@ researchSetup();
     });
    });
    makeTab('Thông tin',container=>{
-    const p=document.createElement('p');p.textContent='Nhiệm vụ: '+selected.title;
-    const g=document.createElement('p');g.textContent='Nhóm phụ trách: Nhóm '+(selected.group_number||1);
-    const d=document.createElement('p');d.textContent='Hạn hoàn thành: '+labelDate(selected.due_date);
-    container.append(p,g,d);
+    const panel=document.createElement('div');panel.className='task-info-panel';
+    const header=document.createElement('div');header.className='task-info-header';
+    const kicker=document.createElement('small');kicker.textContent='THÔNG TIN NHIỆM VỤ';
+    const title=document.createElement('h4');title.textContent=selected.title;
+    header.append(kicker,title);panel.append(header);
+    const grid=document.createElement('div');grid.className='task-info-grid';
+    const add=(label,value)=>{
+     const cell=document.createElement('div');cell.className='task-info-cell';
+     const key=document.createElement('small');key.textContent=label;
+     const val=document.createElement('strong');val.textContent=value;
+     cell.append(key,val);grid.append(cell);
+    };
+    add('Nhóm phụ trách','Nhóm '+(selected.group_number||1));
+    add('Hạn hoàn thành',labelDate(selected.due_date));
+    add('Trạng thái',selected.status||'Chưa làm');
+    add('Tiến độ',(selected.status==='Hoàn thành'?100:selected.status==='Chờ rà soát'?90:selected.status==='Đang làm'?50:0)+'%');
+    panel.append(grid);container.append(panel);
    });
    contentTab.click();
    if(adminEditingEnabled()){
