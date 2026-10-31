@@ -1433,7 +1433,16 @@ function updateResearchCardAdminActions(){
 }
 
 let researchPageCache = [];
-async function loadResearch() {
+// Gộp các yêu cầu tải nghiên cứu xảy ra đồng thời thành một lần truy vấn.
+let researchLoadInFlight = null;
+function loadResearch() {
+  if (researchLoadInFlight) return researchLoadInFlight;
+  const request = fetchAndRenderResearch();
+  researchLoadInFlight = request;
+  request.finally(() => { if (researchLoadInFlight === request) researchLoadInFlight = null; });
+  return request;
+}
+async function fetchAndRenderResearch() {
   if (!db) return;
 
   const {data, error} = await db
