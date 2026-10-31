@@ -642,6 +642,26 @@ body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar>button[tit
 position:static!important;inset:auto!important;height:31px!important;min-height:31px!important;margin:0!important
 }
 body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #richEditor{margin-top:0!important}
+</style><style id="toolbar-compact-all-editors">
+/* Shared editor is used by Draft 1, Draft 2 and the unified article. */
+#researchEditor #richToolbar.docs-style-toolbar,
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{
+  display:flex!important;flex-wrap:wrap!important;align-items:center!important;
+  align-content:flex-start!important;box-sizing:border-box!important;
+  height:auto!important;min-height:0!important;max-height:none!important;
+  padding:4px 6px!important;gap:3px 4px!important;margin-bottom:0!important;
+  flex:0 0 auto!important;overflow:visible!important;
+}
+#researchEditor #richToolbar.docs-style-toolbar #wordEditorSizeButton,
+#researchEditor #richToolbar.docs-style-toolbar>button[title*="Tải ảnh"],
+#researchEditor #richToolbar.docs-style-toolbar>button[title*="ảnh từ máy"]{
+  position:static!important;inset:auto!important;margin:0!important;
+}
+#researchEditor #richToolbar.docs-style-toolbar>button,
+#researchEditor #richToolbar.docs-style-toolbar>select,
+#researchEditor #richToolbar.docs-style-toolbar>.docs-font-size-input{
+  margin-top:0!important;margin-bottom:0!important;
+}
 </style><style id="toolbar-compact-final-fix">
 /* Toolbar hugs its controls without reserving a blank lower row. */
 body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{
