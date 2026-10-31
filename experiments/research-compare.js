@@ -11,7 +11,7 @@ function normalizeParagraphs(html){
  })).filter(x=>x.text);
  return items;
 }
-function createResearchCompareUI({mount,loadDrafts,onMerge,canMerge=()=>false}){
+function createResearchCompareUI({mount,loadDrafts,onMerge,onSelectionChange=()=>{},canMerge=()=>false}){
  if(!(mount instanceof HTMLElement)||typeof loadDrafts!=='function'||typeof onMerge!=='function')throw Error('Invalid compare configuration');
  const root=document.createElement('section');root.className='research-compare';
  const title=document.createElement('h2');title.textContent='So sánh và chọn lọc ý (thử nghiệm)';
@@ -27,10 +27,10 @@ function createResearchCompareUI({mount,loadDrafts,onMerge,canMerge=()=>false}){
    const li=document.createElement('li');
    const text=document.createElement('span');text.textContent=item.text;
    const up=document.createElement('button');up.type='button';up.textContent='↑';up.setAttribute('aria-label','Đưa ý lên');up.disabled=i===0;
-   up.onclick=()=>{[picks[i-1],picks[i]]=[picks[i],picks[i-1]];renderSelected()};
+   up.onclick=()=>{[picks[i-1],picks[i]]=[picks[i],picks[i-1]];renderSelected();onSelectionChange()};
    const down=document.createElement('button');down.type='button';down.textContent='↓';down.setAttribute('aria-label','Đưa ý xuống');down.disabled=i===picks.length-1;
-   down.onclick=()=>{[picks[i+1],picks[i]]=[picks[i],picks[i+1]];renderSelected()};
-   const remove=document.createElement('button');remove.type='button';remove.textContent='Bỏ';remove.onclick=()=>{picks.splice(i,1);renderSelected();renderColumns()};
+   down.onclick=()=>{[picks[i+1],picks[i]]=[picks[i],picks[i+1]];renderSelected();onSelectionChange()};
+   const remove=document.createElement('button');remove.type='button';remove.textContent='Bỏ';remove.onclick=()=>{picks.splice(i,1);renderSelected();renderColumns();onSelectionChange()};
    li.append(text,up,down,remove);selected.append(li);
   });
   merge.disabled=!picks.length||!canMerge()||loading;
@@ -42,7 +42,7 @@ function createResearchCompareUI({mount,loadDrafts,onMerge,canMerge=()=>false}){
    items.forEach(item=>{
     const id=(slot+1)+':'+item.id;
     const label=document.createElement('label');const cb=document.createElement('input');cb.type='checkbox';cb.checked=picks.some(p=>p.key===id);
-    cb.onchange=()=>{if(cb.checked)picks.push({key:id,text:item.text,slot:slot+1});else picks=picks.filter(p=>p.key!==id);renderSelected()};
+    cb.onchange=()=>{if(cb.checked)picks.push({key:id,text:item.text,slot:slot+1});else picks=picks.filter(p=>p.key!==id);renderSelected();onSelectionChange()};
     label.append(cb,document.createTextNode(item.text));section.append(label);
    });columns.append(section);
   });
