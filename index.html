@@ -3766,20 +3766,21 @@ body:not(.word-editor-open) #researchEditor .research-actions button{display:inl
  const preview=url=>{
   const u=new URL(url),h=u.hostname;
   if(h==='docs.google.com'){
-   const m=u.pathname.match(/^\/document\/d\/([\w-]+)/);
-   if(m)return 'https://docs.google.com/document/d/'+m[1]+'/preview';
-   const sh=u.pathname.match(/^\/spreadsheets\/d\/([\w-]+)/);
-   if(sh)return 'https://docs.google.com/spreadsheets/d/'+sh[1]+'/preview';
-   const sl=u.pathname.match(/^\/presentation\/d\/([\w-]+)/);
-   if(sl)return 'https://docs.google.com/presentation/d/'+sl[1]+'/preview';
+   for(const [kind,endpoint] of [['document','document'],['spreadsheets','spreadsheets'],['presentation','presentation']]){
+    const m=u.pathname.match(new RegExp('^/'+kind+'/d/([\\w-]+)'));
+    if(m)return 'https://docs.google.com/'+endpoint+'/d/'+m[1]+'/preview';
+   }
   }
   if(h==='drive.google.com'){
+   const folder=u.pathname.match(/^\/drive\/(?:u\/\d+\/)?folders\/([\w-]+)/)||u.pathname.match(/^\/folders\/([\w-]+)/);
+   if(folder)return 'https://drive.google.com/embeddedfolderview?id='+encodeURIComponent(folder[1])+'#list';
    const m=u.pathname.match(/^\/file\/d\/([\w-]+)/);
-   const id=m?.[1]||(u.pathname==='/open'?u.searchParams.get('id'):null);
+   const id=m?.[1]||(u.pathname==='/open'||u.pathname==='/file/d'?u.searchParams.get('id'):null);
    if(id&&/^[\w-]+$/.test(id))return 'https://drive.google.com/file/d/'+id+'/preview';
   }
   return url;
  };
+ const canManageSources=()=>isAdmin&&adminMode==='edit';
  function render(){
   const list=$('sharedLinkList');list.replaceChildren();
   const search=$('sharedLinkSearch').value.trim().toLocaleLowerCase('vi');
@@ -3790,9 +3791,10 @@ body:not(.word-editor-open) #researchEditor .research-actions button{display:inl
    const button=document.createElement('button');button.type='button';button.textContent=(category(x.url)==='drive'?'📄 ':'🔗 ')+x.title;
    button.onclick=()=>{chosen=x.id;$('sharedViewerTitle').textContent=x.title;const link=$('sharedViewerOpen');link.href=x.url;link.hidden=false;$('sharedViewerEmpty').hidden=true;const frame=$('sharedViewerFrame');frame.src=preview(x.url);frame.hidden=false;$('sharedViewerHint').hidden=false;render();};
    row.append(button);
-   if(isAdmin&&adminMode==='edit'){
+   if(canManageSources()){
     const del=document.createElement('button');del.type='button';del.textContent='Xóa';del.title='Xóa liên kết';
     del.onclick=async()=>{
+     if(!canManageSources())return alert('Chỉ quản trị viên được xóa nguồn.');
      if(!confirm('Xóa liên kết '+x.title+' khỏi Nguồn thông tin chung?'))return;
      const {error}=await db.from('research_shared_links').delete().eq('id',x.id);
      if(error)return alert('Không xóa được: '+error.message);
@@ -3805,7 +3807,7 @@ body:not(.word-editor-open) #researchEditor .research-actions button{display:inl
  }
  async function load(){
   if(!db)return;
-  $('sharedLinkForm').hidden=!(isAdmin&&adminMode==='edit');
+  $('sharedLinkForm').hidden=!canManageSources();
   const {data,error}=await db.from('research_shared_links').select('id,title,url,created_at').order('created_at',{ascending:false}).limit(200);
   if(error){$('sharedLinkStatus').textContent='Cần chạy SQL thiết lập Nguồn thông tin chung trong Supabase: '+error.message;return;}
   items=(data||[]).filter(x=>{try{return ['https:','http:'].includes(new URL(x.url).protocol)}catch{return false}});
@@ -3814,7 +3816,7 @@ body:not(.word-editor-open) #researchEditor .research-actions button{display:inl
  }
  $('sharedLinkForm').addEventListener('submit',async e=>{
   e.preventDefault();
-  if(!(isAdmin&&adminMode==='edit'))return;
+  if(!canManageSources())return alert('Chỉ quản trị viên được thêm nguồn.');
   const raw=$('sharedLinkUrl').value.trim();
   let url;try{url=new URL(raw);if(!['http:','https:'].includes(url.protocol))throw Error();}catch{return alert('Vui lòng nhập liên kết http hoặc https hợp lệ.');}
   const button=$('sharedLinkForm').querySelector('button');button.disabled=true;
