@@ -3705,8 +3705,9 @@ html body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) 
 </style>
 <script>
 (function(){
+ function initializeRichMediaTools(){
  const editor=document.getElementById('richEditor');
- if(!editor)return;
+ if(!editor||document.getElementById('richMediaTools'))return;
  const bar=document.createElement('div');bar.id='richMediaTools';
  const handle=document.createElement('div');handle.id='richMediaResize';handle.title='Kéo để thay đổi kích thước ảnh';
  document.body.append(bar,handle);
@@ -3725,6 +3726,10 @@ html body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) 
  handle.addEventListener('pointerup',()=>{drag=null});handle.addEventListener('pointercancel',()=>{drag=null});
  window.addEventListener('scroll',()=>{if(target)position()},true);window.addEventListener('resize',()=>{if(target)position()});
  new MutationObserver(()=>{if(target&&!editor.contains(target))clear()}).observe(editor,{childList:true,subtree:true});
+ }
+ // Trình soạn thảo được tạo khi window.load; khởi tạo công cụ sau thời điểm đó.
+ if(document.readyState==='complete')initializeRichMediaTools();
+ else window.addEventListener('load',()=>setTimeout(initializeRichMediaTools,0),{once:true});
 })();
 </script>
 </body>
