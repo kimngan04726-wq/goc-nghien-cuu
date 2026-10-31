@@ -784,6 +784,38 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
 #researchDetail .research-history-toolbar-actions .research-history-expand-button{flex:none}
 #researchDetail .research-work-box>.research-icon-button{position:static!important}
 </style>
+<style id="research-action-alignment-tooltips-20261031">
+/* Căn đều bốn biểu tượng, không thay đổi hành vi nút. */
+#researchDetail .research-work-box .research-icon-button,
+#researchDetail .research-work-box button.research-icon-button{
+ position:relative!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+ transform:none!important;float:none!important;vertical-align:middle!important;
+ width:52px!important;height:52px!important;min-width:52px!important;min-height:52px!important;
+ padding:8px!important;margin:0!important;display:inline-flex!important;
+ align-items:center!important;justify-content:center!important;line-height:1!important;
+}
+#researchDetail .research-work-box .research-actions-inline{align-items:center!important}
+#researchDetail .research-icon-button[data-tooltip]{position:relative;cursor:pointer}
+#researchDetail .research-icon-button[data-tooltip]::after{
+ content:attr(data-tooltip);position:absolute;left:50%;bottom:calc(100% + 9px);
+ transform:translateX(-50%);z-index:99999;white-space:nowrap;
+ background:#18364b;color:#fff;border-radius:6px;padding:6px 9px;
+ font:13px Arial,sans-serif;box-shadow:0 3px 10px #0003;
+ opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s ease;
+}
+#researchDetail .research-icon-button[data-tooltip]:hover::after,
+#researchDetail .research-icon-button[data-tooltip]:focus-visible::after{opacity:1;visibility:visible}
+#researchDetail .research-history-toolbar-actions{align-items:center!important}
+#researchDetail .research-history-toolbar-actions[data-tooltip]{position:relative}
+#researchDetail .research-history-toolbar-actions[data-tooltip]::before{
+ content:attr(data-tooltip);position:absolute;right:42px;bottom:calc(100% + 7px);
+ z-index:99999;white-space:nowrap;background:#18364b;color:white;
+ border-radius:6px;padding:6px 9px;font:13px Arial,sans-serif;
+ opacity:0;visibility:hidden;pointer-events:none;
+}
+#researchDetail .research-history-toolbar-actions[data-tooltip]:has(select:hover)::before,
+#researchDetail .research-history-toolbar-actions[data-tooltip]:has(select:focus-visible)::before{opacity:1;visibility:visible}
+</style>
 </head>
 <body>
 
@@ -2076,7 +2108,7 @@ researchSetup();
   const backupRows=document.createElement('tbody');backupTable.append(backupHead,backupRows);
   const backupScroll=document.createElement('div');backupScroll.className='research-history-scroll';backupScroll.append(backupTable);
   const backupToolbar=historyToolbar('🗂 Lịch sử lưu bài','Xem lại các phiên bản đã lưu và chọn nội dung cần xem.',v=>{backupSort=v;renderBackups();});
-  const iconOnly=(button,icon,label)=>{button.textContent=icon;button.title=label;button.setAttribute('aria-label',label);button.classList.add('research-icon-button');return button;};
+  const iconOnly=(button,icon,label)=>{button.textContent=icon;button.title=label;button.setAttribute('aria-label',label);button.setAttribute('data-tooltip',label);button.classList.add('research-icon-button');return button;};
   const backupExpand=historyExpandButton(()=>historyExpand(backupPanel,renderBackups));
   backupToolbar.querySelector('.research-history-toolbar-actions').append(backupExpand);
   backupPanel.append(backupToolbar,backupStatus,backupScroll);
@@ -2134,9 +2166,9 @@ researchSetup();
     const hint=document.createElement('p');hint.textContent=subtitle;info.append(title,hint);
     const sort=document.createElement('select');sort.className='research-history-sort';sort.setAttribute('aria-label','Sắp xếp lịch sử');
     [['new','⇅'],['old','⇵']].forEach(([value,label])=>{const opt=document.createElement('option');opt.value=value;opt.textContent=label;sort.append(opt);});
-    const updateSortLabel=()=>{const label=sort.value==='new'?'Mới nhất trước':'Cũ nhất trước';sort.title=label;sort.setAttribute('aria-label','Sắp xếp: '+label);};
+    const updateSortLabel=()=>{const label=sort.value==='new'?'Mới nhất trước':'Cũ nhất trước';sort.title=label;sort.setAttribute('aria-label','Sắp xếp: '+label);sort.parentElement?.setAttribute('data-tooltip','Sắp xếp: '+label);};
     sort.onchange=()=>{updateSortLabel();onSort(sort.value);};updateSortLabel();
-    const actions=document.createElement('div');actions.className='research-history-toolbar-actions';actions.append(sort);
+    const actions=document.createElement('div');actions.className='research-history-toolbar-actions';actions.setAttribute('data-tooltip','Sắp xếp: Mới nhất trước');actions.append(sort);
     bar.append(info,actions);return bar;
   }
   const showSaved=raw=>{
