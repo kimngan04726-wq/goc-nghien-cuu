@@ -1969,7 +1969,8 @@ researchSetup();
     if(selected===null||!canEditResearch(selected))return;
     if(!window.DOMPurify)return alert('Trình soạn thảo bảo mật chưa tải xong. Vui lòng thử lại.');
     activeDraft=null;
-    await openResearchEditor(selected);
+    openingDraftEditor=true;
+    try{await openResearchEditor(selected);}finally{openingDraftEditor=false;}
     const panel=document.getElementById('researchEditor');
     if(panel.style.display!=='block')return;
     activeDraft={pageId:selected,slot};
@@ -2010,6 +2011,20 @@ researchSetup();
     const sizeButton=document.getElementById('wordEditorSizeButton');
     if(sizeButton){sizeButton.textContent='⛶ Phóng to';sizeButton.setAttribute('aria-pressed','false');}
     originalCancelResearch();
+  };
+  // Mở bài thống nhất phải xóa hoàn toàn ngữ cảnh bản nháp trước đó.
+  let openingDraftEditor=false;
+  const openEditorBeforeDraftGuard=openResearchEditor;
+  openResearchEditor=async function(id){
+    if(!openingDraftEditor){
+      activeDraft=null;
+      const heading=document.querySelector('#researchEditor h2');
+      if(heading){
+        heading.textContent=heading.dataset.originalDraftHeading||'Chỉnh sửa bài nghiên cứu';
+        delete heading.dataset.originalDraftHeading;
+      }
+    }
+    return openEditorBeforeDraftGuard(id);
   };
   function showAnalysis(mode){
     const a=sentences(stripText(draftState[1]));const b=sentences(stripText(draftState[2]));
