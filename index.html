@@ -2029,20 +2029,73 @@ researchSetup();
     }
     return openEditorBeforeDraftGuard(id);
   };
-  function showAnalysis(mode){
-    const plain=raw=>stripText(raw.startsWith('<!--RICH_RESEARCH_V1-->')?raw.slice('<!--RICH_RESEARCH_V1-->'.length):raw);const a=sentences(plain(draftState[1]));const b=sentences(plain(draftState[2]));
-    if(!a.length||!b.length){result.hidden=false;result.textContent='Cần có nội dung ở cả hai bản nháp để tổng hợp hoặc so sánh.';return;}
-    const keysA=new Set(a.map(normalize));const common=b.filter(x=>keysA.has(normalize(x)));
-    const uniqueB=b.filter(x=>!keysA.has(normalize(x)));
-    const uniqueA=a.filter(x=>!new Set(b.map(normalize)).has(normalize(x)));
-    result.hidden=false;result.replaceChildren();
-    const h=document.createElement('h3');h.textContent=mode==='merge'?'Bản tổng hợp đề xuất':'Kết quả so sánh và lọc ý';result.append(h);
-    const add=(title,items)=>{const label=document.createElement('h4');label.textContent=title;result.append(label);const p=document.createElement('div');p.style.whiteSpace='pre-wrap';p.textContent=items.join('\n\n')||'Không có';result.append(p);};
-    if(mode==='merge'){
-      const all=[...a,...uniqueB];add('Nội dung ghép (chưa tự viết lại)',all);
-      const copy=document.createElement('button');copy.textContent='Sao chép bản đề xuất';copy.onclick=()=>navigator.clipboard.writeText(all.join('\n\n')).then(()=>alert('Đã sao chép. Bạn có thể dán vào trình soạn thảo Bài làm thống nhất.')).catch(()=>alert('Không sao chép được.'));result.append(copy);
-    }else{add('Ý trùng nhau (khớp câu)',common);add('Chỉ có ở bản nháp 1',uniqueA);add('Chỉ có ở bản nháp 2',uniqueB);}
-    const note=document.createElement('p');note.textContent='Công cụ miễn phí chỉ lọc câu giống nhau và ghép ý; không phải AI tạo sinh. Không tự ghi đè bài thống nhất.';result.append(note);
+  async function showAnalysis(mode){
+    if(selected===null)return;
+    const pageId=selected;
+    result.hidden=false;
+    result.textContent='Đang đọc lại cả hai bản nháp đã lưu...';
+    mergeButton.disabled=true;
+    compareButton.disabled=true;
+    try{
+      const {data,error}=await db.from('research_drafts').select('slot,content').eq('page_id',pageId);
+      if(pageId!==selected)return;
+      if(error)throw error;
+      for(const slot of [1,2])draftState[slot]=(data||[]).find(row=>Number(row.slot)===slot)?.content||'';
+      const plain=raw=>{
+        const html=raw.startsWith(RICH_MARKER)?raw.slice(RICH_MARKER.length):raw;
+        if(!raw.startsWith(RICH_MARKER))return html;
+        const node=document.createElement('div');
+        node.innerHTML=window.DOMPurify?DOMPurify.sanitize(html):html;
+        node.querySelectorAll('br').forEach(el=>el.replaceWith(document.createTextNode('\n')));
+        node.querySelectorAll('p,div,li,h1,h2,h3,h4,h5,h6').forEach(el=>el.append(document.createTextNode('\n')));
+        return node.textContent||'';
+      };
+      const a=sentences(plain(draftState[1]));
+      const b=sentences(plain(draftState[2]));
+      if(!a.length||!b.length){
+        result.textContent='Chưa đủ hai bản nháp đã lưu. Bản nháp 1: '+a.length+' câu; Bản nháp 2: '+b.length+' câu. Hãy lưu cả hai bản rồi thử lại.';
+        return;
+      }
+      const keysA=new Set(a.map(normalize));
+      const keysB=new Set(b.map(normalize));
+      const common=b.filter(x=>keysA.has(normalize(x)));
+      const uniqueB=b.filter(x=>!keysA.has(normalize(x)));
+      const uniqueA=a.filter(x=>!keysB.has(normalize(x)));
+      result.replaceChildren();
+      const h=document.createElement('h3');
+      h.textContent=mode==='merge'?'Bản tổng hợp từ hai bản nháp':'So sánh hai bản nháp';
+      result.append(h);
+      const summary=document.createElement('p');
+      summary.textContent='Đã đọc từ Supabase: Bản nháp 1 ('+a.length+' câu), Bản nháp 2 ('+b.length+' câu).';
+      result.append(summary);
+      const add=(title,items)=>{
+        const label=document.createElement('h4');label.textContent=title;result.append(label);
+        const p=document.createElement('div');p.style.whiteSpace='pre-wrap';
+        p.textContent=items.join('\n\n')||'Không có';result.append(p);
+      };
+      if(mode==='merge'){
+        add('Nội dung từ Bản nháp 1',a);
+        add('Ý bổ sung từ Bản nháp 2 (không trùng nguyên câu)',uniqueB);
+        const all=[...a,...uniqueB];
+        add('Bản tổng hợp đề xuất',all);
+        const copy=document.createElement('button');
+        copy.textContent='Sao chép bản tổng hợp';
+        copy.onclick=()=>navigator.clipboard.writeText(all.join('\n\n')).then(()=>alert('Đã sao chép. Bạn có thể dán vào Bài làm thống nhất.')).catch(()=>alert('Không sao chép được.'));
+        result.append(copy);
+      }else{
+        add('Câu giống nhau ở cả hai bản',common);
+        add('Chỉ có ở Bản nháp 1',uniqueA);
+        add('Chỉ có ở Bản nháp 2',uniqueB);
+      }
+      const note=document.createElement('p');
+      note.textContent='Công cụ miễn phí ghép và lọc câu trùng chữ, chưa hiểu ý nghĩa như AI tạo sinh. Không tự ghi đè Bài làm thống nhất.';
+      result.append(note);
+    }catch(error){
+      result.textContent='Không đọc được hai bản nháp từ Supabase: '+(error?.message||'Lỗi không xác định')+'. Chưa tổng hợp dữ liệu.';
+    }finally{
+      mergeButton.disabled=false;
+      compareButton.disabled=false;
+    }
   }
   mergeButton.onclick=()=>showAnalysis('merge');
   compareButton.onclick=()=>showAnalysis('compare');
