@@ -2297,7 +2297,7 @@ researchSetup();
     if(!content)return alert('Bài tổng hợp chưa có nội dung.');
     const input=prompt('Dán đường dẫn Google Docs hiện có. Hệ thống sẽ sao lưu và CHÈN vào cuối, không xóa nội dung cũ.','https://docs.google.com/document/d/1xcBZnQNKFz9dIw_g2PSh3ABRuBmHarSHvnJ5dFSlYrE/edit');
     if(input===null)return;
-    const match=input.match(/(?:\\/d\\/)?([a-zA-Z0-9_-]{20,})/);
+    const match=input.match(/(?:\/d\/)?([a-zA-Z0-9_-]{20,})/);
     if(!match)return alert('Đường dẫn tài liệu không hợp lệ.');
     const id=match[1];
     docsButton.disabled=true;
