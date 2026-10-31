@@ -3455,29 +3455,35 @@ try{
       statusIcon.textContent=filled?'✓':'○';
       statusIcon.classList.toggle('filled',filled);
      };
-     if(index===2){
-      const raw=String(page.content||'');
-      setStatus(raw);
-      preview.textContent=plainText(raw)||'Chưa có nội dung.';
-     }else{
-      preview.textContent='Đang tải bản nháp...';
-      statusIcon.textContent='…';
-      const loadDraft=async()=>{
-       try{
-        const {data,error}=await db.from('research_drafts').select('*').eq('page_id',page.id);
-        if(error)throw error;
-        const draft=(data||[]).find(d=>Number(d.draft_number||d.draft_index||d.slot||0)===index+1);
-        const raw=String(draft?.content||'');
-        setStatus(raw);
-        preview.textContent=plainText(raw)||'Chưa có nội dung.';
-       }catch(e){
-        statusIcon.textContent='?';
-        statusIcon.classList.remove('filled');
-        preview.textContent='Không tải được bản nháp. Hãy mở trang nghiên cứu để xem.';
+     preview.textContent='Đang kiểm tra nội dung và bản lưu...';
+     statusIcon.textContent='…';
+     const loadSavedStatus=async()=>{
+      try{
+       const slot=index+1;
+       const checks=index===2?
+        [db.from('research_page_backups').select('content').eq('page_id',page.id).limit(500)]:
+        [db.from('research_drafts').select('*').eq('page_id',page.id),db.from('research_draft_backups').select('content').eq('page_id',page.id).eq('slot',slot).limit(500)];
+       const results=await Promise.all(checks);
+       for(const result of results){if(result.error)throw result.error;}
+       let current=String(index===2?page.content||'':'');
+       if(index<2){
+        const draft=(results[0].data||[]).find(d=>Number(d.draft_number||d.draft_index||d.slot||0)===slot);
+        current=String(draft?.content||'');
        }
-      };
-      loadDraft();
-     }
+       const saved=index===2?(results[0].data||[]):(results[1].data||[]);
+       const hasSaved=saved.some(entry=>!!plainText(entry.content));
+       const hasCurrent=!!plainText(current);
+       const filled=hasCurrent||hasSaved;
+       statusIcon.textContent=filled?'✓':'○';
+       statusIcon.classList.toggle('filled',filled);
+       preview.textContent=plainText(current)||(hasSaved?'Ô hiện tại trống, nhưng đã có bản lưu trong lịch sử.':'Chưa có nội dung.');
+      }catch(e){
+       statusIcon.textContent='?';
+       statusIcon.classList.remove('filled');
+       preview.textContent='Không kiểm tra được nội dung hoặc bản lưu: '+(e.message||e);
+      }
+     };
+     loadSavedStatus();
      details.append(summary,preview);container.append(details);
     });
    });
