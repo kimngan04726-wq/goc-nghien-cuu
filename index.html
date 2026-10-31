@@ -1969,7 +1969,7 @@ researchSetup();
     if(selected===null||!canEditResearch(selected))return;
     if(!window.DOMPurify)return alert('Trình soạn thảo bảo mật chưa tải xong. Vui lòng thử lại.');
     activeDraft=null;
-    await originalOpenResearchEditor(selected);
+    await openResearchEditor(selected);
     const panel=document.getElementById('researchEditor');
     if(panel.style.display!=='block')return;
     activeDraft={pageId:selected,slot};
@@ -1977,7 +1977,7 @@ researchSetup();
     rich.innerHTML=DOMPurify.sanitize(draftHtml(draftState[slot]||''));
     document.getElementById('researchText').value=draftState[slot]||'';
     const heading=panel.querySelector('h2');
-    if(heading){heading.dataset.originalDraftHeading=heading.textContent;heading.textContent='Chỉnh sửa Bản nháp '+slot;}
+    if(heading){heading.dataset.originalDraftHeading=heading.textContent;heading.textContent='Bản nháp '+slot;}
     panel.scrollIntoView({behavior:'smooth'});
   }
   saveResearch=async function(){
@@ -2006,6 +2006,9 @@ researchSetup();
     const panel=document.getElementById('researchEditor');
     const heading=panel?.querySelector('h2');
     if(heading?.dataset.originalDraftHeading){heading.textContent=heading.dataset.originalDraftHeading;delete heading.dataset.originalDraftHeading;}
+    document.body.classList.remove('word-editor-open');
+    const sizeButton=document.getElementById('wordEditorSizeButton');
+    if(sizeButton){sizeButton.textContent='⛶ Phóng to';sizeButton.setAttribute('aria-pressed','false');}
     originalCancelResearch();
   };
   function showAnalysis(mode){
