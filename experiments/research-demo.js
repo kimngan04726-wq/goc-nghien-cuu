@@ -36,7 +36,7 @@ const bridge=window.createResearchCompareBridge({db,pageId,subId,canMerge:()=>tr
 const preview=window.createResearchMergePreview({mount:document.getElementById('preview'),bridge});
 const compare=window.createResearchCompareUI({mount:document.getElementById('compare'),loadDrafts:bridge.loadDrafts,onMerge:async result=>{await bridge.onMerge(result);preview.render();document.getElementById('preview').scrollIntoView({behavior:'smooth',block:'start'})},canMerge:()=>true});
 const viewA=document.getElementById('viewA'),viewB=document.getElementById('viewB');
-document.getElementById('tabA').onclick=async()=>{if(editor.dirty&&!confirm('Có nội dung chưa lưu. Bạn vẫn muốn chuyển trang?'))return;viewB.hidden=true;viewA.hidden=false;await editor.open(subId,0)};
-document.getElementById('tabB').onclick=async()=>{if(editor.dirty&&!confirm('Có nội dung chưa lưu. Bạn vẫn muốn chuyển trang?'))return;viewA.hidden=true;viewB.hidden=false;await compare.refresh();preview.render()};
+document.getElementById('tabA').onclick=async()=>{if(editor.dirty){const saved=await editor.save();if(!saved){alert('Chưa lưu được bản nháp. Hãy xử lý lỗi lưu trước khi chuyển trang.');return}}const opened=await editor.open(subId,0);if(opened){viewB.hidden=true;viewA.hidden=false}};
+document.getElementById('tabB').onclick=async()=>{if(editor.dirty){const saved=await editor.save();if(!saved){alert('Chưa lưu được bản nháp. Hãy xử lý lỗi lưu trước khi chuyển trang.');return}}viewA.hidden=true;viewB.hidden=false;await compare.refresh();preview.render()};
 void editor.open(subId,1);
 })();
