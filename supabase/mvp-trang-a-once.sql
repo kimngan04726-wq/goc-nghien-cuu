@@ -44,7 +44,7 @@ BEGIN
  IF NOT v_admin AND v.owner_id IS DISTINCT FROM v_user THEN
   RETURN jsonb_build_object('result','forbidden');
  END IF;
- IF v.version <> p_expected_version THEN
+ IF p_expected_version IS NULL OR v.version <> p_expected_version THEN
   RETURN jsonb_build_object('result','conflict','version',v.version,'content',v.content,'status',v.status);
  END IF;
  v_next := coalesce(p_status,v.status);
@@ -61,21 +61,27 @@ BEGIN
  RETURN jsonb_build_object('result','saved','version',v.version,'status',v.status);
 END $$;
 REVOKE ALL ON FUNCTION public.mvp_save_subsection(smallint,text,bigint,text,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.mvp_save_subsection(smallint,text,bigint,text,text) FROM anon;
 GRANT EXECUTE ON FUNCTION public.mvp_save_subsection(smallint,text,bigint,text,text) TO authenticated;
 
 INSERT INTO public.mvp_subsections(task_key,subsection_key,title) VALUES
-(1,'main','Lý do chọn đề tài'),
-(2,'main','Mục đích, mục tiêu và câu hỏi nghiên cứu'),
-(3,'main','Cơ sở lý thuyết'),
-(4,'main','Mô hình nghiên cứu và giả thuyết'),
-(5,'main','Các biến nghiên cứu'),
-(6,'main','Thang đo và phương án đo lường'),
-(7,'main','Các nội dung khác');
+(1,'01','Bối cảnh vấn đề'),(1,'02','Khoảng trống nghiên cứu'),(1,'03','Tính cấp thiết'),(1,'04','Ý nghĩa khoa học'),(1,'05','Ý nghĩa thực tiễn'),
+(2,'01','Bối cảnh và định hướng nghiên cứu'),(2,'02','Mục đích nghiên cứu tổng quát'),(2,'03','Các mục tiêu nghiên cứu cụ thể'),(2,'04','Câu hỏi nghiên cứu'),(2,'05','Kết quả nghiên cứu kỳ vọng'),(2,'06','Mối liên hệ giữa mục tiêu và câu hỏi nghiên cứu'),
+(3,'01','Các khái niệm và thuật ngữ liên quan'),(3,'02','Các lý thuyết nền tảng'),(3,'03','Tổng quan các nghiên cứu trong nước'),(3,'04','Tổng quan các nghiên cứu nước ngoài'),(3,'05','So sánh và tổng hợp các nghiên cứu trước'),(3,'06','Khoảng trống nghiên cứu'),(3,'07','Khung lý thuyết đề xuất'),
+(4,'01','Cơ sở đề xuất mô hình nghiên cứu'),(4,'02','Xác định các yếu tố trong mô hình'),(4,'03','Mối quan hệ giữa các yếu tố'),(4,'04','Xây dựng các giả thuyết nghiên cứu'),(4,'05','Mô hình nghiên cứu đề xuất'),(4,'06','Giải thích các giả thuyết'),(4,'07','Tổng hợp giả thuyết và chiều tác động kỳ vọng'),
+(5,'01','Tổng quan các biến trong nghiên cứu'),(5,'02','Biến độc lập'),(5,'03','Biến phụ thuộc'),(5,'04','Biến trung gian (nếu có)'),(5,'05','Biến điều tiết (nếu có)'),(5,'06','Biến kiểm soát (nếu có)'),(5,'07','Định nghĩa và cách đo lường từng biến'),(5,'08','Bảng tổng hợp các biến nghiên cứu'),
+(6,'01','Cơ sở xây dựng thang đo'),(6,'02','Nguồn tham khảo các thang đo'),(6,'03','Thang đo cho biến độc lập'),(6,'04','Thang đo cho biến phụ thuộc'),(6,'05','Thang đo cho biến trung gian, điều tiết (nếu có)'),(6,'06','Thiết kế các biến quan sát'),(6,'07','Hiệu chỉnh và mã hóa thang đo'),(6,'08','Bảng tổng hợp thang đo chính thức'),
+(7,'01','Thiết kế nghiên cứu'),(7,'02','Quy trình nghiên cứu'),(7,'03','Phương pháp nghiên cứu định tính (nếu có)'),(7,'04','Phương pháp nghiên cứu định lượng (nếu có)'),(7,'05','Đối tượng và phạm vi khảo sát'),(7,'06','Phương pháp chọn mẫu và cỡ mẫu'),(7,'07','Phương pháp thu thập dữ liệu'),(7,'08','Công cụ và quy trình xử lý dữ liệu'),(7,'09','Phương pháp phân tích dữ liệu'),(7,'10','Đạo đức nghiên cứu và bảo mật thông tin');
 
 SELECT task_key,COUNT(*) AS so_tieu_muc FROM public.mvp_subsections GROUP BY task_key ORDER BY task_key;
 SELECT tablename,rowsecurity FROM pg_tables WHERE schemaname='public' AND tablename='mvp_subsections';
 SELECT COUNT(*) AS tong_tieu_muc FROM public.mvp_subsections;
 COMMIT;
+
+-- Chạy RIÊNG sau COMMIT để xem kết quả rõ trong SQL Editor:
+-- SELECT task_key, COUNT(*) AS so_tieu_muc FROM public.mvp_subsections GROUP BY task_key ORDER BY task_key;
+-- SELECT COUNT(*) AS tong_tieu_muc FROM public.mvp_subsections;
+-- SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname='public' AND tablename='mvp_subsections';
 
 -- HOÀN TÁC (KHÔNG CHẠY nếu chưa duyệt riêng; DROP sẽ mất dữ liệu mới):
 -- BEGIN;
