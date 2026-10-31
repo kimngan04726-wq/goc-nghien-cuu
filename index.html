@@ -2041,6 +2041,7 @@ researchSetup();
   const backupRows=document.createElement('tbody');backupTable.append(backupHead,backupRows);
   const backupScroll=document.createElement('div');backupScroll.className='research-history-scroll';backupScroll.append(backupTable);
   const backupToolbar=historyToolbar('🗂 Lịch sử lưu bài','Xem lại các phiên bản đã lưu và chọn nội dung cần xem.',v=>{backupSort=v;renderBackups();});
+  const iconOnly=(button,icon,label)=>{button.textContent=icon;button.title=label;button.setAttribute('aria-label',label);button.classList.add('research-icon-button');return button;};
   const backupExpand=historyExpandButton(()=>historyExpand(backupPanel,renderBackups));
   backupToolbar.append(backupExpand);
   backupPanel.append(backupToolbar,backupStatus,backupScroll);
@@ -2059,7 +2060,6 @@ researchSetup();
     node.innerHTML=window.DOMPurify?DOMPurify.sanitize(raw.slice(marker.length)):raw.slice(marker.length).replace(/<[^>]+>/g,' ');
     return node.textContent||'';
   };
-  const iconOnly=(button,icon,label)=>{button.textContent=icon;button.title=label;button.setAttribute('aria-label',label);button.classList.add('research-icon-button');return button;};
   function historyExpand(panel,render){
     const dialog=document.createElement('dialog');dialog.className='research-history-modal';
     const top=document.createElement('div');top.className='research-history-modal-top';
