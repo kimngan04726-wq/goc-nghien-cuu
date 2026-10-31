@@ -73,6 +73,12 @@ async function refresh(){
  dirty=false;renderList();pick(selected?.task_key||1);refreshBadges();
 }
 function refreshBadges(){
+ document.querySelectorAll('#researchDetail .research-work-box').forEach(box=>{
+  const page=typeof editingPageId!=='undefined'&&editingPageId?Number(editingPageId):Number(document.querySelector('#research .card.active')?.dataset?.pageId||0);
+  const r=rows.find(x=>x.task_key===page);if(!r)return;
+  let b=box.querySelector('.mvpWorkBadge');if(!b){b=document.createElement('div');b.className='mvpWorkBadge';box.prepend(b)}
+  b.textContent='Tiến độ '+(r.status==='Đã duyệt'?'100':'0')+'% · '+r.status;
+ });
  document.querySelectorAll('#research .card').forEach((card,i)=>{
   const r=rows.find(x=>x.task_key===i+1);if(!r)return;
   let badge=card.querySelector('.mvpBadge');if(!badge){badge=document.createElement('div');badge.className='mvpBadge';card.append(badge)}
