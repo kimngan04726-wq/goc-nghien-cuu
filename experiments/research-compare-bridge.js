@@ -38,7 +38,7 @@ function createResearchCompareBridge({db,pageId,subId,canMerge=()=>false}){
   if(!Number.isSafeInteger(Number(saved)))throw Error('Server did not return merged version');
   baseVersion=Number(saved);preview=null;return true;
  }
- return {loadDrafts,onMerge,confirmSave,get preview(){return preview}};
+ return {loadDrafts,onMerge,confirmSave,invalidatePreview(){preview=null},get preview(){return preview}};
 }
 global.createResearchCompareBridge=createResearchCompareBridge;
 })(window);
