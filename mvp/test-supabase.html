@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Trang A — kiểm thử Supabase THỬ</title>
+<style>body{font:16px system-ui;max-width:780px;margin:30px auto;padding:0 16px;line-height:1.5}label{display:block;margin:12px 0}input,textarea{box-sizing:border-box;width:100%;padding:10px}button{padding:10px;margin:8px 8px 8px 0}pre{white-space:pre-wrap;background:#f3f3f3;padding:16px;overflow-wrap:anywhere}.warn{background:#fff1d5;padding:12px;border:2px solid #a66}textarea{min-height:120px}</style></head><body>
+<h1>Trang A — kiểm thử độc lập</h1><p class="warn"><strong>CHỈ PROJECT SUPABASE THỬ.</strong> Không dùng URL, khóa hay tài khoản của Supabase thật. Trang này không chạy trên website chính và không lưu cấu hình vào trình duyệt. Dùng publishable/anon key, <strong>không dùng service_role/secret key</strong>.</p>
+<label>Project URL của Supabase thử<input id="url" type="url" placeholder="https://TEN-PROJECT-THU.supabase.co" autocomplete="off"></label>
+<label>Publishable key hoặc anon key của project thử<input id="key" type="password" autocomplete="off"></label>
+<label>Email Member thử<input id="email" type="email" autocomplete="off"></label>
+<label>Mật khẩu Member thử<input id="password" type="password" autocomplete="off"></label>
+<button id="login">1. Đăng nhập Member thử</button><button id="logout" disabled>Đăng xuất</button>
+<p id="identity">Chưa đăng nhập</p>
+<h2>Tiểu mục 1.01 đã giao cho Member</h2>
+<button id="load" disabled>2. Đọc tiểu mục 1.01</button>
+<label>Trạng thái<select id="status"><option>Chưa viết</option><option>Đang viết</option><option>Chờ duyệt</option><option>Đã duyệt</option></select></label>
+<label>Nội dung thử<textarea id="content" placeholder="Nội dung kiểm thử trên project thử"></textarea></label>
+<button id="save" disabled>3. Lưu bằng RPC (thay đổi dữ liệu THỬ)</button>
+<button id="forbidden" disabled>4. Thử lưu tiểu mục 1.02 chưa giao (mong đợi forbidden)</button>
+<button id="conflict" disabled>5. Thử phiên bản cũ trên 1.01 (mong đợi conflict)</button>
+<p><strong>Nhật ký:</strong></p><pre id="log" aria-live="polite"></pre>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);let client=null,record=null,memberId=null;
+const log=(label,data)=>{$('log').textContent+=label+': '+(typeof data==='string'?data:JSON.stringify(data,null,2))+'\n'};
+const enabled=x=>['logout','load','save','forbidden','conflict'].forEach(id=>$(id).disabled=!x);
+function checkConfig(){const u=new URL($('url').value.trim());if(u.protocol!=='https:'||!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(u.href))throw Error('Chỉ nhập URL dạng https://PROJECT.supabase.co của project thử');const key=$('key').value.trim();if(!key||key.startsWith('sb_secret_'))throw Error('Không dùng secret/service_role key');return [u.origin,key]}
+async function getRecord(task,sub){const {data,error}=await client.from('mvp_subsections').select('task_key,subsection_key,title,owner_id,status,content,version').eq('task_key',task).eq('subsection_key',sub).single();if(error)throw error;return data}
+async function callRpc(task,sub,version,content,status){const {data,error}=await client.rpc('mvp_save_subsection',{p_task_key:task,p_subsection_key:sub,p_expected_version:version,p_content:content,p_status:status});if(error)throw error;return data}
+$('login').onclick=async()=>{try{enabled(false);record=null;const [url,key]=checkConfig();if(!window.supabase?.createClient)throw Error('Không tải được thư viện Supabase; kiểm tra kết nối mạng');client=window.supabase.createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});const {data,error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;memberId=data.user.id;$('password').value='';$('identity').textContent='Đã đăng nhập: '+data.user.email;enabled(true);$('save').disabled=true;$('conflict').disabled=true;log('Đăng nhập','THÀNH CÔNG; kiểm tra tài khoản có role member ở project thử trước khi lưu')}catch(e){log('Đăng nhập LỖI',e.message)}};
+$('logout').onclick=async()=>{try{if(client)await client.auth.signOut()}finally{client=null;record=null;memberId=null;enabled(false);$('identity').textContent='Đã đăng xuất';$('content').value='';log('Đăng xuất','Đã kết thúc phiên thử')}};
+$('load').onclick=async()=>{try{record=await getRecord(1,'01');$('content').value=record.content;$('status').value=record.status;const ok=record.owner_id===memberId;$('save').disabled=!ok;$('conflict').disabled=!ok;log('Đọc 1.01',{title:record.title,version:record.version,status:record.status,ownerMatchesMember:ok});if(!ok)log('CẢNH BÁO','Người đăng nhập không phải owner của 1.01; không cho lưu')}catch(e){log('Đọc LỖI',e.message)}};
+$('save').onclick=async()=>{if(!record||record.owner_id!==memberId)return;try{const result=await callRpc(1,'01',record.version,$('content').value,$('status').value);log('Lưu RPC',result);if(result?.result==='saved'){record=await getRecord(1,'01');log('Đọc lại sau lưu',{version:record.version,contentMatches:record.content===$('content').value,statusMatches:record.status===$('status').value})}else log('CHƯA ĐẠT','RPC không trả saved; giữ nguyên nội dung đang gõ')}catch(e){log('Lưu LỖI',e.message)}};
+$('forbidden').onclick=async()=>{try{const other=await getRecord(1,'02');if(other.owner_id===memberId){log('BỎ QUA','1.02 đã được giao cho Member này; không thể dùng để thử forbidden');return}const r=await callRpc(1,'02',other.version,'KHONG DUOC GHI - TEST','Đang viết');log('Thử không có quyền',{expected:'forbidden',actual:r?.result,pass:r?.result==='forbidden'})}catch(e){log('Thử không có quyền LỖI',e.message)}};
+$('conflict').onclick=async()=>{if(!record)return;try{const current=await getRecord(1,'01');if(current.version<1){log('BỎ QUA','Cần lưu thành công một lần trước khi thử phiên bản cũ');return}const r=await callRpc(1,'01',current.version-1,'KHONG DUOC GHI - STALE TEST',current.status);log('Thử version cũ',{expected:'conflict',actual:r?.result,pass:r?.result==='conflict'});record=current}catch(e){log('Thử conflict LỖI',e.message)}};
+})();
+</script></body></html>
