@@ -2280,7 +2280,7 @@ researchSetup();
     try{
       const {error}=await db.from('research_page_backups').insert({page_id:pageId,content,note:'Lưu bài làm'});
       if(error)throw error;
-      if(backupPanel.style.display==='block')await loadBackups();
+      // Lưu phiên bản không thay đổi trạng thái hoặc dựng lại bảng lịch sử.
       alert('Đã lưu thêm một phiên bản mới.');
     }catch(e){alert('Không lưu được: '+(e.message||e));}
     finally{saveVersion.disabled=false;}
@@ -2391,7 +2391,7 @@ researchSetup();
           const removedIndex=data.findIndex(saved=>saved.id===item.id);
           if(removedIndex!==-1)data.splice(removedIndex,1);
           tr.remove();
-          if(!data.length){x.historyBox.textContent='Chưa có lần lưu nào.';}
+          if(!data.length){list.textContent='Chưa có lần lưu nào.';}
         };
         actions.append(view,del);tr.append(number,date,excerpt,actions);table.append(tr);
       });
@@ -2417,7 +2417,7 @@ researchSetup();
       const {error}=await db.from('research_draft_backups').insert({page_id:pageId,slot,content});
       x.save.disabled=false;
       if(error)return alert('Không lưu được: '+error.message);
-      if(x.historyBox.style.display==='block')await draftHistory(slot);
+      // Không mở hoặc tải lại lịch sử khi lưu phiên bản.
       alert('Đã lưu phiên bản mới cho Bản nháp '+slot+'.');
     };
   });
