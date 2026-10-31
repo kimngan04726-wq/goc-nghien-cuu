@@ -106,5 +106,6 @@ function refreshBadges(){
 }
 async function open(n){ensure();if(pending()){alert('Có thay đổi chưa lưu. Vui lòng xử lý trước khi mở lại.');return}$('mvpA').hidden=false;$('mvpInfo').textContent='Đang tải...';selected=null;await refresh();if(n&&rows.length)pick(n)}
 window.openMvpResearchA=open;
-document.addEventListener('DOMContentLoaded',()=>{ensure();setInterval(()=>{if($('app')&&!$('app').classList.contains('hidden')&&rows.length)refreshBadges()},3000)});
+const boot=()=>{ensure();setInterval(()=>{if($('app')&&!$('app').classList.contains('hidden')&&rows.length)refreshBadges()},3000)};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
