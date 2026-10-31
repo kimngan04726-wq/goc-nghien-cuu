@@ -3727,9 +3727,16 @@ html body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) 
  window.addEventListener('scroll',()=>{if(target)position()},true);window.addEventListener('resize',()=>{if(target)position()});
  new MutationObserver(()=>{if(target&&!editor.contains(target))clear()}).observe(editor,{childList:true,subtree:true});
  }
- // Trình soạn thảo được tạo khi window.load; khởi tạo công cụ sau thời điểm đó.
- if(document.readyState==='complete')initializeRichMediaTools();
- else window.addEventListener('load',()=>setTimeout(initializeRichMediaTools,0),{once:true});
+ // Trình soạn thảo chỉ được tạo sau khi xác thực và khởi tạo bất đồng bộ.
+ // Theo dõi DOM thay vì đoán thời điểm window.load.
+ const bootObserver=new MutationObserver(()=>{
+   if(document.getElementById('richEditor')){
+     initializeRichMediaTools();
+     if(document.getElementById('richMediaTools'))bootObserver.disconnect();
+   }
+ });
+ if(document.getElementById('richEditor'))initializeRichMediaTools();
+ if(!document.getElementById('richMediaTools'))bootObserver.observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
 </body>
