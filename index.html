@@ -2787,8 +2787,18 @@ researchSetup();
         body:JSON.stringify({requests,writeControl:doc.revisionId?{requiredRevisionId:doc.revisionId}:undefined})
       });
       // Chỉ đánh dấu chờ rà soát sau khi Google Docs xác nhận ghi thành công.
-      try{const task=await linkedTask();if(task){const {error}=await db.rpc('set_group_task_status',{p_task_id:task.id,p_status:'Chờ rà soát'});if(error)throw error;}}catch(syncError){alert('Đã xuất Google Docs nhưng chưa đồng bộ được tiến độ: '+syncError.message);}
-      alert('Đã xuất vào thẻ "'+title+'". Bản sao lưu: '+backup.name);
+      let progressSynced=false;
+try{
+ const task=await linkedTask();
+ if(!task)throw Error('Không tìm được duy nhất một nhiệm vụ trùng với tiêu đề bài. Hãy kiểm tra tên nhiệm vụ hoặc nhiệm vụ trùng tên.');
+ const {error}=await db.rpc('set_group_task_status',{p_task_id:task.id,p_status:'Chờ rà soát'});
+ if(error)throw error;
+ progressSynced=true;
+ if(typeof loadTasks==='function')await loadTasks();
+}catch(syncError){
+ alert('Đã xuất Google Docs thành công, nhưng KHÔNG chuyển được sang Chờ rà soát (90%): '+(syncError.message||syncError));
+}
+      alert('Đã xuất vào thẻ "'+title+'". '+(progressSynced?'Nhiệm vụ đã chuyển sang Chờ rà soát (90%).':'Tiến độ chưa được đồng bộ; xem thông báo lỗi trước đó.')+' Bản sao lưu: '+backup.name);
       window.open('https://docs.google.com/document/d/'+encodeURIComponent(id)+'/edit?tab='+encodeURIComponent(tabId),'_blank','noopener');
     }catch(error){alert('Chưa xuất được: '+(error.message||error));}
     finally{docsButton.disabled=false;}
