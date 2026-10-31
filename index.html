@@ -848,6 +848,7 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
 #researchDetail .research-history-toolbar-actions[data-tooltip]:has(select:hover)::before,
 #researchDetail .research-history-toolbar-actions[data-tooltip]:has(select:focus-visible)::before{opacity:1;visibility:visible}
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -2286,9 +2287,50 @@ researchSetup();
     }catch(e){alert('Không lưu được: '+(e.message||e));}
     finally{saveVersion.disabled=false;}
   };
-  docsButton.onclick=()=>{
-    alert('Chưa bật xuất tự động: Google Docs cần xác thực Google an toàn. Không ghi đè bản Final khi chưa kết nối thành công.');
-    window.open('https://docs.google.com/document/d/1xcBZnQNKFz9dIw_g2PSh3ABRuBmHarSHvnJ5dFSlYrE/edit?usp=drivesdk','_blank','noopener');
+  docsButton.onclick=async()=>{
+    const page=researchPageCache.find(p=>Number(p.id)===selected);
+    if(!page||!canEditResearch(selected))return alert('Bạn không có quyền xuất bài.');
+    if(document.getElementById('researchEditor')?.style.display==='block')return alert('Hãy lưu nội dung đang chỉnh sửa trước.');
+    const raw=String(page.content||'').replace(/^<!--RICH_RESEARCH_V1-->/,'');
+    const parsed=new DOMParser().parseFromString(raw,'text/html');
+    const content=(/<[a-z][^>]*>/i.test(raw)?parsed.body.textContent:raw).trim();
+    if(!content)return alert('Bài tổng hợp chưa có nội dung.');
+    const input=prompt('Dán đường dẫn Google Docs hiện có. Hệ thống sẽ sao lưu và CHÈN vào cuối, không xóa nội dung cũ.','https://docs.google.com/document/d/1xcBZnQNKFz9dIw_g2PSh3ABRuBmHarSHvnJ5dFSlYrE/edit');
+    if(input===null)return;
+    const match=input.match(/(?:\\/d\\/)?([a-zA-Z0-9_-]{20,})/);
+    if(!match)return alert('Đường dẫn tài liệu không hợp lệ.');
+    const id=match[1];
+    docsButton.disabled=true;
+    try{
+      if(!window.google?.accounts?.oauth2)throw Error('Chưa tải được đăng nhập Google. Hãy tải lại trang.');
+      const token=await new Promise((resolve,reject)=>{
+        const client=google.accounts.oauth2.initTokenClient({
+          client_id:'453242836681-7qoe89ghj3mmbiua5cnf9se25ig60ea5.apps.googleusercontent.com',
+          scope:'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive',
+          callback:response=>response.access_token?resolve(response.access_token):reject(Error(response.error_description||'Không được cấp quyền Google')),
+          error_callback:error=>reject(Error(error.message||error.type||'Không đăng nhập được Google'))
+        });
+        client.requestAccessToken({prompt:'consent'});
+      });
+      const api=async(url,options={})=>{
+        const response=await fetch(url,{...options,headers:{Authorization:'Bearer '+token,...(options.headers||{})}});
+        const data=await response.json().catch(()=>({}));
+        if(!response.ok)throw Error(data.error?.message||'Google API lỗi '+response.status);
+        return data;
+      };
+      const meta=await api('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(id)+'?fields=id,name,mimeType,capabilities(canEdit)');
+      if(meta.mimeType!=='application/vnd.google-apps.document'||!meta.capabilities?.canEdit)throw Error('Tài liệu không phải Google Docs có quyền chỉnh sửa.');
+      const doc=await api('https://docs.googleapis.com/v1/documents/'+encodeURIComponent(id)+'?fields=title,revisionId');
+      if(!confirm('Tài liệu đích: '+meta.name+'\\n\\nSẽ tạo bản sao lưu trước, rồi CHÈN Bài tổng hợp vào cuối. Không xóa nội dung cũ. Đồng ý?'))return;
+      const backup=await api('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(id)+'/copy?fields=id,name',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:meta.name+' - Sao lưu - '+new Date().toLocaleString('vi-VN')})});
+      if(!backup.id)throw Error('Chưa sao lưu được, đã hủy cập nhật.');
+      const body={requests:[{insertText:{endOfSegmentLocation:{},text:'\\n\\n'+(page.title||'Bài tổng hợp')+' — '+new Date().toLocaleString('vi-VN')+'\\n'+content+'\\n'}}]};
+      if(doc.revisionId)body.writeControl={requiredRevisionId:doc.revisionId};
+      await api('https://docs.googleapis.com/v1/documents/'+encodeURIComponent(id)+':batchUpdate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      alert('Xuất thành công! Đã chèn bài vào cuối tài liệu và tạo bản sao lưu: '+backup.name);
+      window.open('https://docs.google.com/document/d/'+encodeURIComponent(id)+'/edit','_blank','noopener');
+    }catch(error){alert('Chưa xuất được: '+(error.message||error));}
+    finally{docsButton.disabled=false;}
   };
   // Hai bản nháp độc lập; bài chung và trình soạn thảo cũ không bị thay đổi.
   const draftsArea=document.createElement('div');draftsArea.className='research-drafts-area';
