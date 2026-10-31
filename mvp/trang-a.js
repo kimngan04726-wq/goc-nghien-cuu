@@ -49,7 +49,8 @@ function showConflict(r,data,localContent,localStatus){
  const close=()=>{dialog.hidden=true;conflictOpen=false};
  $('mvpSeeRemote').onclick=()=>{close();r.version=data.version;r.content=data.content;r.status=data.status;dirty=false;pick(r.task_key,r.subsection_key);message('Đã tải bản mới từ máy chủ')};
  $('mvpKeepMine').onclick=()=>{close();r.version=data.version; // CAS lần nữa với version máy chủ vừa trả; nếu có thay đổi mới sẽ lại conflict
- $('mvpContent').value=localContent;$('mvpStatus').value=localStatus;dirty=true;message('Đang lưu lại bản của bạn với phiên bản máy chủ mới nhất...');save()};
+ // Không ghi đè nội dung người dùng có thể vừa gõ thêm trong khi hộp thoại mở.
+ dirty=true;message('Đang lưu lại bản của bạn với phiên bản máy chủ mới nhất...');save()};
  $('mvpCancelConflict').onclick=()=>{close();dirty=true;message('Đã hủy xử lý xung đột. Chữ bạn đang gõ vẫn được giữ lại; chưa lưu.')};
 }
 async function save(){
@@ -86,8 +87,9 @@ async function assignOwner(){
  selected.owner_id=data.owner_id;
 }
 async function refresh(){
+ if(pending())return;
  const c=client();if(!c){$('mvpInfo').textContent='Không thể kết nối Supabase. Vui lòng tải lại trang.';return}
- const uid=await currentUser();if(!uid){rows=[];userId=null;$('mvpInfo').textContent='Khách chưa đăng nhập: cần đăng nhập để xem và soạn thảo Trang A.';$('mvpList').replaceChildren();$('mvpTitle').textContent='Vui lòng đăng nhập';$('mvpContent').disabled=true;$('mvpStatus').disabled=true;$('mvpOwner').disabled=true;return}
+ const uid=await currentUser();if(!uid){rows=[];userId=null;profiles=[];selected=null;clearTimeout(timer);dirty=false;$('mvpContent').value='';$('mvpInfo').textContent='Khách chưa đăng nhập: cần đăng nhập để xem và soạn thảo Trang A.';$('mvpList').replaceChildren();$('mvpTitle').textContent='Vui lòng đăng nhập';$('mvpContent').disabled=true;$('mvpStatus').disabled=true;$('mvpOwner').disabled=true;return}
  let data,error,loadedProfiles;try{const results=await Promise.all([c.from('mvp_subsections').select('*').order('task_key').order('subsection_key'),c.from('group_profiles').select('user_id,display_name,role')]);({data,error}=results[0]);loadedProfiles=results[1].data}catch(e){$('mvpInfo').textContent='Không tải được Trang A: '+(e?.message||'Lỗi mạng');return}
  if(error){$('mvpInfo').textContent='Không tải được: '+error.message;return}
  rows=data||[];profiles=loadedProfiles||[];userId=uid;
