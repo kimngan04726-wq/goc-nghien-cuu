@@ -1285,6 +1285,18 @@ main .card{padding:clamp(12px,1.2vw,16px)}
  .task-progress-track{margin:8px 0 10px!important}
 }
 </style>
+<style id="dashboard-groups-align-2026">
+/* Align both home group panels and their card baselines despite 3 vs 4 cards. */
+@media(min-width:1101px){
+ #dashboardHome .dash-columns{align-items:stretch!important}
+ #dashboardHome .dash-columns>.dash-section{height:100%!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important}
+ #dashboardHome .dash-columns>.dash-section .dash-cards{flex:1!important;align-items:stretch!important;grid-auto-rows:1fr!important}
+ #dashboardHome .dash-columns>.dash-section .dash-card{height:100%!important;display:flex!important;flex-direction:column!important}
+ #dashboardHome .dash-columns>.dash-section .dash-card img{height:82px!important;flex:0 0 82px!important;object-fit:cover!important}
+ #dashboardHome .dash-columns>.dash-section .dash-card strong{flex:0 0 auto!important}
+ #dashboardHome .dash-columns>.dash-section .dash-card small{margin-top:auto!important}
+}
+</style>
 </head>
 <body>
 
