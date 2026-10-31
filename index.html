@@ -866,6 +866,26 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
 @keyframes dashCardWiggle{0%,100%{transform:translateY(-5px) rotate(-.6deg)}30%{transform:translateY(-5px) rotate(1.2deg)}65%{transform:translateY(-5px) rotate(-1.1deg)}}
 @media(prefers-reduced-motion:reduce){#dashboardHome .dash-card{transition:none!important;animation:none!important}#dashboardHome .dash-card:hover{transform:none}}
 </style>
+
+<style id="compact-task-dashboard-style">
+#taskStats{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important}
+#taskStats .task-stat{min-height:96px;cursor:pointer;border-radius:14px!important;background:#fbf8f3!important;border:1px solid #e8dbcc!important}
+#taskStats .task-stat:nth-child(n+5){display:none!important}
+.task-compact-toolbar{display:flex;justify-content:flex-end;margin:12px 0}
+.task-compact-toolbar input{width:min(100%,360px);padding:12px 15px;border:1px solid #dfd6cc;border-radius:10px;font-family:"Times New Roman",serif;font-size:17px}
+#taskList.task-compact-root{display:flex!important;flex-direction:column!important;gap:9px!important;width:100%;max-width:100%;grid-template-columns:none!important}
+.task-compact-row{display:grid;grid-template-columns:minmax(0,1fr) 130px 50px 20px;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 17px;background:#fff;border:1px solid #e9e1d6;border-radius:12px;color:#092b4b;font-family:"Times New Roman",serif;cursor:pointer;min-height:70px}
+.task-compact-row:hover,.task-compact-row.selected{background:#fdf8f1;border-color:#d2a76d;box-shadow:0 3px 10px #132c4012}
+.task-compact-label{display:flex;flex-direction:column;gap:4px;min-width:0}.task-compact-label strong{font-size:19px}.task-compact-label small{font-size:15px;color:#627387}
+.task-compact-status{padding:6px 9px;border-radius:25px;background:#f8dddd;text-align:center;font-size:15px}
+.task-compact-status[data-status="Đang làm"]{background:#fff0c9}.task-compact-status[data-status="Chờ rà soát"]{background:#dceffc}.task-compact-status[data-status="Hoàn thành"]{background:#dcf1e0}
+.task-compact-detail{margin:15px 0;padding:22px;background:#fffcf8;border:1px solid #e6d9c8;border-radius:14px;color:#092b4b;font-family:"Times New Roman",serif}
+.task-compact-detail[hidden]{display:none!important}.task-compact-detail-head{display:flex;justify-content:space-between;align-items:center}.task-compact-detail-head h3{margin:0;font-size:23px}
+.task-compact-detail button,.task-compact-pages button{padding:9px 15px;border:1px solid #d8cbbb;border-radius:8px;background:#fff;color:#092b4b;cursor:pointer;font-family:"Times New Roman",serif}
+.task-compact-admin{display:flex;gap:8px;margin-top:12px}.task-compact-pages{display:flex;justify-content:center;gap:8px;margin:16px 0}.task-compact-pages .active{background:#173b59;color:#fff}
+@media(min-width:950px){#taskList.task-compact-root.with-detail{width:57%;display:inline-flex!important;vertical-align:top}.task-compact-detail:not([hidden]){display:inline-block;width:calc(43% - 20px);margin:0 0 0 20px;vertical-align:top;box-sizing:border-box}}
+@media(max-width:650px){#taskStats{grid-template-columns:repeat(2,minmax(0,1fr))!important}.task-compact-row{grid-template-columns:minmax(0,1fr) 95px 42px;gap:5px;padding:11px}.task-compact-row>span:last-child{display:none}.task-compact-label strong{font-size:16px}.task-compact-label small,.task-compact-status{font-size:12px}}
+</style>
 </head>
 <body>
 
@@ -3030,68 +3050,75 @@ researchSetup();
   ['taskFilterGroup','taskFilterStatus'].forEach(id=>document.getElementById(id).value='all');
   renderTaskBoard();
  }
+ let taskSearch='',taskPage=1,taskSelectedId=null;
+ const taskPageSize=7;
+ const taskRoot=document.getElementById('taskList');
+ taskRoot.classList.add('task-compact-root');
+ const taskToolbar=document.createElement('div');taskToolbar.className='task-compact-toolbar';
+ const taskSearchInput=document.createElement('input');taskSearchInput.type='search';taskSearchInput.placeholder='⌕ Tìm nhiệm vụ...';taskSearchInput.setAttribute('aria-label','Tìm nhiệm vụ');
+ taskSearchInput.oninput=()=>{taskSearch=taskSearchInput.value.trim().toLocaleLowerCase('vi');taskPage=1;renderTaskBoard();};
+ taskToolbar.append(taskSearchInput);
+ taskRoot.before(taskToolbar);
+ const taskDetail=document.createElement('aside');taskDetail.className='task-compact-detail';taskDetail.hidden=true;taskRoot.after(taskDetail);
+ const taskPagination=document.createElement('div');taskPagination.className='task-compact-pages';taskDetail.after(taskPagination);
  function renderTaskBoard(){
   updateTaskDashboard();
-  const today=localDateISO();
   const group=document.getElementById('taskFilterGroup').value;
   const statusFilter=document.getElementById('taskFilterStatus').value;
-  const data=cachedKanbanTasks.filter(t=>{
-   if(group!=='all'&&String(t.group_number||1)!==group)return false;
-   if(statusFilter!=='all'&&t.status!==statusFilter)return false;
-   return true;
-  });
+  const data=cachedKanbanTasks.filter(t=>
+   (group==='all'||String(t.group_number||1)===group)&&
+   (statusFilter==='all'||t.status===statusFilter)&&
+   (!taskSearch||String(t.title).toLocaleLowerCase('vi').includes(taskSearch))
+  );
   document.getElementById('taskFilterCount').textContent='Đang hiển thị '+data.length+' / '+cachedKanbanTasks.length+' công việc';
-  const active=[group!=='all'?'Nhóm '+group:null,statusFilter!=='all'?'Trạng thái: '+statusFilter:null].filter(Boolean);
-  const g1=cachedKanbanTasks.filter(t=>String(t.group_number||1)==='1').length;
-  const g2=cachedKanbanTasks.filter(t=>String(t.group_number||1)==='2').length;
-  const message=document.getElementById('taskFilterMessage');
-  message.textContent=active.length?('Đã lọc theo '+active.join(' · ')+'. Kết quả: '+data.length+' công việc.'+(data.length===cachedKanbanTasks.length?' Tất cả công việc hiện đều phù hợp với lựa chọn này.':'')):'Đang xem tất cả công việc.';
-  if(!data.length)message.textContent+=' Không có công việc phù hợp; bà có thể chọn Xem tất cả.';
-  document.getElementById('taskFilterGroup').options[1].textContent='Nhóm 1 ('+g1+')';
-  document.getElementById('taskFilterGroup').options[2].textContent='Nhóm 2 ('+g2+')';
-  const root=el('taskList');root.replaceChildren();
-  root.classList.toggle('kanban-single-status',statusFilter!=='all');
-  root.dataset.filteredStatus=statusFilter;
-  statuses.filter(status=>statusFilter==='all'||status===statusFilter).forEach(status=>{
-   const lane=document.createElement('div');lane.className='kanban-lane';
-   const heading=document.createElement('h3');
-   const list=data.filter(t=>t.status===status);
-   heading.textContent=status+' ('+list.length+')';
-   lane.append(heading);
-   if(!list.length){const empty=document.createElement('p');empty.className='task-empty';empty.textContent='Không có công việc';lane.append(empty);}
-   list.forEach(task=>{
-     const card=document.createElement('div');card.className='kanban-item';
-     const name=document.createElement('b');name.textContent=task.title;
-     const groupInfo=document.createElement('p');groupInfo.className='task-due';groupInfo.textContent='Nhóm '+(task.group_number||1);
-     const deadline=document.createElement('p');deadline.className='task-due';deadline.textContent='Hạn: '+labelDate(task.due_date);
-     if(task.due_date&&task.due_date<today&&status!=='Hoàn thành'){deadline.classList.add('task-overdue');deadline.textContent+=' · Quá hạn';}
-     const select=document.createElement('select');
-     statuses.forEach(value=>{const option=document.createElement('option');option.value=value;option.textContent=value;option.selected=value===task.status;select.append(option);});
-     select.disabled=!(canChangeTaskStatus());
-     select.onchange=async()=>{if(!(canChangeTaskStatus()))return;select.disabled=true;await changeStatus(task.id,select.value);};
-     card.append(name,groupInfo,deadline,select);
-     if(adminEditingEnabled()){
-       const edit=document.createElement('button');edit.textContent='Sửa';edit.onclick=()=>editTask(task.id);
-       const remove=document.createElement('button');remove.textContent='Xóa';remove.onclick=()=>deleteTask(task.id);
-       card.append(edit,remove);
-     }
-     lane.append(card);
-   });
-   root.append(lane);
+  document.getElementById('taskFilterMessage').textContent=data.length?'Chọn một nhiệm vụ để xem chi tiết.':'Không tìm thấy công việc phù hợp.';
+  document.getElementById('taskFilterGroup').options[1].textContent='Nhóm 1 ('+cachedKanbanTasks.filter(t=>String(t.group_number||1)==='1').length+')';
+  document.getElementById('taskFilterGroup').options[2].textContent='Nhóm 2 ('+cachedKanbanTasks.filter(t=>String(t.group_number||1)==='2').length+')';
+  taskRoot.replaceChildren();taskPagination.replaceChildren();
+  const pages=Math.max(1,Math.ceil(data.length/taskPageSize));taskPage=Math.min(taskPage,pages);
+  const pageData=data.slice((taskPage-1)*taskPageSize,taskPage*taskPageSize);
+  pageData.forEach(task=>{
+   const row=document.createElement('button');row.type='button';row.className='task-compact-row';
+   if(String(task.id)===String(taskSelectedId))row.classList.add('selected');
+   const label=document.createElement('span');label.className='task-compact-label';
+   const name=document.createElement('strong');name.textContent=task.title;
+   const meta=document.createElement('small');meta.textContent='Nhóm '+(task.group_number||1)+' · Hạn: '+labelDate(task.due_date);
+   label.append(name,meta);
+   const status=document.createElement('span');status.className='task-compact-status';status.dataset.status=task.status;status.textContent=task.status;
+   const pct=document.createElement('b');pct.textContent=taskProgressWeight(task)+'%';
+   const arrow=document.createElement('span');arrow.textContent='›';arrow.style.fontSize='24px';
+   row.append(label,status,pct,arrow);
+   row.onclick=()=>{taskSelectedId=task.id;renderTaskBoard();};
+   taskRoot.append(row);
   });
-  enforceStatusLaneVisibility();
+  if(!pageData.length){const empty=document.createElement('p');empty.textContent='Không có nhiệm vụ';taskRoot.append(empty);}
+  if(pages>1){
+   for(let i=1;i<=pages;i++){const btn=document.createElement('button');btn.type='button';btn.textContent=i;btn.className=i===taskPage?'active':'';btn.onclick=()=>{taskPage=i;renderTaskBoard();};taskPagination.append(btn);}
+  }
+  const selected=cachedKanbanTasks.find(t=>String(t.id)===String(taskSelectedId));
+  taskDetail.replaceChildren();taskDetail.hidden=!selected;
+  taskRoot.classList.toggle('with-detail',!!selected);
+  if(selected){
+   const head=document.createElement('div');head.className='task-compact-detail-head';
+   const title=document.createElement('h3');title.textContent=selected.title;
+   const close=document.createElement('button');close.type='button';close.textContent='✕';close.setAttribute('aria-label','Đóng chi tiết');close.onclick=()=>{taskSelectedId=null;renderTaskBoard();};
+   head.append(title,close);
+   const info=document.createElement('p');info.textContent='Nhóm '+(selected.group_number||1)+' · Hạn: '+labelDate(selected.due_date);
+   const state=document.createElement('p');state.textContent='Trạng thái: '+selected.status+' · Tiến độ: '+taskProgressWeight(selected)+'%';
+   taskDetail.append(head,info,state);
+   const page=researchPageCache.find(p=>p.title===selected.title);
+   if(page){
+    const open=document.createElement('button');open.type='button';open.textContent='📖 Mở bài nghiên cứu';open.onclick=()=>{showPage('research');document.getElementById('researchContent'+page.id)?.closest('.card')?.querySelector('button')?.click();};taskDetail.append(open);
+   }
+   if(adminEditingEnabled()){
+    const controls=document.createElement('div');controls.className='task-compact-admin';
+    const edit=document.createElement('button');edit.textContent='Sửa';edit.onclick=()=>editTask(selected.id);
+    const remove=document.createElement('button');remove.textContent='Xóa';remove.onclick=()=>deleteTask(selected.id);
+    controls.append(edit,remove);taskDetail.append(controls);
+   }
+  }
  }
- function enforceStatusLaneVisibility(){
-  const root=document.getElementById('taskList');
-  const chosen=document.getElementById('taskFilterStatus').value;
-  root.classList.toggle('kanban-single-status',chosen!=='all');
-  root.querySelectorAll('.kanban-lane').forEach(lane=>{
-   const heading=lane.querySelector('h3')?.textContent||'';
-   const name=heading.replace(/\\s*\\(\\d+\\)\\s*$/,'').trim();
-   lane.hidden=chosen!=='all'&&name!==chosen;
-   lane.style.display=lane.hidden?'none':'';
-  });
- }
+ function enforceStatusLaneVisibility(){renderTaskBoard();}
  // Cho phép bộ lọc HTML gọi hàm nằm trong module Kanban.
  document.getElementById("taskApplyFilter").addEventListener("click",()=>{renderTaskBoard();enforceStatusLaneVisibility();});
  document.getElementById("taskFilterStatus").addEventListener("change",()=>{renderTaskBoard();enforceStatusLaneVisibility();});
