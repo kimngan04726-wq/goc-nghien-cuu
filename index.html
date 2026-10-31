@@ -2018,8 +2018,13 @@ researchSetup();
     const preview=document.createElement('div');preview.className='detail-content';preview.textContent='Chưa có nội dung.';
     const button=document.createElement('button');button.textContent='✎ Chỉnh sửa';
     button.onclick=()=>editDraft(slot);
-    panel.append(h,owner,preview,button);draftCards.append(panel);
-    return {panel,owner,preview,button};
+    const controls=document.createElement('div');controls.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:10px';
+    const save=document.createElement('button');save.textContent='💾 Lưu bài làm';
+    const history=document.createElement('button');history.textContent='🗂 Lịch sử lưu bài';
+    const historyBox=document.createElement('div');historyBox.style.cssText='display:none;margin-top:12px;overflow-x:auto';
+    controls.append(save,history);
+    panel.append(h,owner,preview,button,controls,historyBox);draftCards.append(panel);
+    return {panel,owner,preview,button,save,history,historyBox};
   });
   const actions=document.createElement('div');actions.className='research-draft-actions';
   const mergeButton=document.createElement('button');mergeButton.textContent='✦ Tổng hợp thông minh (miễn phí)';
@@ -2053,6 +2058,68 @@ researchSetup();
       x.button.disabled=!(isAdmin&&adminMode==='edit'||isMember&&assignedResearchPages.has(id));
     }
   }
+  const draftSelections={1:null,2:null};
+  async function draftHistory(slot){
+    const pageId=selected,x=draftNodes[slot-1];
+    if(pageId===null)return;
+    x.historyBox.textContent='Đang tải...';
+    const {data,error}=await db.from('research_draft_backups').select('id,content,created_at').eq('page_id',pageId).eq('slot',slot).order('created_at',{ascending:true}).limit(500);
+    if(pageId!==selected)return;
+    x.historyBox.replaceChildren();
+    if(error){x.historyBox.textContent='Chưa kết nối lịch sử bản nháp: '+error.message;return;}
+    if(!data.length){x.historyBox.textContent='Chưa có lần lưu nào.';return;}
+    const table=document.createElement('table');table.style.cssText='width:100%;font-size:14px;border-collapse:collapse';
+    const head=document.createElement('tr');
+    for(const title of ['Lần lưu','Ngày giờ','Thao tác']){const th=document.createElement('th');th.textContent=title;head.append(th);}
+    table.append(head);
+    data.forEach((item,i)=>{
+      const tr=document.createElement('tr');
+      const number=document.createElement('td');number.textContent='Lần '+(i+1);
+      const date=document.createElement('td');date.textContent=new Date(item.created_at).toLocaleString('vi-VN');
+      const actions=document.createElement('td');
+      const view=document.createElement('button');view.textContent='Nội dung';
+      view.onclick=()=>{
+        if(document.getElementById('researchEditor')?.style.display==='block')return alert('Hãy lưu hoặc đóng trình soạn thảo trước.');
+        draftSelections[slot]={id:item.id,content:item.content,pageId};
+        const raw=item.content.startsWith('<!--RICH_RESEARCH_V1-->')?item.content.slice('<!--RICH_RESEARCH_V1-->'.length):item.content;
+        x.preview.textContent=stripText(raw)||'Bản lưu trống.';
+        x.preview.scrollIntoView({behavior:'smooth',block:'center'});
+      };
+      const del=document.createElement('button');del.textContent='Xóa';del.style.cssText='margin-left:6px;background:#9b453c;color:white';
+      del.onclick=async()=>{
+        if(!canEditResearch(pageId))return;
+        if(!confirm('Xóa vĩnh viễn lần '+(i+1)+' của Bản nháp '+slot+'?'))return;
+        del.disabled=true;
+        const {error:err}=await db.from('research_draft_backups').delete().eq('id',item.id).eq('page_id',pageId).eq('slot',slot);
+        if(err){del.disabled=false;return alert('Không xóa được: '+err.message);}
+        if(draftSelections[slot]?.id===item.id){draftSelections[slot]=null;x.preview.textContent='Chưa chọn phiên bản.';}
+        await draftHistory(slot);
+      };
+      actions.append(view,del);tr.append(number,date,actions);table.append(tr);
+    });
+    x.historyBox.append(table);
+  }
+  draftNodes.forEach((x,i)=>{
+    const slot=i+1;
+    x.history.onclick=async()=>{
+      x.historyBox.style.display=x.historyBox.style.display==='none'?'block':'none';
+      if(x.historyBox.style.display==='block')await draftHistory(slot);
+    };
+    x.save.onclick=async()=>{
+      if(selected===null||!canEditResearch(selected))return;
+      if(document.getElementById('researchEditor')?.style.display==='block')return alert('Hãy lưu hoặc đóng trình soạn thảo trước.');
+      const pageId=selected;
+      const content=draftSelections[slot]?.pageId===pageId?draftSelections[slot].content:draftState[slot];
+      if(!content?.trim())return alert('Chưa có nội dung bản nháp để lưu.');
+      if(!confirm('Lưu Bản nháp '+slot+' thành phiên bản mới?'))return;
+      x.save.disabled=true;
+      const {error}=await db.from('research_draft_backups').insert({page_id:pageId,slot,content});
+      x.save.disabled=false;
+      if(error)return alert('Không lưu được: '+error.message);
+      x.historyBox.style.display='block';await draftHistory(slot);
+      alert('Đã lưu phiên bản mới cho Bản nháp '+slot+'.');
+    };
+  });
   // Tái sử dụng đúng trình soạn thảo nâng cao của bài chung, nhưng lưu sang bảng riêng.
   let activeDraft=null;
   const originalSaveResearch=saveResearch;
@@ -2077,8 +2144,9 @@ researchSetup();
     // Khi chuyển sang bản nháp, trả nút đó về trạng thái bình thường.
     edit.style.display=canEditResearch(selected)?'inline-block':'none';
     const rich=document.getElementById('richEditor');
-    rich.innerHTML=DOMPurify.sanitize(draftHtml(draftState[slot]||''));
-    document.getElementById('researchText').value=draftState[slot]||'';
+    const source=draftSelections[slot]?.pageId===selected?draftSelections[slot].content:draftState[slot];
+    rich.innerHTML=DOMPurify.sanitize(draftHtml(source||''));
+    document.getElementById('researchText').value=source||'';
     const heading=panel.querySelector('h2');
     if(heading){heading.dataset.originalDraftHeading=heading.textContent;heading.textContent='Bản nháp '+slot;}
     panel.scrollIntoView({behavior:'smooth'});
@@ -2099,6 +2167,7 @@ researchSetup();
     const query=existing?db.from('research_drafts').update(payload).eq('page_id',pageId).eq('slot',slot):db.from('research_drafts').insert(payload);
     const {error}=await query;
     if(error)return alert('Không lưu được bản nháp: '+error.message);
+    draftSelections[slot]=null;
     activeDraft=null;
     cancelResearch();
     await loadDrafts();
@@ -2325,6 +2394,8 @@ researchSetup();
     if(backupPanel.style.display==='block')loadBackups();
   }
   function open(id){
+    draftSelections[1]=null;draftSelections[2]=null;
+    draftNodes.forEach(x=>x.historyBox.style.display='none');
     selectedSaved=null;
     backupPanel.style.display='none';
     selected=id;
