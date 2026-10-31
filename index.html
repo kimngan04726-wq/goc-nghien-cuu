@@ -993,6 +993,75 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
  .task-compact-row{grid-template-columns:35px minmax(0,1fr) 88px 42px!important}
 }
 </style>
+
+<style id="task-single-screen-compact">
+/* Chỉ thu gọn bảng nhiệm vụ, không đụng tới khu Thêm công việc. */
+#tasks{--task-board-height:calc(100dvh - 135px)}
+#tasks>h2{font-size:clamp(24px,2.4vw,32px)!important;margin:3px 0 10px!important;line-height:1.15!important}
+#taskDashboard{margin:0!important}
+#taskStats{gap:10px!important;margin-bottom:10px!important}
+#taskStats .task-stat{min-height:65px!important;height:65px!important;padding:8px 10px 8px 60px!important;border-radius:11px!important;gap:1px!important}
+#taskStats .task-stat:before{left:17px!important;font-size:28px!important}
+#taskStats .task-stat strong{font-size:26px!important;line-height:1!important}
+#taskStats .task-stat span{font-size:15px!important}
+.task-visual-progress{padding:0 5px 11px!important;margin-bottom:8px!important;gap:14px!important}
+.task-visual-progress strong{font-size:15px!important}
+.task-visual-progress .task-progress-track{height:12px!important}
+.task-visual-list-header{margin:0 0 8px!important;min-height:40px!important;gap:10px!important}
+.task-visual-list-header h3{font-size:22px!important}
+.task-compact-toolbar{gap:8px!important}
+.task-compact-toolbar input,.task-compact-toolbar select{min-height:38px!important;height:38px!important;font-size:15px!important;padding:6px 12px!important;border-radius:9px!important}
+.task-compact-toolbar input{width:240px!important}
+.task-compact-toolbar select{width:165px!important}
+.task-visual-layout{gap:12px!important;min-height:0!important}
+.task-visual-layout.has-selection{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)!important}
+#taskList.task-compact-root,#taskList.task-compact-root.with-detail{gap:6px!important;min-height:0!important}
+.task-compact-row{min-height:62px!important;height:62px!important;padding:7px 10px!important;border-radius:10px!important;grid-template-columns:38px minmax(0,1fr) 104px 40px 12px!important;gap:7px!important}
+.task-row-file-icon{width:34px!important;height:38px!important;font-size:21px!important;border-radius:8px!important}
+.task-compact-label{gap:1px!important}
+.task-compact-label strong{font-size:17px!important;line-height:1.1!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.task-compact-label small{font-size:13px!important;line-height:1.2!important}
+.task-compact-status{font-size:13px!important;padding:5px 6px!important}
+.task-compact-row>b{font-size:15px!important}
+.task-compact-detail:not([hidden]){min-height:0!important;height:100%!important;max-height:100%!important;padding:13px!important;border-radius:14px!important;overflow-y:auto!important}
+.task-compact-detail-head h3{font-size:19px!important;line-height:1.15!important}
+.task-compact-detail-head button{padding:3px 7px!important}
+.task-detail-meta{margin:10px 0!important;gap:7px!important;font-size:13px!important}
+.task-detail-tabs{margin-bottom:8px!important}
+.task-detail-tabs button{padding:8px 4px!important;font-size:14px!important}
+.task-detail-body{min-height:0!important}
+.task-draft-preview summary{padding:10px!important;font-size:15px!important}
+.task-draft-text{padding:8px!important;font-size:14px!important;max-height:130px!important}
+.task-detail-review{margin-top:10px!important;padding-top:9px!important}
+.task-detail-review h4{font-size:16px!important;margin:2px 0 9px!important}
+.task-detail-review-actions button{padding:9px 5px!important;font-size:14px!important}
+.task-compact-admin{margin-top:9px!important}
+.task-compact-admin button{padding:6px 11px!important}
+.task-compact-pages{margin:8px 0!important;gap:5px!important}
+.task-compact-pages button{min-width:32px!important;min-height:32px!important;padding:4px 9px!important;font-size:14px!important}
+@media(min-width:1000px) and (min-height:650px){
+ #tasks{height:calc(100dvh - 90px)!important;max-height:calc(100dvh - 90px)!important;overflow:hidden!important;box-sizing:border-box!important}
+ .task-visual-layout{height:calc(100dvh - 325px)!important;max-height:calc(100dvh - 325px)!important;overflow:hidden!important}
+ #taskList.task-compact-root{overflow-y:auto!important;scrollbar-width:thin}
+ .task-compact-detail:not([hidden]){overflow-y:auto!important}
+}
+@media(max-width:999px){
+ .task-visual-layout.has-selection{grid-template-columns:1fr!important}
+ .task-compact-detail:not([hidden]){height:auto!important;max-height:350px!important}
+}
+@media(max-width:600px){
+ #taskStats{gap:6px!important}
+ #taskStats .task-stat{padding-left:42px!important}
+ #taskStats .task-stat:before{left:10px!important;font-size:23px!important}
+ #taskStats .task-stat strong{font-size:22px!important}
+ #taskStats .task-stat span{font-size:12px!important}
+ .task-visual-list-header{align-items:stretch!important}
+ .task-compact-toolbar input{width:100%!important}
+ .task-compact-toolbar select{width:130px!important}
+ .task-compact-row{grid-template-columns:28px minmax(0,1fr) 75px 34px!important}
+ .task-row-file-icon{width:27px!important}
+}
+</style>
 </head>
 <body>
 
