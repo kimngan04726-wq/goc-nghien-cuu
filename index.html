@@ -754,6 +754,29 @@ body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #rich
 #researchDetail .research-draft-card .research-icon-button{position:static!important;top:auto!important;right:auto!important;float:none!important;margin:0!important}
 #researchDetail .research-draft-card .detail-content{padding-right:0!important}
 </style>
+<style id="editor-done-compact-layout">
+/* Chỉ bố trí lại khung, không thay đổi các công cụ soạn thảo. */
+#researchEditor:has(#richToolbar) .research-actions{display:flex!important;align-items:center!important;gap:8px!important}
+#researchEditor:has(#richToolbar) .research-actions #wordEditorSizeButton{
+ position:static!important;inset:auto!important;order:2!important;
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ height:40px!important;min-height:40px!important;margin:0!important;
+ padding:6px 12px!important;width:auto!important;white-space:nowrap!important;
+ background:#fffaf4!important;border:1px solid #bba993!important;border-radius:8px!important;
+ color:#173a59!important;font:15px 'Times New Roman',serif!important
+}
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{
+ min-height:0!important;max-height:none!important;
+ padding-top:6px!important;padding-bottom:6px!important;
+ align-content:center!important;row-gap:4px!important;
+}
+body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar:empty{display:none!important}
+body.word-editor-open #researchEditor .research-actions{top:8px!important;right:10px!important}
+@media(max-width:650px){
+ body.word-editor-open #researchEditor .research-actions{right:6px!important;gap:5px!important}
+ #researchEditor:has(#richToolbar) .research-actions #wordEditorSizeButton{padding:5px 7px!important;font-size:13px!important}
+}
+</style>
 </head>
 <body>
 
@@ -3237,6 +3260,8 @@ body.word-editor-open #researchEditor #researchMessage{flex:none;margin:0!import
   const toolbar=document.getElementById('richToolbar');if(!toolbar)return;
   let btn=document.getElementById('wordEditorSizeButton');
   if(!btn){btn=document.createElement('button');btn.type='button';btn.id='wordEditorSizeButton';btn.className='word-editor-size-button';btn.addEventListener('mousedown',e=>e.preventDefault());btn.addEventListener('click',()=>setWordEditorExpanded(!document.body.classList.contains('word-editor-open')));toolbar.append(btn)}
+  const actions=document.querySelector('#researchEditor .research-actions');
+  if(actions&&btn.parentElement!==actions)actions.append(btn);
  }
  const priorOpen=openResearchEditor;
  openResearchEditor=async function(id){await priorOpen(id);if(editingPageId!==id)return;ensureSizeButton();setWordEditorExpanded(true);document.getElementById('richEditor')?.focus()};
@@ -3244,7 +3269,7 @@ body.word-editor-open #researchEditor #researchMessage{flex:none;margin:0!import
  cancelResearch=function(){setWordEditorExpanded(false);return priorCancel()};
  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.body.classList.contains('word-editor-open')){event.preventDefault();setWordEditorExpanded(false)}});
 })();
-</script><script>(function(){const a=document.querySelector('#researchEditor .research-actions');if(!a)return;const b=a.querySelectorAll('button');if(b.length<2)return;b[0].textContent='Lưu';b[0].onclick=function(){if(confirm('Bạn có muốn lưu các thay đổi không?'))saveResearch()};b[1].onclick=function(){if(confirm('Bạn có muốn hủy các thay đổi chưa lưu không?'))cancelResearch()};})();</script><style id="compact-docs-toolbar-v4">
+</script><script>(function(){const a=document.querySelector('#researchEditor .research-actions');if(!a)return;const b=a.querySelectorAll('button');if(b.length<2)return;b[0].textContent='Xong';b[0].setAttribute('title','Thoát chế độ chỉnh sửa (không lưu)');b[0].onclick=function(event){event.preventDefault();cancelResearch()};b[1].remove();})();</script><style id="compact-docs-toolbar-v4">
 body.word-editor-open #researchEditor>h2{display:none!important}
 body.word-editor-open #researchEditor{padding:5px 8px!important}
 body.word-editor-open #researchEditor .research-actions{top:7px!important;right:10px!important}
