@@ -2225,7 +2225,8 @@ researchSetup();
         const {error:deleteError}=await db.from('research_page_backups').delete().eq('id',item.id).eq('page_id',pageId);
         if(deleteError){del.disabled=false;return alert('Không xóa được: '+deleteError.message);}
         if(selectedSaved?.id===item.id){selectedSaved=null;showSaved('');}
-        await loadBackups();
+        backupData=backupData.filter(saved=>saved.id!==item.id);
+        renderBackups();
       };
       cell.append(btn,del);tr.append(count,date,excerpt,cell);backupRows.append(tr);
     });
@@ -2354,7 +2355,9 @@ researchSetup();
           const {error:err}=await db.from('research_draft_backups').delete().eq('id',item.id).eq('page_id',pageId).eq('slot',slot);
           if(err){del.disabled=false;return alert('Không xóa được: '+err.message);}
           if(draftSelections[slot]?.id===item.id){draftSelections[slot]=null;x.preview.textContent='Chưa chọn phiên bản.';}
-          await draftHistory(slot);
+          const removedIndex=data.findIndex(saved=>saved.id===item.id);
+          if(removedIndex!==-1)data.splice(removedIndex,1);
+          render();
         };
         actions.append(view,del);tr.append(number,date,excerpt,actions);table.append(tr);
       });
