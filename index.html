@@ -2295,23 +2295,25 @@ researchSetup();
     const parsed=new DOMParser().parseFromString(raw,'text/html');
     const content=(/<[a-z][^>]*>/i.test(raw)?parsed.body.textContent:raw).trim();
     if(!content)return alert('Bài tổng hợp chưa có nội dung.');
-    const input=prompt('Dán đường dẫn Google Docs hiện có. Hệ thống sẽ sao lưu và CHÈN vào cuối, không xóa nội dung cũ.','https://docs.google.com/document/d/1xcBZnQNKFz9dIw_g2PSh3ABRuBmHarSHvnJ5dFSlYrE/edit');
-    if(input===null)return;
-    const match=input.match(/(?:\/d\/)?([a-zA-Z0-9_-]{20,})/);
-    if(!match)return alert('Đường dẫn tài liệu không hợp lệ.');
-    const id=match[1];
+    if(!window.google?.accounts?.oauth2)return alert('Chưa tải được đăng nhập Google. Hãy tải lại trang.');
     docsButton.disabled=true;
     try{
-      if(!window.google?.accounts?.oauth2)throw Error('Chưa tải được đăng nhập Google. Hãy tải lại trang.');
-      const token=await new Promise((resolve,reject)=>{
+      // OAuth phải được kích hoạt trực tiếp từ thao tác bấm, trước prompt/await.
+      const tokenPromise=new Promise((resolve,reject)=>{
         const client=google.accounts.oauth2.initTokenClient({
           client_id:'453242836681-7qoe89ghj3mmbiua5cnf9se25ig60ea5.apps.googleusercontent.com',
           scope:'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive',
           callback:response=>response.access_token?resolve(response.access_token):reject(Error(response.error_description||'Không được cấp quyền Google')),
-          error_callback:error=>reject(Error(error.message||error.type||'Không đăng nhập được Google'))
+          error_callback:error=>reject(Error(error.message||error.type||'Không mở được cửa sổ Google. Hãy cho phép cửa sổ bật lên của website.'))
         });
         client.requestAccessToken({prompt:'consent'});
       });
+      const token=await tokenPromise;
+      const input=prompt('Dán đường dẫn Google Docs hiện có. Hệ thống sẽ sao lưu và CHÈN vào cuối, không xóa nội dung cũ.','https://docs.google.com/document/d/1xcBZnQNKFz9dIw_g2PSh3ABRuBmHarSHvnJ5dFSlYrE/edit');
+      if(input===null)return;
+      const match=input.trim().match(/(?:docs\\.google\\.com\\/document\\/d\\/)?([a-zA-Z0-9_-]{20,})/);
+      if(!match)return alert('Đường dẫn tài liệu không hợp lệ.');
+      const id=match[1];
       const api=async(url,options={})=>{
         const response=await fetch(url,{...options,headers:{Authorization:'Bearer '+token,...(options.headers||{})}});
         const data=await response.json().catch(()=>({}));
