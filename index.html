@@ -1162,6 +1162,39 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
  #tasks .task-list-column #taskList.task-compact-root{max-height:none!important}
 }
 </style>
+
+<style id="task-detail-reference-layout-v2">
+/* Khung chi tiết bám theo mẫu đã duyệt; tránh các quy tắc cũ làm vỡ bố cục. */
+#tasks .task-visual-layout.has-selection{display:grid!important;grid-template-columns:minmax(0,1.45fr) minmax(350px,1fr)!important;gap:16px!important;align-items:start!important}
+#tasks .task-compact-detail:not([hidden]){display:flex!important;flex-direction:column!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;padding:20px 18px!important;margin:0!important;border-radius:18px!important;background:#fffcf8!important;box-sizing:border-box!important;box-shadow:0 4px 16px #102c4010!important}
+#tasks .task-compact-detail-head{display:flex!important;align-items:center!important;gap:10px!important;min-height:35px!important}
+#tasks .task-detail-doc-icon{font-size:25px!important;color:#10395d!important;line-height:1}
+#tasks .task-compact-detail-head h3{font-family:"Times New Roman",serif!important;font-size:clamp(19px,1.7vw,25px)!important;line-height:1.2!important;flex:1!important;margin:0!important;color:#0b3053!important}
+#tasks .task-compact-detail-head>button{font-size:23px!important;line-height:1!important;background:transparent!important;border:0!important;box-shadow:none!important;padding:4px 7px!important;color:#173855!important}
+#tasks .task-detail-meta{display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:8px 12px!important;margin:16px 0!important;font-size:16px!important}
+#tasks .task-detail-meta .task-compact-status{margin-left:auto!important;font-size:15px!important;padding:6px 12px!important;white-space:nowrap!important}
+#tasks .task-detail-tabs{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:0!important;margin:0 0 15px!important}
+#tasks .task-detail-tabs button{min-width:0!important;width:100%!important;min-height:41px!important;padding:8px 3px!important;border:1px solid #ded6cc!important;border-radius:8px!important;background:#fffaf6!important;color:#173855!important;font-family:"Times New Roman",serif!important;font-size:16px!important;font-weight:bold!important}
+#tasks .task-detail-tabs button.active{background:#10395d!important;color:#fff!important;border-color:#10395d!important}
+#tasks .task-detail-body{min-height:0!important;display:flex!important;flex-direction:column!important}
+#tasks .task-draft-preview{display:block!important;border:1px solid #e4dacf!important;border-radius:10px!important;background:#fffdfa!important;margin:0 0 6px!important;overflow:hidden!important}
+#tasks .task-draft-preview+.task-draft-preview{border-top:1px solid #e4dacf!important}
+#tasks .task-draft-preview summary{display:flex!important;align-items:center!important;gap:10px!important;min-height:48px!important;padding:9px 13px!important;font-size:17px!important;line-height:1.25!important;cursor:pointer!important;list-style:none!important}
+#tasks .task-draft-preview summary::-webkit-details-marker{display:none!important}
+#tasks .task-preview-file{font-size:20px!important;color:#143a5c!important}
+#tasks .task-preview-name{flex:1!important}
+#tasks .task-preview-check{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:22px!important;height:22px!important;border:2px solid #89939a!important;border-radius:50%!important;color:#89939a!important;font-size:16px!important;line-height:1!important}
+#tasks .task-preview-check.filled{color:#16804a!important;border-color:#16804a!important}
+#tasks .task-draft-preview summary:after{content:'⌄'!important;float:none!important;font-size:22px!important;line-height:1!important;margin-left:8px!important;color:#173855!important}
+#tasks .task-draft-preview[open] summary:after{content:'⌃'!important}
+#tasks .task-detail-review{margin-top:18px!important;padding-top:15px!important;border-top:1px solid #e6dacf!important}
+#tasks .task-detail-review h4{font-size:18px!important;margin:4px 0 14px!important;color:#0b3053!important}
+#tasks .task-detail-review-actions{display:flex!important;gap:9px!important}
+#tasks .task-detail-review-actions button{flex:1!important;min-width:0!important;min-height:45px!important;padding:9px 5px!important;font-size:15px!important;border-radius:8px!important}
+#tasks .task-compact-admin{margin-top:13px!important;padding-top:10px!important;border-top:1px solid #eee4da!important}
+#tasks .task-compact-admin button{padding:5px 12px!important;font-size:14px!important}
+@media(max-width:900px){#tasks .task-visual-layout.has-selection{grid-template-columns:minmax(0,1fr)!important}#tasks .task-compact-detail:not([hidden]){max-width:100%!important}}
+</style>
 </head>
 <body>
 
@@ -3358,7 +3391,7 @@ researchSetup();
    const head=document.createElement('div');head.className='task-compact-detail-head';
    const title=document.createElement('h3');title.textContent=selected.title;
    const close=document.createElement('button');close.type='button';close.textContent='✕';close.setAttribute('aria-label','Đóng chi tiết');close.onclick=()=>{taskSelectedId=null;renderTaskBoard();};
-   head.append(title,close);
+   const docIcon=document.createElement('span');docIcon.className='task-detail-doc-icon';docIcon.textContent='▤';head.prepend(docIcon);head.append(title,close);taskDetail.append(head);
    const info=document.createElement('div');info.className='task-detail-meta';
    const groupInfo=document.createElement('span');groupInfo.textContent='♧ Nhóm '+(selected.group_number||1);
    const dueInfo=document.createElement('span');dueInfo.textContent='▦ Hạn: '+labelDate(selected.due_date);
@@ -3378,7 +3411,17 @@ researchSetup();
     const sections=[['Bản nháp 1',null],['Bản nháp 2',null],['Bài tổng hợp',page.content]];
     sections.forEach(([name,value],index)=>{
      const details=document.createElement('details');details.className='task-draft-preview';
-     const summary=document.createElement('summary');summary.textContent='▤  '+name;
+     const summary=document.createElement('summary');
+     const fileIcon=document.createElement('span');fileIcon.className='task-preview-file';fileIcon.textContent='▤';
+     const nameText=document.createElement('span');nameText.className='task-preview-name';nameText.textContent=name;
+     const statusIcon=document.createElement('span');statusIcon.className='task-preview-check';statusIcon.textContent='○';
+     summary.append(fileIcon,nameText,statusIcon);
+     const updatePreviewCheck=()=>{
+      const raw=index===2?String(page.content||''):String((window.researchDraftCache||{})[page.id+'-'+(index+1)]||'');
+      const node=document.createElement('div');node.innerHTML=raw.replace(/^<!--RICH_RESEARCH_V1-->/,'');
+      const hasContent=!!node.textContent?.trim();
+      statusIcon.textContent=hasContent?'✓':'○';statusIcon.classList.toggle('filled',hasContent);
+     };updatePreviewCheck();
      const preview=document.createElement('div');preview.className='task-draft-text';
      if(index===2){
       const plain=document.createElement('div');plain.innerHTML=String(value||'').replace(/^<!--RICH_RESEARCH_V1-->/,'');
