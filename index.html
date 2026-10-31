@@ -3614,5 +3614,18 @@ body:not(.word-editor-open) #researchEditor .research-actions button{display:inl
  window.refreshSharedSources=load;
 })();
 </script>
+<style id="toolbar-remove-blank-space-final">
+/* Chỉ thu chiều cao khung thanh công cụ, giữ nguyên từng nút và hành vi. */
+html body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{
+ height:max-content!important;min-height:0!important;max-height:none!important;
+ flex:0 0 auto!important;align-self:stretch!important;
+ padding-top:3px!important;padding-bottom:3px!important;
+ margin-top:0!important;margin-bottom:0!important;
+ row-gap:3px!important;align-content:flex-start!important;
+}
+html body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #richEditor{
+ margin-top:0!important;
+}
+</style>
 </body>
 </html>
