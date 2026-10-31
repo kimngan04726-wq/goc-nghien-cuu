@@ -2094,22 +2094,22 @@ researchSetup();
           if(best>=0&&score>=0.30)merged.splice(best+1,0,sentence);
           else merged.push(sentence);
         }
+        // Giữ nguyên ý, tránh tự thêm từ nối máy móc hoặc cắt đoạn giữa ý liên quan.
+        const cleaned=merged.map(x=>x.trim()).filter(Boolean);
         const paragraphs=[];
-        let current=[];
-        for(let i=0;i<merged.length;i++){
-          const sentence=merged[i].trim();
-          if(!sentence)continue;
-          if(current.length>=3||(current.length>=2&&i>0&&similarity(merged[i-1],sentence)<0.12)){
-            paragraphs.push(current.join(' '));current=[];
+        if(cleaned.length<=5){
+          paragraphs.push(cleaned.join(' '));
+        }else{
+          let group=[];
+          for(let i=0;i<cleaned.length;i++){
+            group.push(cleaned[i]);
+            const next=cleaned[i+1];
+            if(next&&group.length>=3&&similarity(cleaned[i],next)<0.10){
+              paragraphs.push(group.join(' '));group=[];
+            }
           }
-          let phrasing=sentence;
-          if(current.length===0&&paragraphs.length>0&&!/^(tuy nhiên|bên cạnh đó|ngoài ra|đồng thời|mặt khác|cuối cùng|như vậy|vì vậy|do đó|đặc biệt)/i.test(sentence)){
-            const lead=paragraphs.length%2===1?'Bên cạnh đó, ':'Ngoài ra, ';
-            phrasing=lead+sentence.charAt(0).toLocaleLowerCase('vi')+sentence.slice(1);
-          }
-          current.push(phrasing);
+          if(group.length)paragraphs.push(group.join(' '));
         }
-        if(current.length)paragraphs.push(current.join(' '));
         let article=paragraphs.join('\n\n');
         const content=document.createElement('div');
         content.style.whiteSpace='pre-wrap';
@@ -2122,7 +2122,7 @@ researchSetup();
         const editable=document.createElement('textarea');
         editable.value=article;
         editable.rows=7;
-        editable.style.cssText='display:block;width:100%;box-sizing:border-box;min-height:150px;margin:8px 0 12px;padding:12px;border:1px solid #cdbca7;border-radius:9px;font:16px/1.6 Georgia,serif';
+        editable.style.cssText='display:block;width:100%;box-sizing:border-box;min-height:150px;margin:8px 0 12px;padding:12px;border:1px solid #cdbca7;border-radius:9px;font-family:'Times New Roman',serif;font-size:18px;line-height:1.7;color:#153456;overflow-wrap:break-word;word-break:normal;white-space:pre-wrap';
         editable.addEventListener('input',()=>{article=editable.value;content.textContent=article;});
         result.append(editLabel,editable);
         const copy=document.createElement('button');
