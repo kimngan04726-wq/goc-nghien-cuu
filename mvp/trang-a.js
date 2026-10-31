@@ -20,7 +20,7 @@ function ensure(){
  const box=document.createElement('div');box.id='mvpA';box.hidden=true;box.innerHTML='<div style="display:flex;justify-content:space-between"><h2>Trang A · Soạn thảo 7 nhiệm vụ</h2><button id="mvpClose">Đóng</button></div><p id="mvpInfo"></p><div class="mvp-layout"><nav id="mvpList"></nav><div><h3 id="mvpTitle"></h3><div class="mvp-controls"><label>Người phụ trách <select id="mvpOwner"></select></label><label>Trạng thái <select id="mvpStatus"></select></label><span id="mvpVersion"></span></div><textarea id="mvpContent" placeholder="Viết nội dung tiểu mục..."></textarea><p id="mvpSaveInfo"></p><button type="button" id="mvpRetry" hidden>Thử lại</button></div></div>';document.body.append(box);
  const dialog=document.createElement('div');dialog.id='mvpConflict';dialog.hidden=true;dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-label','Có người vừa sửa');dialog.innerHTML='<h3>Có người vừa sửa</h3><p>Bản trên máy chủ đã thay đổi. Bạn muốn xử lý thế nào?</p><button type="button" id="mvpSeeRemote">Xem bản mới</button><button type="button" id="mvpKeepMine">Giữ bản của tôi</button><button type="button" id="mvpCancelConflict">Hủy</button>';document.body.append(dialog);
  const conflictStyle=document.createElement('style');conflictStyle.textContent='#mvpConflict:not([hidden]){position:fixed;z-index:100001;top:35%;left:50%;transform:translateX(-50%);width:min(94vw,480px);background:white;border:2px solid #19364e;border-radius:12px;padding:24px;box-shadow:0 0 0 100vmax #0009}';document.head.append(conflictStyle);
- $('mvpClose').onclick=()=>{if(pending()&&!confirm('Có nội dung chưa lưu hoặc đang lưu. Đóng?'))return;box.hidden=true};
+ $('mvpClose').onclick=()=>{if(pending()){message('Có nội dung chưa lưu; hãy lưu hoặc xử lý xung đột trước khi đóng.');return}box.hidden=true};
  $('mvpContent').addEventListener('input',()=>{dirty=true;schedule()});
  $('mvpStatus').onchange=()=>{dirty=true;schedule()};
  $('mvpOwner').onchange=assignOwner;
@@ -31,7 +31,7 @@ function renderList(){
  $('mvpList').querySelectorAll('button').forEach(b=>b.onclick=()=>pick(Number(b.dataset.task),b.dataset.sub));
 }
 function pick(n,sub){
- if(pending()){alert('Có thay đổi chưa lưu hoặc đang xử lý. Vui lòng thử lại sau.');return}
+ if(pending()){message('Có thay đổi chưa lưu hoặc đang xử lý. Vui lòng thử lại sau.');return}
  selected=rows.find(r=>r.task_key===n&&(!sub||r.subsection_key===sub));if(!selected)return;
  renderList();$('mvpTitle').textContent=titles[selected.task_key-1]+' / '+selected.title;$('mvpContent').value=selected.content;
  $('mvpVersion').textContent='Phiên bản '+selected.version;
@@ -44,11 +44,11 @@ function pick(n,sub){
  $('mvpSaveInfo').textContent=can?'Tự lưu sau 1,2 giây':'Chỉ đọc — chưa được phân công';
 }
 function schedule(){clearTimeout(timer);if(!conflictOpen)timer=setTimeout(save,1200)}
-function showConflict(r,data,localContent,localStatus){
+function showConflict(r,data){
  conflictOpen=true;const dialog=$('mvpConflict');dialog.hidden=false;
  const close=()=>{dialog.hidden=true;conflictOpen=false};
- $('mvpSeeRemote').onclick=()=>{close();r.version=data.version;r.content=data.content;r.status=data.status;dirty=false;pick(r.task_key,r.subsection_key);message('Đã tải bản mới từ máy chủ')};
- $('mvpKeepMine').onclick=()=>{close();r.version=data.version; // CAS lần nữa với version máy chủ vừa trả; nếu có thay đổi mới sẽ lại conflict
+ $('mvpSeeRemote').onclick=()=>{close();if(!Number.isSafeInteger(data.version)||typeof data.content!=='string'||!statuses.includes(data.status)){message('Không đọc được bản mới; bản đang gõ vẫn được giữ.');dirty=true;return}const draft=$('mvpContent').value;r.version=data.version;r.content=data.content;r.status=data.status;dirty=false;pick(r.task_key,r.subsection_key);$('mvpContent').dataset.mvpDraft=draft;message('Đã xem bản mới. Bản bạn gõ được giữ trong bộ nhớ phiên này; chưa lưu.');};
+ $('mvpKeepMine').onclick=()=>{close();if(!Number.isSafeInteger(data.version)){dirty=true;message('Không có phiên bản máy chủ hợp lệ; không ghi đè.');return}r.version=data.version; // CAS lần nữa với version máy chủ vừa trả; nếu có thay đổi mới sẽ lại conflict
  // Không ghi đè nội dung người dùng có thể vừa gõ thêm trong khi hộp thoại mở.
  dirty=true;message('Đang lưu lại bản của bạn với phiên bản máy chủ mới nhất...');save()};
  $('mvpCancelConflict').onclick=()=>{close();dirty=true;message('Đã hủy xử lý xung đột. Chữ bạn đang gõ vẫn được giữ lại; chưa lưu.')};
@@ -70,7 +70,7 @@ async function save(){
     renderList();refreshBadges();break;
    case 'conflict':
     message('Có người vừa sửa. Vui lòng chọn cách xử lý.');
-    showConflict(r,data,$('mvpContent').value,$('mvpStatus').value);break;
+    showConflict(r,data);break;
    case 'forbidden':message('Không có quyền lưu tiểu mục này. Nội dung đang gõ vẫn được giữ lại.');break;
    case 'not_found':message('Tiểu mục không còn tồn tại. Không thể lưu; nội dung vẫn còn.');break;
    case 'invalid_status':message('Trạng thái không hợp lệ. Hãy chọn một trong bốn trạng thái.');break;
@@ -110,7 +110,7 @@ function refreshBadges(){
   if(!card.querySelector('.mvpOpen')){const b=document.createElement('button');b.className='mvpOpen';b.textContent='Mở soạn thảo';b.onclick=e=>{e.stopPropagation();open(i+1)};card.append(b)}
  });
 }
-async function open(n){ensure();if(pending()){alert('Có thay đổi chưa lưu. Vui lòng xử lý trước khi mở lại.');return}$('mvpA').hidden=false;$('mvpInfo').textContent='Đang tải...';selected=null;await refresh();if(n&&rows.length)pick(n)}
+async function open(n){ensure();if(pending()){message('Có thay đổi chưa lưu. Vui lòng xử lý trước khi mở lại.');return}$('mvpA').hidden=false;$('mvpInfo').textContent='Đang tải...';selected=null;await refresh();if(n&&rows.length)pick(n)}
 window.openMvpResearchA=open;
 const boot=()=>{try{ensure();setInterval(async()=>{try{if(!$('app')||$('app').classList.contains('hidden'))return;if(rows.length){refreshBadges();return}if(initializing)return;initializing=true;await refresh()}catch(e){console.error('Trang A:',e)}finally{initializing=false}},3000)}catch(e){console.error('Trang A không khởi tạo được:',e)}};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
