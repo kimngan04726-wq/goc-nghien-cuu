@@ -2111,6 +2111,9 @@ researchSetup();
       }
       const note=document.createElement('p');
       note.textContent='Bài được ghép và chia đoạn tự động theo từ khóa, chưa phải bài viết lại bằng AI nên bạn cần đọc và chỉnh câu chuyển ý. Không tự ghi đè Bài làm thống nhất.';
+      note.style.fontSize='12pt';
+      note.style.fontStyle='italic';
+      note.style.lineHeight='1.5';
       result.append(note);
     }catch(error){
       result.textContent='Không đọc được hai bản nháp từ Supabase: '+(error?.message||'Lỗi không xác định')+'. Chưa tổng hợp dữ liệu.';
