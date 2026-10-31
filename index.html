@@ -1917,7 +1917,7 @@ researchSetup();
     const h=document.createElement('h3');h.textContent='📝 Bản nháp '+slot;
     const owner=document.createElement('p');owner.className='research-draft-owner';owner.textContent='Chưa phân công thành viên';
     const preview=document.createElement('div');preview.className='detail-content';preview.textContent='Chưa có nội dung.';
-    const button=document.createElement('button');button.textContent='✎ Chỉnh sửa bản nháp '+slot;
+    const button=document.createElement('button');button.textContent='✎ Chỉnh sửa';
     button.onclick=()=>editDraft(slot);
     panel.append(h,owner,preview,button);draftCards.append(panel);
     return {panel,owner,preview,button};
@@ -1938,7 +1938,7 @@ researchSetup();
     const {data,error}=await db.from('research_drafts').select('slot,content,author_id').eq('page_id',id);
     if(id!==selected)return;
     if(error){
-      draftNodes.forEach(x=>{x.preview.textContent='Chưa kết nối bảng research_drafts trong Supabase.';x.button.disabled=true;});
+      draftNodes.forEach(x=>{x.preview.textContent='Chưa kết nối bảng research_drafts trong Supabase.';x.button.disabled=!canEditResearch(id);});
       actions.querySelectorAll('button').forEach(x=>x.disabled=true);
       result.hidden=false;result.textContent='Cần tạo bảng research_drafts và cấu hình quyền trong Supabase trước khi lưu bản nháp. Bài làm thống nhất vẫn hoạt động như cũ.';
       return;
@@ -1950,21 +1950,64 @@ researchSetup();
       draftState[slot]=row?.content||'';
       const x=draftNodes[slot-1];
       x.owner.textContent=row?.author_id?'Đã có người phụ trách':'Chưa phân công thành viên';
-      x.preview.textContent=stripText(draftState[slot].replace(/^__RICH_HTML__:/,''))||'Chưa có nội dung.';
+      x.preview.textContent=stripText(draftState[slot].startsWith('<!--RICH_RESEARCH_V1-->')?draftState[slot].slice('<!--RICH_RESEARCH_V1-->'.length):draftState[slot])||'Chưa có nội dung.';
       x.button.disabled=!(isAdmin&&adminMode==='edit'||isMember&&assignedResearchPages.has(id));
     }
   }
+  // Tái sử dụng đúng trình soạn thảo nâng cao của bài chung, nhưng lưu sang bảng riêng.
+  let activeDraft=null;
+  const originalSaveResearch=saveResearch;
+  const originalCancelResearch=cancelResearch;
+  const originalOpenResearchEditor=openResearchEditor;
+  const RICH_MARKER='<!--RICH_RESEARCH_V1-->';
+  function draftHtml(raw){
+    if(raw.startsWith(RICH_MARKER))return raw.slice(RICH_MARKER.length);
+    const node=document.createElement('div');node.textContent=raw;
+    return node.innerHTML.replace(/\\n/g,'<br>');
+  }
   async function editDraft(slot){
     if(selected===null||!canEditResearch(selected))return;
-    const current=draftState[slot]||'';
-    const text=prompt('Bản nháp '+slot+' — nhập nội dung (bản nháp lưu riêng; trình soạn thảo bài thống nhất không thay đổi):',stripText(current));
-    if(text===null)return;
-    const {data:{user}}=await db.auth.getUser();
-    if(!user)return alert('Bạn cần đăng nhập để lưu.');
-    const {error}=await db.from('research_drafts').upsert({page_id:selected,slot,content:text,author_id:user.id,updated_at:new Date().toISOString()},{onConflict:'page_id,slot'});
-    if(error)return alert('Chưa lưu được bản nháp: '+error.message);
-    await loadDrafts();
+    if(!window.DOMPurify)return alert('Trình soạn thảo bảo mật chưa tải xong. Vui lòng thử lại.');
+    activeDraft=null;
+    await originalOpenResearchEditor(selected);
+    const panel=document.getElementById('researchEditor');
+    if(panel.style.display!=='block')return;
+    activeDraft={pageId:selected,slot};
+    const rich=document.getElementById('richEditor');
+    rich.innerHTML=DOMPurify.sanitize(draftHtml(draftState[slot]||''));
+    document.getElementById('researchText').value=draftState[slot]||'';
+    const heading=panel.querySelector('h2');
+    if(heading){heading.dataset.originalDraftHeading=heading.textContent;heading.textContent='Chỉnh sửa Bản nháp '+slot;}
+    panel.scrollIntoView({behavior:'smooth'});
   }
+  saveResearch=async function(){
+    if(!activeDraft)return originalSaveResearch();
+    const {pageId,slot}=activeDraft;
+    if(!canEditResearch(pageId))return alert('Bạn không có quyền chỉnh sửa.');
+    if(!window.DOMPurify)return alert('Chưa tải được thư viện bảo mật. Chưa lưu nội dung.');
+    const rich=document.getElementById('richEditor');
+    const content=RICH_MARKER+DOMPurify.sanitize(rich.innerHTML);
+    const {data:{user}}=await db.auth.getUser();
+    if(!user)return alert('Vui lòng đăng nhập.');
+    const {data:existing,error:readError}=await db.from('research_drafts').select('author_id').eq('page_id',pageId).eq('slot',slot).maybeSingle();
+    if(readError)return alert('Chưa kết nối bảng research_drafts. Chưa lưu nội dung.');
+    const payload={page_id:pageId,slot,content,updated_at:new Date().toISOString()};
+    if(!existing)payload.author_id=user.id;
+    const query=existing?db.from('research_drafts').update(payload).eq('page_id',pageId).eq('slot',slot):db.from('research_drafts').insert(payload);
+    const {error}=await query;
+    if(error)return alert('Không lưu được bản nháp: '+error.message);
+    activeDraft=null;
+    cancelResearch();
+    await loadDrafts();
+    alert('Đã lưu Bản nháp '+slot+'. Bài làm thống nhất không thay đổi.');
+  };
+  cancelResearch=function(){
+    activeDraft=null;
+    const panel=document.getElementById('researchEditor');
+    const heading=panel?.querySelector('h2');
+    if(heading?.dataset.originalDraftHeading){heading.textContent=heading.dataset.originalDraftHeading;delete heading.dataset.originalDraftHeading;}
+    originalCancelResearch();
+  };
   function showAnalysis(mode){
     const a=sentences(stripText(draftState[1]));const b=sentences(stripText(draftState[2]));
     if(!a.length||!b.length){result.hidden=false;result.textContent='Cần có nội dung ở cả hai bản nháp để tổng hợp hoặc so sánh.';return;}
