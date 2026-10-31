@@ -3467,11 +3467,11 @@ try{
        for(const result of results){if(result.error)throw result.error;}
        let current=String(index===2?page.content||'':'');
        if(index<2){
-        const draft=(results[0].data||[]).find(d=>Number(d.draft_number||d.draft_index||d.slot||0)===slot);
+        const draft=(results[0].data||[]).find(d=>Number(d.slot??d.draft_number??d.draft_index??0)===slot);
         current=String(draft?.content||'');
        }
        const saved=index===2?(results[0].data||[]):(results[1].data||[]);
-       const hasSaved=saved.some(entry=>!!plainText(entry.content));
+       const hasSaved=saved.length>0;
        const hasCurrent=!!plainText(current);
        const filled=hasCurrent||hasSaved;
        statusIcon.textContent=filled?'✓':'○';
