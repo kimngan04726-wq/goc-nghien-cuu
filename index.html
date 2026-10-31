@@ -3102,7 +3102,7 @@ researchSetup();
    const box=document.createElement('div');box.className='task-stat';
    const num=document.createElement('strong');num.textContent=value;
    const caption=document.createElement('span');caption.textContent=label;
-   box.append(num,caption);box.setAttribute('role','button');box.tabIndex=0;box.title='Lọc theo '+label;box.onclick=()=>{const filter=document.getElementById('taskFilterStatus');filter.value=filter.value===label?'all':label;taskPage=1;renderTaskBoard();};box.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();box.click();}};stats.append(box);
+   box.append(num,caption);box.setAttribute('aria-pressed',String(document.getElementById('taskFilterStatus').value===label));box.setAttribute('role','button');box.tabIndex=0;box.title='Lọc theo '+label;box.onclick=()=>{const filter=document.getElementById('taskFilterStatus');filter.value=filter.value===label?'all':label;taskPage=1;renderTaskBoard();};box.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();box.click();}};stats.append(box);
   });
   document.getElementById('taskProgressFill').style.width=pct+'%';
   const visualProgress=document.getElementById('taskVisualProgressLabel');if(visualProgress)visualProgress.textContent='Tiến độ chung: '+pct+'%  ('+done+'/'+all.length+' công việc)';
@@ -3175,7 +3175,10 @@ researchSetup();
   });
   if(!pageData.length){const empty=document.createElement('p');empty.textContent='Không có nhiệm vụ';taskRoot.append(empty);}
   if(pages>1){
-   for(let i=1;i<=pages;i++){const btn=document.createElement('button');btn.type='button';btn.textContent=i;btn.className=i===taskPage?'active':'';btn.onclick=()=>{taskPage=i;renderTaskBoard();};taskPagination.append(btn);}
+   const addPageButton=(label,target,disabled,active)=>{const btn=document.createElement('button');btn.type='button';btn.textContent=label;btn.disabled=disabled;btn.className=active?'active':'';btn.onclick=()=>{taskPage=target;renderTaskBoard();};taskPagination.append(btn);};
+   addPageButton('‹',Math.max(1,taskPage-1),taskPage===1,false);
+   for(let i=1;i<=pages;i++)addPageButton(String(i),i,false,i===taskPage);
+   addPageButton('›',Math.min(pages,taskPage+1),taskPage===pages,false);
   }
   const selected=cachedKanbanTasks.find(t=>String(t.id)===String(taskSelectedId));
   taskDetail.replaceChildren();taskDetail.hidden=!selected;
