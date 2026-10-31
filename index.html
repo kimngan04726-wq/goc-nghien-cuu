@@ -3639,5 +3639,20 @@ html body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) 
  margin-top:0!important;
 }
 </style>
+<style id="toolbar-red-mark-gap-fix">
+/* Thu hẹp đúng vùng trống dưới hàng công cụ, không đổi nút hay chức năng. */
+html body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{
+ display:flex!important;flex-flow:row wrap!important;
+ align-items:center!important;align-content:flex-start!important;
+ height:auto!important;min-height:0!important;max-height:none!important;
+ padding:3px 5px!important;margin:0!important;
+ row-gap:2px!important;column-gap:4px!important;
+ flex-grow:0!important;flex-shrink:0!important;flex-basis:auto!important;
+ box-sizing:border-box!important;
+}
+html body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #richEditor{
+ margin-top:0!important;
+}
+</style>
 </body>
 </html>
