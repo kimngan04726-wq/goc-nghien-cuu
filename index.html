@@ -1930,8 +1930,8 @@ researchSetup();
   draftsArea.append(draftCards,actions,result);
   const draftState={1:'',2:''};
   const stripText=html=>{const node=document.createElement('div');node.innerHTML=window.DOMPurify?DOMPurify.sanitize(html):html.replace(/<[^>]*>/g,' ');return node.textContent||'';};
-  const sentences=text=>text.split(/(?<=[.!?。])\\s+|\\n+/u).map(x=>x.trim()).filter(Boolean);
-  const normalize=text=>text.toLocaleLowerCase('vi').normalize('NFC').replace(/[^\\p{L}\\p{N}]+/gu,' ').trim();
+  const sentences=text=>text.split(/(?<=[.!?。])\s+|\n+/u).map(x=>x.trim()).filter(Boolean);
+  const normalize=text=>text.toLocaleLowerCase('vi').normalize('NFC').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
   async function loadDrafts(){
     if(selected===null)return;
     const id=selected;
@@ -1963,7 +1963,7 @@ researchSetup();
   function draftHtml(raw){
     if(raw.startsWith(RICH_MARKER))return raw.slice(RICH_MARKER.length);
     const node=document.createElement('div');node.textContent=raw;
-    return node.innerHTML.replace(/\\n/g,'<br>');
+    return node.innerHTML.replace(/\n/g,'<br>');
   }
   async function editDraft(slot){
     if(selected===null||!canEditResearch(selected))return;
@@ -2030,17 +2030,17 @@ researchSetup();
     return openEditorBeforeDraftGuard(id);
   };
   function showAnalysis(mode){
-    const a=sentences(stripText(draftState[1]));const b=sentences(stripText(draftState[2]));
+    const plain=raw=>stripText(raw.startsWith('<!--RICH_RESEARCH_V1-->')?raw.slice('<!--RICH_RESEARCH_V1-->'.length):raw);const a=sentences(plain(draftState[1]));const b=sentences(plain(draftState[2]));
     if(!a.length||!b.length){result.hidden=false;result.textContent='Cần có nội dung ở cả hai bản nháp để tổng hợp hoặc so sánh.';return;}
     const keysA=new Set(a.map(normalize));const common=b.filter(x=>keysA.has(normalize(x)));
     const uniqueB=b.filter(x=>!keysA.has(normalize(x)));
     const uniqueA=a.filter(x=>!new Set(b.map(normalize)).has(normalize(x)));
     result.hidden=false;result.replaceChildren();
     const h=document.createElement('h3');h.textContent=mode==='merge'?'Bản tổng hợp đề xuất':'Kết quả so sánh và lọc ý';result.append(h);
-    const add=(title,items)=>{const label=document.createElement('h4');label.textContent=title;result.append(label);const p=document.createElement('div');p.style.whiteSpace='pre-wrap';p.textContent=items.join('\\n\\n')||'Không có';result.append(p);};
+    const add=(title,items)=>{const label=document.createElement('h4');label.textContent=title;result.append(label);const p=document.createElement('div');p.style.whiteSpace='pre-wrap';p.textContent=items.join('\n\n')||'Không có';result.append(p);};
     if(mode==='merge'){
       const all=[...a,...uniqueB];add('Nội dung ghép (chưa tự viết lại)',all);
-      const copy=document.createElement('button');copy.textContent='Sao chép bản đề xuất';copy.onclick=()=>navigator.clipboard.writeText(all.join('\\n\\n')).then(()=>alert('Đã sao chép. Bạn có thể dán vào trình soạn thảo Bài làm thống nhất.')).catch(()=>alert('Không sao chép được.'));result.append(copy);
+      const copy=document.createElement('button');copy.textContent='Sao chép bản đề xuất';copy.onclick=()=>navigator.clipboard.writeText(all.join('\n\n')).then(()=>alert('Đã sao chép. Bạn có thể dán vào trình soạn thảo Bài làm thống nhất.')).catch(()=>alert('Không sao chép được.'));result.append(copy);
     }else{add('Ý trùng nhau (khớp câu)',common);add('Chỉ có ở bản nháp 1',uniqueA);add('Chỉ có ở bản nháp 2',uniqueB);}
     const note=document.createElement('p');note.textContent='Công cụ miễn phí chỉ lọc câu giống nhau và ghép ý; không phải AI tạo sinh. Không tự ghi đè bài thống nhất.';result.append(note);
   }
