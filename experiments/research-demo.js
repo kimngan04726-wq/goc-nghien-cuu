@@ -34,7 +34,7 @@ const db={
 const editor=window.createResearchSubsectionUI({mount:document.getElementById('editor'),db,pageId,subsections:[{id:subId,title:'1.1 · Câu hỏi nghiên cứu'}],canEdit:()=>true});
 const bridge=window.createResearchCompareBridge({db,pageId,subId,canMerge:()=>true});
 const preview=window.createResearchMergePreview({mount:document.getElementById('preview'),bridge});
-const compare=window.createResearchCompareUI({mount:document.getElementById('compare'),loadDrafts:bridge.loadDrafts,onMerge:async result=>{await bridge.onMerge(result);preview.render();document.getElementById('preview').scrollIntoView({behavior:'smooth',block:'start'})},canMerge:()=>true});
+const compare=window.createResearchCompareUI({mount:document.getElementById('compare'),loadDrafts:bridge.loadDrafts,onMerge:async result=>{await bridge.onMerge(result);preview.render();document.getElementById('preview').scrollIntoView({behavior:'smooth',block:'start'})},canMerge:()=>true,onSelectionChange:()=>{bridge.invalidatePreview();preview.render()}});
 const viewA=document.getElementById('viewA'),viewB=document.getElementById('viewB');
 document.getElementById('tabA').onclick=async()=>{if(editor.dirty){const saved=await editor.save();if(!saved){alert('Chưa lưu được bản nháp. Hãy xử lý lỗi lưu trước khi chuyển trang.');return}}const opened=await editor.open(subId,0);if(opened){viewB.hidden=true;viewA.hidden=false}};
 document.getElementById('tabB').onclick=async()=>{if(editor.dirty){const saved=await editor.save();if(!saved){alert('Chưa lưu được bản nháp. Hãy xử lý lỗi lưu trước khi chuyển trang.');return}}viewA.hidden=true;viewB.hidden=false;await compare.refresh();preview.render()};
