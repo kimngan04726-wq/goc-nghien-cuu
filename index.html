@@ -662,7 +662,7 @@ body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{
 #researchEditor #richToolbar.docs-style-toolbar>.docs-font-size-input{
   margin-top:0!important;margin-bottom:0!important;
 }
-</style><style id="toolbar-compact-final-fix">
+</style><style id="draft-member-link-style">.draft-member-profile-link{border:0;background:none;color:#174c78;font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0 2px}.draft-member-profile-link:hover{color:#0b6da5}</style><style id="toolbar-compact-final-fix">
 /* Toolbar hugs its controls without reserving a blank lower row. */
 body.word-editor-open #researchEditor #richToolbar.docs-style-toolbar{
   height:fit-content!important;min-height:0!important;max-height:none!important;
@@ -2335,13 +2335,33 @@ researchSetup();
       const row=(data||[]).find(x=>Number(x.slot)===slot);
       draftState[slot]=row?.content||'';
       const x=draftNodes[slot-1];
-      x.owner.textContent=row?.author_id?'Đã có người phụ trách':'Chưa phân công thành viên';
+      const pageGroup=Number(researchPageCache.find(p=>Number(p.id)===id)?.group_number)===2?2:1;
+      const memberNumber=(pageGroup-1)*2+slot;
+      x.owner.replaceChildren();
+      x.owner.append(document.createTextNode('Người phụ trách: '));
+      const memberLink=document.createElement('button');
+      memberLink.type='button';
+      memberLink.className='draft-member-profile-link';
+      memberLink.textContent=canonicalMemberName(memberNumber);
+      memberLink.onclick=()=>openMemberProfile(memberNumber);
+      x.owner.append(memberLink);
       if(selected!==id)return;
       const display=draftState[slot];
       x.preview.textContent=stripText(display.startsWith('<!--RICH_RESEARCH_V1-->')?display.slice('<!--RICH_RESEARCH_V1-->'.length):display)||'Chưa có nội dung.';
       x.button.disabled=!(isAdmin&&adminMode==='edit'||isMember&&assignedResearchPages.has(id));
     }
   }
+  // Đồng bộ tên khi hồ sơ hoặc tên ở thanh thành viên thay đổi.
+  const memberNameObserver=new MutationObserver(()=>{
+    for(const [index,x] of draftNodes.entries()){
+      const member=x.owner.querySelector('.draft-member-profile-link');
+      if(!member||selected===null)continue;
+      const group=Number(researchPageCache.find(p=>Number(p.id)===selected)?.group_number)===2?2:1;
+      const name=canonicalMemberName((group-1)*2+index+1);
+      if(member.textContent!==name)member.textContent=name;
+    }
+  });
+  document.querySelectorAll('.sidebar-person span:last-child').forEach(el=>memberNameObserver.observe(el,{childList:true,characterData:true,subtree:true}));
   const draftSelections={1:null,2:null};
   async function draftHistory(slot){
     const pageId=selected,x=draftNodes[slot-1];
