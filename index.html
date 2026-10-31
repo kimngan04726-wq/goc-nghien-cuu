@@ -1431,6 +1431,22 @@ main .card{padding:clamp(12px,1.2vw,16px)}
 }
 </style>
 
+<style id="research-viewport-card-fix-2026">
+/* Account for the account toolbar; keep two compact rows visible. */
+@media(min-width:1001px) and (min-height:590px){
+ body:has(#research:not(.gallery-detail):not(.hidden)) main{height:100dvh!important;overflow:hidden!important}
+ #app:has(#research:not(.gallery-detail):not(.hidden)){height:calc(100dvh - 18px)!important;overflow:hidden!important}
+ #app:has(#research:not(.gallery-detail):not(.hidden))>section:first-child{padding:5px 10px!important;margin-bottom:5px!important;min-height:0!important}
+ #app:has(#research:not(.gallery-detail):not(.hidden))>section:first-child button{min-height:28px!important;padding:4px 9px!important}
+ #research:not(.gallery-detail):not(.hidden){height:auto!important;max-height:none!important;flex:1 1 0!important;min-height:0!important;overflow:hidden!important}
+ #research:not(.gallery-detail) #researchGroup1,#research:not(.gallery-detail) #researchGroup2{flex:1 1 0!important;min-height:0!important;grid-auto-rows:minmax(0,1fr)!important}
+ #research:not(.gallery-detail) .grid .card{min-height:0!important;max-height:100%!important;overflow:hidden!important}
+ #research:not(.gallery-detail) .grid .card:before{height:clamp(48px,11vh,105px)!important;min-height:0!important;flex:0 0 auto!important}
+ #research:not(.gallery-detail) .grid .card h3{font-size:clamp(13px,1.8vh,16px)!important;margin:5px 8px 3px!important}
+ #research:not(.gallery-detail) .grid .card:after{margin-bottom:3px!important}
+ #research:not(.gallery-detail) .grid .card:has(.research-rename-button:not(.hidden)):after{margin-bottom:28px!important}
+}
+</style>
 </head>
 <body>
 
