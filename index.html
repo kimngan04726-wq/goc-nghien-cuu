@@ -2063,32 +2063,52 @@ researchSetup();
       const uniqueA=a.filter(x=>!keysB.has(normalize(x)));
       result.replaceChildren();
       const h=document.createElement('h3');
-      h.textContent=mode==='merge'?'Bản tổng hợp từ hai bản nháp':'So sánh hai bản nháp';
+      h.textContent=mode==='merge'?'Bài tổng hợp đề xuất':'Kết quả so sánh và lọc ý';
       result.append(h);
-      const summary=document.createElement('p');
-      summary.textContent='Đã đọc từ Supabase: Bản nháp 1 ('+a.length+' câu), Bản nháp 2 ('+b.length+' câu).';
-      result.append(summary);
+      const stats=document.createElement('p');
+      stats.textContent='Hai bản nháp có '+common.length+' câu trùng nguyên văn, '+uniqueA.length+' câu riêng ở bản 1 và '+uniqueB.length+' câu riêng ở bản 2.';
+      result.append(stats);
       const add=(title,items)=>{
         const label=document.createElement('h4');label.textContent=title;result.append(label);
         const p=document.createElement('div');p.style.whiteSpace='pre-wrap';
         p.textContent=items.join('\n\n')||'Không có';result.append(p);
       };
       if(mode==='merge'){
-        add('Nội dung từ Bản nháp 1',a);
-        add('Ý bổ sung từ Bản nháp 2 (không trùng nguyên câu)',uniqueB);
-        const all=[...a,...uniqueB];
-        add('Bản tổng hợp đề xuất',all);
+        // Ghép theo chủ đề bằng độ tương đồng từ khóa, không liệt kê từng câu riêng lẻ.
+        const merged=[...a];
+        const tokens=text=>new Set((normalize(text).match(/[\\p{L}\\p{N}]+/gu)||[]).filter(w=>w.length>3));
+        for(const sentence of uniqueB){
+          const words=tokens(sentence);
+          let best=-1,score=0;
+          merged.forEach((other,i)=>{
+            const otherWords=tokens(other);
+            const overlap=[...words].filter(w=>otherWords.has(w)).length;
+            const ratio=overlap/Math.max(1,Math.min(words.size,otherWords.size));
+            if(ratio>score){score=ratio;best=i;}
+          });
+          if(best>=0&&score>=0.32)merged.splice(best+1,0,sentence);
+          else merged.push(sentence);
+        }
+        const paragraphs=[];
+        const maxSentences=3;
+        for(let i=0;i<merged.length;i+=maxSentences)paragraphs.push(merged.slice(i,i+maxSentences).join(' '));
+        const article=paragraphs.join('\n\n');
+        const content=document.createElement('div');
+        content.style.whiteSpace='pre-wrap';
+        content.style.lineHeight='1.8';
+        content.textContent=article;
+        result.append(content);
         const copy=document.createElement('button');
-        copy.textContent='Sao chép bản tổng hợp';
-        copy.onclick=()=>navigator.clipboard.writeText(all.join('\n\n')).then(()=>alert('Đã sao chép. Bạn có thể dán vào Bài làm thống nhất.')).catch(()=>alert('Không sao chép được.'));
+        copy.textContent='Sao chép bài tổng hợp';
+        copy.onclick=()=>navigator.clipboard.writeText(article).then(()=>alert('Đã sao chép bài tổng hợp.')).catch(()=>alert('Không sao chép được.'));
         result.append(copy);
       }else{
-        add('Câu giống nhau ở cả hai bản',common);
-        add('Chỉ có ở Bản nháp 1',uniqueA);
-        add('Chỉ có ở Bản nháp 2',uniqueB);
+        add('Câu trùng nguyên văn',common);
+        add('Ý riêng Bản nháp 1',uniqueA);
+        add('Ý riêng Bản nháp 2',uniqueB);
       }
       const note=document.createElement('p');
-      note.textContent='Công cụ miễn phí ghép và lọc câu trùng chữ, chưa hiểu ý nghĩa như AI tạo sinh. Không tự ghi đè Bài làm thống nhất.';
+      note.textContent='Bài được ghép và chia đoạn tự động theo từ khóa, chưa phải bài viết lại bằng AI nên bạn cần đọc và chỉnh câu chuyển ý. Không tự ghi đè Bài làm thống nhất.';
       result.append(note);
     }catch(error){
       result.textContent='Không đọc được hai bản nháp từ Supabase: '+(error?.message||'Lỗi không xác định')+'. Chưa tổng hợp dữ liệu.';
