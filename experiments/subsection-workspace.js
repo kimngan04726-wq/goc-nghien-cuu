@@ -13,17 +13,18 @@ function createResearchSubsectionUI({mount,db,pageId,subsections,canEdit=()=>fal
  const save=document.createElement('button');save.type='button';save.textContent='Lưu phiên bản';
  const switcher=document.createElement('select');switcher.setAttribute('aria-label','Chọn bản thảo');
  [['0','Bài tổng hợp'],['1','Bản nháp 1'],['2','Bản nháp 2']].forEach(([value,label])=>{const o=document.createElement('option');o.value=value;o.textContent=label;switcher.append(o)});
- let current=null,version=0,dirty=false,busy=false,loading=false,revision=0,timeout=null;
+ let current=null,version=0,dirty=false,busy=false,loading=false,revision=0,timeout=null,pendingSave=null;
  function report(message){status.textContent=message;info.textContent=(current?'Tiểu mục: '+current.subId+' · Bản: '+current.slot+' · Phiên bản: '+version+' · ':'')+message}
  function stopTimer(){clearTimeout(timeout);timeout=null}
  function editable(){return !!current&&!editor.readOnly&&canEdit(current.subId,current.slot)}
  function markDirty(){revision++;dirty=true;report('Có thay đổi chưa lưu');stopTimer();if(editable())timeout=setTimeout(()=>{void saveNow()},2000)}
  async function saveNow(){
   stopTimer();
-  if(!editable()||busy||loading||!dirty)return !dirty;
+  if(busy)return pendingSave?await pendingSave:!dirty;
+  if(!editable()||loading||!dirty)return !dirty;
   busy=true;save.disabled=true;report('Đang lưu...');
   const snapshot=editor.value,rev=revision,ctx={...current},expected=version;
-  try{
+  pendingSave=(async()=>{try{
    const {data,error}=await db.rpc('save_research_subsection_document',{p_page_id:pageId,p_sub_id:ctx.subId,p_slot:ctx.slot,p_expected_version:expected,p_content:snapshot});
    if(error)throw error;
    const result=Array.isArray(data)?data[0]:data;
@@ -38,7 +39,8 @@ function createResearchSubsectionUI({mount,db,pageId,subsections,canEdit=()=>fal
   }finally{
    busy=false;save.disabled=!editable();
    if(dirty&&revision!==rev&&editable())timeout=setTimeout(()=>{void saveNow()},2000);
-  }
+  }})();
+  try{return await pendingSave}finally{pendingSave=null}
  }
  async function open(subId,slot=0){
   if(!validId(subId)||![0,1,2].includes(slot))throw Error('Invalid subsection');
