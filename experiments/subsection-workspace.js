@@ -4,7 +4,7 @@
 const validId=s=>typeof s==='string'&&/^[a-z0-9][a-z0-9_-]{0,79}$/i.test(s);
 // A bounded line diff: unmatched lines are marked; never parse user text as HTML.
 function highlightLineDifferences(left,right,leftNode,rightNode){
- const a=String(left).split('\\n'),b=String(right).split('\\n');
+ const a=String(left).split('\n'),b=String(right).split('\n');
  leftNode.replaceChildren();rightNode.replaceChildren();
  const limit=250;
  if(a.length>limit||b.length>limit){
