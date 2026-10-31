@@ -2104,6 +2104,58 @@ researchSetup();
         copy.textContent='Sao chép bài tổng hợp';
         copy.onclick=()=>navigator.clipboard.writeText(article).then(()=>alert('Đã sao chép bài tổng hợp.')).catch(()=>alert('Không sao chép được.'));
         result.append(copy);
+        const paste=document.createElement('button');
+        paste.type='button';
+        paste.textContent='Dán vào Bài làm thống nhất';
+        paste.style.marginLeft='10px';
+        paste.onclick=async()=>{
+          if(selected!==pageId)return alert('Bạn đã chuyển sang bài khác. Hãy tổng hợp lại trước khi dán.');
+          if(!canEditResearch(pageId))return alert('Bạn không có quyền sửa Bài làm thống nhất.');
+          const editorPanel=document.getElementById('researchEditor');
+          if(editorPanel&&getComputedStyle(editorPanel).display!=='none')return alert('Bạn đang mở trình soạn thảo. Hãy lưu hoặc đóng bài đang sửa trước khi dán để tránh mất thay đổi.');
+          const dialog=document.createElement('dialog');
+          dialog.style.cssText='max-width:min(470px,calc(100vw - 32px));border:1px solid #d7c4ac;border-radius:14px;padding:24px;box-shadow:0 16px 50px #0004';
+          const title=document.createElement('h3');title.textContent='Dán bài tổng hợp vào Bài làm thống nhất';
+          const description=document.createElement('p');description.textContent='Chọn cách dán. Thao tác sẽ lưu trực tiếp vào Bài làm thống nhất, không thay đổi hai bản nháp.';
+          const buttons=document.createElement('div');buttons.style.cssText='display:flex;flex-wrap:wrap;gap:9px;margin-top:18px';
+          const replace=document.createElement('button');replace.textContent='Thay thế nội dung';
+          const append=document.createElement('button');append.textContent='Dán sau nội dung có sẵn';
+          const cancel=document.createElement('button');cancel.textContent='Hủy';
+          buttons.append(replace,append,cancel);dialog.append(title,description,buttons);
+          document.body.append(dialog);
+          const close=()=>{dialog.close();dialog.remove();};
+          cancel.onclick=close;
+          dialog.addEventListener('cancel',()=>setTimeout(()=>dialog.remove(),0),{once:true});
+          const apply=async(mode)=>{
+            replace.disabled=true;append.disabled=true;cancel.disabled=true;
+            try{
+              const {data,error}=await db.from('research_pages').select('content').eq('id',pageId).single();
+              if(error)throw error;
+              if(selected!==pageId)throw new Error('Bạn đã chuyển sang bài khác.');
+              const marker='<!--RICH_RESEARCH_V1-->';
+              const clean=window.DOMPurify;
+              if(!clean)throw new Error('Thư viện bảo mật chưa tải. Vui lòng thử lại.');
+              const asHtml=text=>text.split(/\\n\\s*\\n/).map(p=>'<p>'+p.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\n/g,'<br>')+'</p>').join('');
+              const newHtml=asHtml(article);
+              const current=data?.content||'';
+              let combined;
+              if(mode==='replace')combined=marker+clean.sanitize(newHtml);
+              else if(current.startsWith(marker))combined=marker+clean.sanitize(current.slice(marker.length)+newHtml);
+              else if(current.trim())combined=marker+clean.sanitize(asHtml(current)+newHtml);
+              else combined=marker+clean.sanitize(newHtml);
+              const {error:saveError}=await db.from('research_pages').update({content:combined,updated_at:new Date().toISOString()}).eq('id',pageId);
+              if(saveError)throw saveError;
+              close();
+              await loadResearch();
+              if(typeof refresh==='function')refresh();
+              alert(mode==='replace'?'Đã thay thế và lưu Bài làm thống nhất.':'Đã dán thêm vào cuối và lưu Bài làm thống nhất.');
+            }catch(err){alert('Chưa dán được: '+(err?.message||'Lỗi không xác định'));replace.disabled=false;append.disabled=false;cancel.disabled=false;}
+          };
+          replace.onclick=()=>apply('replace');
+          append.onclick=()=>apply('append');
+          dialog.showModal();
+        };
+        result.append(paste);
       }else{
         add('Câu trùng nguyên văn',common);
         add('Ý riêng Bản nháp 1',uniqueA);
