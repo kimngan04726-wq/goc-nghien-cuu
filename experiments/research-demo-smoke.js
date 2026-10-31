@@ -19,15 +19,15 @@ function run(){
   function scenario(name,a,b,expectedLeft,expectedRight){
    const left=document.createElement('pre'),right=document.createElement('pre');
    diff(a,b,left,right);
-   check(name,left.querySelectorAll('.sw-diff-changed').length===expectedLeft&&right.querySelectorAll('.sw-diff-changed').length===expectedRight);
+   check(name,left.querySelectorAll('.sw-diff-changed').length===expectedLeft&&right.querySelectorAll('.sw-diff-changed').length===expectedRight&&left.textContent.replace(/\n$/,'')===a&&right.textContent.replace(/\n$/,'')===b);
   }
-  scenario('Identical Vietnamese lines','Tiếng Việt\\nNghiên cứu','Tiếng Việt\\nNghiên cứu',0,0);
+  scenario('Identical Vietnamese lines','Tiếng Việt\nNghiên cứu','Tiếng Việt\nNghiên cứu',0,0);
   scenario('Changed survey count','Khảo sát 100 người','Khảo sát 150 người',1,1);
-  scenario('Added line','A','A\\nB',0,1);
-  scenario('Removed line','A\\nB','A',1,0);
-  scenario('Multiple edits','A\\nB\\nC','A\\nX\\nC\\nD',1,2);
+  scenario('Added line','A','A\nB',0,1);
+  scenario('Removed line','A\nB','A',1,0);
+  scenario('Multiple edits','A\nB\nC','A\nX\nC\nD',1,2);
   const left=document.createElement('pre'),right=document.createElement('pre');
-  const long=Array(251).fill('dòng').join('\\n');
+  const long=Array(251).fill('dòng').join('\n');
   const message=diff(long,'ngắn',left,right);
   check('Long document fallback',message.includes('250')&&left.textContent===long&&right.textContent==='ngắn');
  }else check('Line diff available',false);
