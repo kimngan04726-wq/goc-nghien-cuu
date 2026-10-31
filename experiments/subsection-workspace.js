@@ -11,13 +11,22 @@ function createResearchSubsectionUI({mount,db,pageId,subsections,canEdit=()=>fal
  const status=document.createElement('p');status.setAttribute('role','status');const side=document.createElement('aside');side.className='sw-side';const sideHeading=document.createElement('h3');sideHeading.textContent='Thông tin bản thảo';const info=document.createElement('p');info.textContent='Chọn tiểu mục để bắt đầu';side.append(sideHeading,info);
  const editor=document.createElement('textarea');editor.rows=16;editor.setAttribute('aria-label','Nội dung tiểu mục');
  const save=document.createElement('button');save.type='button';save.textContent='Lưu phiên bản';
+ const conflict=document.createElement('section');conflict.className='sw-conflict';conflict.hidden=true;conflict.setAttribute('aria-label','Xử lý xung đột bản nháp');
+ const conflictTitle=document.createElement('h3');conflictTitle.textContent='Không thể lưu bản nháp';
+ const conflictHelp=document.createElement('p');conflictHelp.textContent='Giữ lại nội dung chưa lưu. Bạn có thể sao chép nội dung của mình, xem phiên bản mới trên máy chủ, rồi quyết định có tải lại hay không.';
+ const copy=document.createElement('button');copy.type='button';copy.textContent='Sao chép nội dung chưa lưu';
+ const inspect=document.createElement('button');inspect.type='button';inspect.textContent='Xem phiên bản trên máy chủ';
+ const reload=document.createElement('button');reload.type='button';reload.textContent='Tải phiên bản mới (bỏ nội dung chưa lưu)';
+ const remote=document.createElement('pre');remote.hidden=true;remote.style.whiteSpace='pre-wrap';remote.style.overflowWrap='anywhere';
+ const conflictStatus=document.createElement('p');conflictStatus.setAttribute('role','status');
+ conflict.append(conflictTitle,conflictHelp,copy,inspect,reload,remote,conflictStatus);
  const switcher=document.createElement('select');switcher.setAttribute('aria-label','Chọn bản thảo');
  [['0','Bài tổng hợp'],['1','Bản nháp 1'],['2','Bản nháp 2']].forEach(([value,label])=>{const o=document.createElement('option');o.value=value;o.textContent=label;switcher.append(o)});
  let current=null,version=0,dirty=false,busy=false,loading=false,revision=0,timeout=null,pendingSave=null,saveRevision=-1,saveFailed=false;
  function report(message){status.textContent=message;info.textContent=(current?'Tiểu mục: '+current.subId+' · Bản: '+current.slot+' · Phiên bản: '+version+' · ':'')+message}
  function stopTimer(){clearTimeout(timeout);timeout=null}
  function editable(){return !!current&&!editor.readOnly&&canEdit(current.subId,current.slot)}
- function markDirty(){revision++;dirty=true;saveFailed=false;report('Có thay đổi chưa lưu');stopTimer();if(editable())timeout=setTimeout(()=>{void saveNow()},2000)}
+ function markDirty(){revision++;dirty=true;saveFailed=false;conflict.hidden=true;remote.hidden=true;report('Có thay đổi chưa lưu');stopTimer();if(editable())timeout=setTimeout(()=>{void saveNow()},2000)}
  async function saveNow(){
   stopTimer();
   if(busy){
@@ -40,7 +49,7 @@ function createResearchSubsectionUI({mount,db,pageId,subsections,canEdit=()=>fal
    report(dirty?'Đã lưu bản trước; còn thay đổi mới':'Đã lưu phiên bản '+version);
    return !dirty;
   }catch(e){
-   dirty=true;saveFailed=true;report('Chưa lưu được hoặc xung đột phiên bản. Nội dung vẫn ở trình soạn thảo: '+(e.message||e));
+   dirty=true;saveFailed=true;conflict.hidden=false;report('Chưa lưu được hoặc xung đột phiên bản. Nội dung vẫn ở trình soạn thảo: '+(e.message||e));
    return false;
   }finally{
    busy=false;save.disabled=!editable();
@@ -56,19 +65,46 @@ function createResearchSubsectionUI({mount,db,pageId,subsections,canEdit=()=>fal
   try{
    const {data,error}=await db.from('research_subsection_documents').select('content,version').eq('page_id',pageId).eq('sub_id',subId).eq('slot',slot).maybeSingle();
    if(error)throw error;
-   current={subId,slot};version=Number(data?.version||0);editor.value=data?.content||'';dirty=false;saveFailed=false;revision++;
+   current={subId,slot};version=Number(data?.version||0);editor.value=data?.content||'';dirty=false;saveFailed=false;conflict.hidden=true;remote.hidden=true;revision++;
    switcher.value=String(slot);editor.readOnly=!canEdit(subId,slot);for(const b of nav.querySelectorAll('button'))b.setAttribute('aria-current',String(b.dataset.subId===subId));
    report(data?'Đã tải phiên bản '+version:'Tiểu mục chưa có nội dung');return true;
   }catch(e){report('Không tải được: '+(e.message||e));switcher.value=String(current?.slot??0);return false}
   finally{loading=false;editor.disabled=false;save.disabled=!editable()}
  }
  for(const sub of subsections){if(!validId(sub.id))continue;const b=document.createElement('button');b.type='button';b.textContent=sub.title||sub.id;b.dataset.subId=sub.id;b.onclick=()=>{void open(sub.id,Number(switcher.value))};nav.append(b)}
+ copy.onclick=async()=>{
+  try{
+   if(!navigator.clipboard?.writeText)throw Error('Clipboard API không khả dụng');
+   await navigator.clipboard.writeText(editor.value);
+   conflictStatus.textContent='Đã sao chép nội dung chưa lưu.';
+  }catch(e){editor.focus();editor.select();conflictStatus.textContent='Không thể sao chép tự động. Nội dung đã được chọn; hãy dùng Ctrl+C hoặc Cmd+C.'}
+ };
+ inspect.onclick=async()=>{
+  if(!current)return;
+  const ctx={...current};conflictStatus.textContent='Đang tải phiên bản máy chủ...';
+  try{
+   const {data,error}=await db.from('research_subsection_documents').select('content,version')
+    .eq('page_id',pageId).eq('sub_id',ctx.subId).eq('slot',ctx.slot).maybeSingle();
+   if(error)throw error;
+   if(!current||current.subId!==ctx.subId||current.slot!==ctx.slot)return;
+   remote.textContent='Phiên bản trên máy chủ: '+Number(data?.version||0)+'\\n\\n'+(data?.content||'(Trống)');
+   remote.hidden=false;conflictStatus.textContent='Nội dung máy chủ chỉ để xem, chưa thay thế bản của bạn.';
+  }catch(e){conflictStatus.textContent='Không tải được phiên bản máy chủ: '+(e.message||e)}
+ };
+ reload.onclick=async()=>{
+  if(!current)return;
+  if(!confirm('Nội dung chưa lưu trong ô soạn thảo sẽ bị thay thế. Hãy sao chép trước khi tiếp tục. Bạn xác nhận tải lại?'))return;
+  // Allow open() to proceed only after the explicit destructive confirmation.
+  const ctx={...current};const originalDirty=dirty;dirty=false;
+  const ok=await open(ctx.subId,ctx.slot);
+  if(!ok){dirty=originalDirty;conflict.hidden=false}
+ };
  editor.addEventListener('input',markDirty);
  save.onclick=()=>{void saveNow()};
  switcher.onchange=()=>{if(current)void open(current.subId,Number(switcher.value))};
  const beforeUnload=e=>{if(dirty){e.preventDefault();e.returnValue=''}};
  global.addEventListener('beforeunload',beforeUnload);
- main.append(switcher,editor,save,status);main.prepend(heading);root.append(nav,main,side);mount.replaceChildren(root);
+ main.append(switcher,editor,save,status,conflict);main.prepend(heading);root.append(nav,main,side);mount.replaceChildren(root);
  return {open,save:saveNow,element:root,dispose(){stopTimer();global.removeEventListener('beforeunload',beforeUnload)},get dirty(){return dirty}};
 }
 global.createResearchSubsectionUI=createResearchSubsectionUI;
