@@ -1352,6 +1352,38 @@ main .card{padding:clamp(12px,1.2vw,16px)}
  #tasks #taskStats .task-stat span{position:static!important;display:block!important;line-height:1.2!important;margin:0!important}
 }
 </style>
+
+<style id="research-one-screen-gallery-2026">
+/* Desktop: fit the complete seven-card research index into one viewport.
+   Research detail pages and narrow/mobile layouts keep normal scrolling. */
+@media (min-width:1001px) and (min-height:590px){
+ html:has(#research:not(.gallery-detail):not(.hidden)){scroll-behavior:auto}
+ body:has(#research:not(.gallery-detail):not(.hidden)){overflow-y:hidden!important}
+ body:has(#research:not(.gallery-detail):not(.hidden)) main{height:100dvh!important;overflow:hidden!important;padding-top:clamp(8px,1.4vh,14px)!important;padding-bottom:8px!important}
+ #research:not(.gallery-detail):not(.hidden){height:calc(100dvh - 28px)!important;max-height:calc(100dvh - 28px)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;margin:0!important;gap:0!important}
+ #research:not(.gallery-detail)>h2{font-size:clamp(19px,2.6vh,25px)!important;margin:0 0 6px!important;line-height:1.15!important}
+ #research:not(.gallery-detail)>h2:before{font-size:26px!important}
+ #research:not(.gallery-detail)>p:first-of-type{font-size:clamp(13px,1.7vh,16px)!important;line-height:1.25!important;padding:clamp(7px,1.2vh,11px) 13px!important;margin:0 0 7px!important}
+ #research:not(.gallery-detail) #researchAddControls{margin:0 0 5px!important;flex:0 0 auto}
+ #research:not(.gallery-detail) #researchAddControls button{padding:4px 10px!important;min-height:28px!important;font-size:13px!important}
+ #research:not(.gallery-detail)>h3{font-size:clamp(17px,2.6vh,23px)!important;line-height:1.2!important;margin:4px 0 6px!important;flex:0 0 auto}
+ #research:not(.gallery-detail) #researchGroup1,
+ #research:not(.gallery-detail) #researchGroup2{gap:clamp(7px,1.2vw,13px)!important;min-height:0!important;flex:1 1 0!important;grid-auto-rows:minmax(0,1fr)!important;align-items:stretch!important}
+ #research:not(.gallery-detail) #researchGroup1{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ #research:not(.gallery-detail) #researchGroup2{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ #research:not(.gallery-detail) .grid .card{min-height:0!important;height:100%!important;padding:0 0 4px!important;border-radius:9px!important}
+ #research:not(.gallery-detail) .grid .card:before{height:auto!important;flex:1 1 38%!important;min-height:20px!important}
+ #research:not(.gallery-detail) .grid .card h3{font-size:clamp(13px,1.9vh,17px)!important;line-height:1.16!important;margin:7px 9px 4px!important;padding-left:30px!important;flex:0 0 auto!important}
+ #research:not(.gallery-detail) .grid .card h3:before{font-size:22px!important;top:-3px!important}
+ #research:not(.gallery-detail) .grid .card:after{font-size:clamp(11px,1.6vh,13px)!important;line-height:1.1!important;margin:0 9px 4px auto!important;width:calc(100% - 18px)!important}
+ #research:not(.gallery-detail) .grid .card:has(.research-rename-button:not(.hidden)):after{margin-bottom:32px!important}
+ #research:not(.gallery-detail) .card .research-rename-button,
+ #research:not(.gallery-detail) .card .research-delete-button{font-size:11px!important;padding:3px 7px!important;min-height:25px!important;bottom:5px!important}
+}
+@media (max-width:1000px), (max-height:589px){
+ body:has(#research:not(.gallery-detail):not(.hidden)){overflow-y:auto!important}
+}
+</style>
 </head>
 <body>
 
