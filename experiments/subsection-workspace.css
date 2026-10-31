@@ -1,0 +1,16 @@
+/* Experimental 3-column research workspace; not included in production index.html. */
+.subsection-workspace{--line:#d9e0e8;--ink:#182635;--muted:#607185;display:grid;grid-template-columns:minmax(170px,230px) minmax(320px,1fr) minmax(180px,250px);gap:16px;min-height:75vh;color:var(--ink);font:inherit}
+.subsection-workspace>*{min-width:0}
+.subsection-workspace .sw-nav,.subsection-workspace .sw-main,.subsection-workspace .sw-side{border:1px solid var(--line);border-radius:12px;background:#fff;padding:16px}
+.subsection-workspace .sw-nav{display:flex;flex-direction:column;gap:8px}
+.subsection-workspace .sw-nav button{text-align:left;border:1px solid transparent;border-radius:8px;padding:9px 10px;background:#f5f7fa;color:inherit;cursor:pointer}
+.subsection-workspace .sw-nav button[aria-current="true"]{background:#e8f0ff;border-color:#9ab9ef;font-weight:650}
+.subsection-workspace .sw-main{display:flex;flex-direction:column;gap:12px}
+.subsection-workspace .sw-main textarea{box-sizing:border-box;width:100%;min-height:52vh;resize:vertical;border:1px solid var(--line);border-radius:8px;padding:12px;font:inherit;line-height:1.55}
+.subsection-workspace .sw-main select,.subsection-workspace .sw-main button{padding:9px 12px;border-radius:8px;border:1px solid var(--line);font:inherit}
+.subsection-workspace .sw-main button{background:#164d9a;color:#fff;cursor:pointer}
+.subsection-workspace .sw-main button:disabled{opacity:.5;cursor:not-allowed}
+.subsection-workspace .sw-side{display:flex;flex-direction:column;gap:10px}
+.subsection-workspace .sw-side p{overflow-wrap:anywhere}
+@media(max-width:900px){.subsection-workspace{grid-template-columns:minmax(150px,210px) minmax(0,1fr)}.subsection-workspace .sw-side{grid-column:1/-1}}
+@media(max-width:620px){.subsection-workspace{grid-template-columns:minmax(0,1fr)}.subsection-workspace .sw-side{grid-column:auto}.subsection-workspace .sw-nav{max-height:180px;overflow:auto}.subsection-workspace .sw-main textarea{min-height:42vh}}
