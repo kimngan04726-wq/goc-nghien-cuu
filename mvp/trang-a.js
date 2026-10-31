@@ -11,19 +11,20 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const client=()=>typeof db!=='undefined'?db:null;
 const currentUser=async()=>{const c=client();if(!c)return null;try{const {data}=await c.auth.getUser();return data?.user?.id||null}catch{return null}};
 const admin=()=>typeof isAdmin!=='undefined'&&isAdmin;
-const message=(text)=>{if($('mvpSaveInfo'))$('mvpSaveInfo').textContent=text};
+const message=(text)=>{if($('mvpSaveInfo'))$('mvpSaveInfo').textContent=text;if($('mvpRetry'))$('mvpRetry').hidden=!text.startsWith('Lưu thất bại')};
 const pending=()=>dirty||loading||conflictOpen;
 window.addEventListener('beforeunload',e=>{if(pending()){e.preventDefault();e.returnValue=''}});
 function ensure(){
  if($('mvpA'))return;
  const style=document.createElement('style');style.textContent='#mvpA{position:fixed;inset:3%;z-index:99999;background:white;overflow:auto;padding:24px;border:2px solid #19364e;border-radius:12px;box-shadow:0 0 0 100vmax #0008}#mvpA[hidden]{display:none}#mvpA .mvp-layout{display:grid;grid-template-columns:minmax(200px,1fr) 2fr;gap:20px}#mvpA textarea{width:100%;min-height:300px;padding:12px}#mvpA .mvp-item{display:block;width:100%;text-align:left;background:#f3f1ec;color:#19364e}#mvpA .mvp-item.active{background:#19364e;color:white}#mvpA .mvp-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}#mvpA select{max-width:100%}@media(max-width:700px){#mvpA .mvp-layout{grid-template-columns:1fr}}';document.head.append(style);
- const box=document.createElement('div');box.id='mvpA';box.hidden=true;box.innerHTML='<div style="display:flex;justify-content:space-between"><h2>Trang A · Soạn thảo 7 nhiệm vụ</h2><button id="mvpClose">Đóng</button></div><p id="mvpInfo"></p><div class="mvp-layout"><nav id="mvpList"></nav><div><h3 id="mvpTitle"></h3><div class="mvp-controls"><label>Người phụ trách <select id="mvpOwner"></select></label><label>Trạng thái <select id="mvpStatus"></select></label><span id="mvpVersion"></span></div><textarea id="mvpContent" placeholder="Viết nội dung tiểu mục..."></textarea><p id="mvpSaveInfo"></p></div></div>';document.body.append(box);
+ const box=document.createElement('div');box.id='mvpA';box.hidden=true;box.innerHTML='<div style="display:flex;justify-content:space-between"><h2>Trang A · Soạn thảo 7 nhiệm vụ</h2><button id="mvpClose">Đóng</button></div><p id="mvpInfo"></p><div class="mvp-layout"><nav id="mvpList"></nav><div><h3 id="mvpTitle"></h3><div class="mvp-controls"><label>Người phụ trách <select id="mvpOwner"></select></label><label>Trạng thái <select id="mvpStatus"></select></label><span id="mvpVersion"></span></div><textarea id="mvpContent" placeholder="Viết nội dung tiểu mục..."></textarea><p id="mvpSaveInfo"></p><button type="button" id="mvpRetry" hidden>Thử lại</button></div></div>';document.body.append(box);
  const dialog=document.createElement('div');dialog.id='mvpConflict';dialog.hidden=true;dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-label','Có người vừa sửa');dialog.innerHTML='<h3>Có người vừa sửa</h3><p>Bản trên máy chủ đã thay đổi. Bạn muốn xử lý thế nào?</p><button type="button" id="mvpSeeRemote">Xem bản mới</button><button type="button" id="mvpKeepMine">Giữ bản của tôi</button><button type="button" id="mvpCancelConflict">Hủy</button>';document.body.append(dialog);
  const conflictStyle=document.createElement('style');conflictStyle.textContent='#mvpConflict:not([hidden]){position:fixed;z-index:100001;top:35%;left:50%;transform:translateX(-50%);width:min(94vw,480px);background:white;border:2px solid #19364e;border-radius:12px;padding:24px;box-shadow:0 0 0 100vmax #0009}';document.head.append(conflictStyle);
  $('mvpClose').onclick=()=>{if(pending()&&!confirm('Có nội dung chưa lưu hoặc đang lưu. Đóng?'))return;box.hidden=true};
  $('mvpContent').addEventListener('input',()=>{dirty=true;schedule()});
  $('mvpStatus').onchange=()=>{dirty=true;schedule()};
  $('mvpOwner').onchange=assignOwner;
+ $('mvpRetry').onclick=()=>{if(dirty&&!loading)save()};
 }
 function renderList(){
  $('mvpList').innerHTML=rows.map(r=>'<button class="mvp-item '+(selected?.task_key===r.task_key&&selected?.subsection_key===r.subsection_key?'active':'')+'" data-task="'+r.task_key+'" data-sub="'+r.subsection_key+'">'+esc(r.task_key+'.'+r.subsection_key+' '+r.title)+' · '+esc(r.status)+'</button>').join('');
@@ -53,13 +54,13 @@ function showConflict(r,data,localContent,localStatus){
 }
 async function save(){
  if(!selected||loading||!dirty||conflictOpen)return;
- const c=client();if(!c){message('Lưu thất bại – thử lại (chưa kết nối Supabase). Nội dung vẫn còn.');return}
+ const c=client();if(!c){message('Lưu thất bại – Thử lại (chưa kết nối Supabase). Nội dung vẫn còn.');return}
  loading=true;const r=selected,content=$('mvpContent').value,status=$('mvpStatus').value,version=r.version;
  if(!Number.isSafeInteger(version)||version<0){loading=false;message('Không xác định được phiên bản; không gửi yêu cầu lưu.');return}
  message('Đang lưu...');
  try{
   const {data,error}=await c.rpc('mvp_save_subsection',{p_task_key:r.task_key,p_subsection_key:r.subsection_key,p_expected_version:version,p_content:content,p_status:status});
-  if(error){message('Lưu thất bại – thử lại. '+error.message+' (nội dung vẫn còn)');return}
+  if(error){message('Lưu thất bại – Thử lại. '+error.message+' (nội dung vẫn còn)');return}
   switch(data?.result){
    case 'saved':
     r.version=data.version;r.content=content;r.status=data.status||status;
@@ -72,9 +73,9 @@ async function save(){
    case 'forbidden':message('Không có quyền lưu tiểu mục này. Nội dung đang gõ vẫn được giữ lại.');break;
    case 'not_found':message('Tiểu mục không còn tồn tại. Không thể lưu; nội dung vẫn còn.');break;
    case 'invalid_status':message('Trạng thái không hợp lệ. Hãy chọn một trong bốn trạng thái.');break;
-   default:message('Lưu thất bại – thử lại (phản hồi không xác định). Nội dung vẫn còn.');
+   default:message('Lưu thất bại – Thử lại (phản hồi không xác định). Nội dung vẫn còn.');
   }
- }catch(e){message('Lưu thất bại – thử lại. '+(e?.message||'Mất kết nối')+'; nội dung vẫn còn.')}
+ }catch(e){message('Lưu thất bại – Thử lại. '+(e?.message||'Mất kết nối')+'; nội dung vẫn còn.')}
  finally{loading=false;if(dirty&&!conflictOpen&&r.version!==version)schedule()}
 }
 async function assignOwner(){
