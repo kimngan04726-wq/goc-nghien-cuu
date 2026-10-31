@@ -2076,30 +2076,55 @@ researchSetup();
         p.textContent=items.join('\n\n')||'Không có';result.append(p);
       };
       if(mode==='merge'){
-        // Ghép theo chủ đề bằng độ tương đồng từ khóa, không liệt kê từng câu riêng lẻ.
+        // Biên tập quy tắc: lọc ý gần trùng, nhóm câu liên quan, thêm liên kết nhẹ.
+        const stop=new Set('và là của có cho trong được những các một với rằng cũng như thì khi để từ vào về này đó sẽ đã đang rất hơn mỗi chúng ta bạn họ nó việc điều cách thể nên cần giúp làm người'.split(' '));
+        const words=text=>new Set((normalize(text).match(/[\\p{L}\\p{N}]+/gu)||[]).filter(w=>w.length>2&&!stop.has(w)));
+        const similarity=(x,y)=>{
+          const wx=words(x),wy=words(y);
+          const overlap=[...wx].filter(w=>wy.has(w)).length;
+          return overlap/Math.max(1,Math.min(wx.size,wy.size));
+        };
         const merged=[...a];
-        const tokens=text=>new Set((normalize(text).match(/[\\p{L}\\p{N}]+/gu)||[]).filter(w=>w.length>3));
         for(const sentence of uniqueB){
-          const words=tokens(sentence);
+          if(merged.some(other=>normalize(other)===normalize(sentence)))continue;
+          // Chỉ bỏ câu gần trùng khi có mức tương đồng cao; tránh xóa ý riêng.
+          if(merged.some(other=>similarity(other,sentence)>0.82))continue;
           let best=-1,score=0;
-          merged.forEach((other,i)=>{
-            const otherWords=tokens(other);
-            const overlap=[...words].filter(w=>otherWords.has(w)).length;
-            const ratio=overlap/Math.max(1,Math.min(words.size,otherWords.size));
-            if(ratio>score){score=ratio;best=i;}
-          });
-          if(best>=0&&score>=0.32)merged.splice(best+1,0,sentence);
+          merged.forEach((other,i)=>{const ratio=similarity(other,sentence);if(ratio>score){score=ratio;best=i;}});
+          if(best>=0&&score>=0.30)merged.splice(best+1,0,sentence);
           else merged.push(sentence);
         }
         const paragraphs=[];
-        const maxSentences=3;
-        for(let i=0;i<merged.length;i+=maxSentences)paragraphs.push(merged.slice(i,i+maxSentences).join(' '));
-        const article=paragraphs.join('\n\n');
+        let current=[];
+        for(let i=0;i<merged.length;i++){
+          const sentence=merged[i].trim();
+          if(!sentence)continue;
+          if(current.length>=3||(current.length>=2&&i>0&&similarity(merged[i-1],sentence)<0.12)){
+            paragraphs.push(current.join(' '));current=[];
+          }
+          let phrasing=sentence;
+          if(current.length===0&&paragraphs.length>0&&!/^(tuy nhiên|bên cạnh đó|ngoài ra|đồng thời|mặt khác|cuối cùng|như vậy|vì vậy|do đó|đặc biệt)/i.test(sentence)){
+            const lead=paragraphs.length%2===1?'Bên cạnh đó, ':'Ngoài ra, ';
+            phrasing=lead+sentence.charAt(0).toLocaleLowerCase('vi')+sentence.slice(1);
+          }
+          current.push(phrasing);
+        }
+        if(current.length)paragraphs.push(current.join(' '));
+        let article=paragraphs.join('\n\n');
         const content=document.createElement('div');
         content.style.whiteSpace='pre-wrap';
         content.style.lineHeight='1.8';
         content.textContent=article;
         result.append(content);
+        const editLabel=document.createElement('p');
+        editLabel.textContent='Bạn có thể chỉnh sửa bản tổng hợp trước khi sao chép hoặc dán:';
+        editLabel.style.cssText='font-size:12pt;font-style:italic;margin-top:14px';
+        const editable=document.createElement('textarea');
+        editable.value=article;
+        editable.rows=7;
+        editable.style.cssText='display:block;width:100%;box-sizing:border-box;min-height:150px;margin:8px 0 12px;padding:12px;border:1px solid #cdbca7;border-radius:9px;font:16px/1.6 Georgia,serif';
+        editable.addEventListener('input',()=>{article=editable.value;content.textContent=article;});
+        result.append(editLabel,editable);
         const copy=document.createElement('button');
         copy.textContent='Sao chép bài tổng hợp';
         copy.onclick=()=>navigator.clipboard.writeText(article).then(()=>alert('Đã sao chép bài tổng hợp.')).catch(()=>alert('Không sao chép được.'));
