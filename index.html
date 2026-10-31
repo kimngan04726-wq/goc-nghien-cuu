@@ -1550,6 +1550,40 @@ body.word-editor-open #researchEditor #richEditor{background:white!important;bor
  #research:not(.gallery-detail) .grid .card .research-delete-button{font-size:10px!important;padding:2px 5px!important;min-height:21px!important;bottom:4px!important}
 }
 </style>
+<style id="research-square-layout-balanced-2026">
+@media(min-width:1001px) and (min-height:590px){
+ #research:not(.gallery-detail) #researchGroup1,
+ #research:not(.gallery-detail) #researchGroup2{
+  width:100%!important;align-self:stretch!important;justify-content:space-evenly!important;
+  align-items:center!important;gap:8px!important;padding:0 5px!important;
+ }
+ #research:not(.gallery-detail) .grid .card{
+  width:min(calc((100dvh - 225px)/2),calc((100vw - 280px)/4 - 12px))!important;
+  height:min(calc((100dvh - 225px)/2),calc((100vw - 280px)/4 - 12px))!important;
+  aspect-ratio:1!important;flex-shrink:0!important;display:flex!important;
+  flex-direction:column!important;justify-content:flex-start!important;
+  padding:0!important;border-radius:12px!important;
+ }
+ #research:not(.gallery-detail) .grid .card:before{
+  height:66%!important;flex:0 0 66%!important;background-size:cover!important;
+  background-position:center!important;
+ }
+ #research:not(.gallery-detail) .grid .card h3{
+  font-size:clamp(12px,1.7vh,16px)!important;
+  line-height:1.12!important;margin:7px 8px 2px!important;
+  padding-left:27px!important;max-height:2.4em!important;overflow:hidden!important;
+ }
+ #research:not(.gallery-detail) .grid .card h3:before{font-size:20px!important}
+ #research:not(.gallery-detail) .grid .card:after{
+  font-size:11px!important;position:absolute!important;right:8px!important;
+  bottom:30px!important;margin:0!important;width:auto!important;
+ }
+ #research:not(.gallery-detail) .grid .card .research-delete-button,
+ #research:not(.gallery-detail) .grid .card .research-rename-button{
+  bottom:5px!important;font-size:10px!important;padding:3px 6px!important;
+ }
+}
+</style>
 </head>
 <body>
 
