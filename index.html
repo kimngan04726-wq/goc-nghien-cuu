@@ -696,6 +696,14 @@ body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #rich
 #researchDetail .research-draft-card .research-history-panel{width:100%;max-width:none;box-sizing:border-box}
 #researchDetail .research-draft-card .research-history-table th{white-space:normal;overflow-wrap:anywhere}
 #researchDetail .research-draft-card .research-history-actions button{max-width:100%}
+/* Giảm chiều cao từng hàng lịch sử; giữ nguyên chiều rộng bảng */
+#researchDetail .research-history-table{border-spacing:0 4px}
+#researchDetail .research-history-table td{padding-top:7px;padding-bottom:7px;line-height:1.35}
+#researchDetail .research-history-table th{padding-top:8px;padding-bottom:8px}
+#researchDetail .research-history-actions{align-items:center;gap:5px}
+#researchDetail .research-history-actions button{padding:6px 9px;font-size:12px;line-height:1.2}
+#researchDetail .research-history-draft .research-history-actions{flex-direction:row;flex-wrap:wrap}
+#researchDetail .research-history-draft .research-history-actions button{padding:6px 7px}
 /* Lịch sử lưu bài gọn trong chiều rộng thẻ bản nháp */
 .research-history-draft{width:100%;max-width:100%;box-sizing:border-box;padding:14px 12px}
 .research-history-draft .research-history-toolbar{align-items:flex-start}
