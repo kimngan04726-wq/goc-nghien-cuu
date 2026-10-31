@@ -2932,21 +2932,44 @@ body:not(.word-editor-open) #researchEditor .research-actions{
 }
 body:not(.word-editor-open) #researchEditor .research-actions button{display:inline-block!important;visibility:visible!important;opacity:1!important}
 </style>
+<style id="switch-editor-dialog-style">
+#switchEditorDialog{border:1px solid #dfc9c0;border-radius:16px;padding:0;max-width:min(540px,calc(100vw - 32px));width:100%;box-shadow:0 16px 55px #0004;font:16px Arial,sans-serif;color:#201b1a}
+#switchEditorDialog::backdrop{background:#0008}
+#switchEditorDialog .switch-editor-inner{padding:22px 24px}
+#switchEditorDialog .switch-editor-title{font-size:18px;font-weight:700;margin:0 0 16px}
+#switchEditorDialog .switch-editor-text{line-height:1.65;margin:0 0 22px}
+#switchEditorDialog .switch-editor-buttons{display:flex;justify-content:flex-end;gap:10px}
+#switchEditorDialog button{cursor:pointer;border-radius:26px;padding:10px 25px;font-weight:700;font-size:15px}
+#switchEditorDialog .switch-editor-ok{background:#91453e;color:white;border:2px solid #91453e}
+#switchEditorDialog .switch-editor-cancel{background:#ffded8;color:#43221d;border:2px solid #ffded8}
+</style>
 <script>
 (function(){
+  const dialog=document.createElement('dialog');
+  dialog.id='switchEditorDialog';
+  dialog.innerHTML='<div class="switch-editor-inner"><p class="switch-editor-title">Góc nghiên cứu của nhóm cho biết</p><p class="switch-editor-text">Bạn đang sửa một bài. Chuyển sang bài khác sẽ bỏ những thay đổi chưa lưu. Nhấn OK để bỏ thay đổi và chuyển, hoặc Cancel để ở lại.</p><div class="switch-editor-buttons"><button type="button" class="switch-editor-ok">OK</button><button type="button" class="switch-editor-cancel">Cancel</button></div></div>';
+  document.body.appendChild(dialog);
+  let pendingButton=null;
+  let bypass=false;
+  dialog.querySelector('.switch-editor-cancel').addEventListener('click',()=>{pendingButton=null;dialog.close()});
+  dialog.querySelector('.switch-editor-ok').addEventListener('click',()=>{
+    const button=pendingButton;
+    pendingButton=null;
+    dialog.close();
+    if(typeof cancelResearch==='function')cancelResearch();
+    if(button){bypass=true;try{button.click()}finally{bypass=false}}
+  });
+  dialog.addEventListener('cancel',()=>{pendingButton=null});
   document.addEventListener('click',function(event){
+    if(bypass)return;
     const button=event.target.closest('button');
-    if(!button||button.closest('#researchEditor'))return;
-    if(!button.textContent.includes('Chỉnh sửa'))return;
+    if(!button||button.closest('#researchEditor')||!button.textContent.includes('Chỉnh sửa'))return;
     const editor=document.getElementById('researchEditor');
     if(!editor||getComputedStyle(editor).display==='none')return;
-    const approved=confirm('Bạn đang chỉnh sửa bài này.\n\nOK = BỎ các thay đổi chưa lưu và CHUYỂN sang bài khác.\nHỦY = KHÔNG chuyển bài, TIẾP TỤC chỉnh sửa và GIỮ nội dung đang viết.');
-    if(!approved){
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      return;
-    }
-    cancelResearch();
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    pendingButton=button;
+    if(!dialog.open)dialog.showModal();
   },true);
 })();
 </script>
