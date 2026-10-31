@@ -1974,6 +1974,9 @@ researchSetup();
     const panel=document.getElementById('researchEditor');
     if(panel.style.display!=='block')return;
     activeDraft={pageId:selected,slot};
+    // Chỉ nút của bài chung được ẩn khi chính bài chung đang sửa.
+    // Khi chuyển sang bản nháp, trả nút đó về trạng thái bình thường.
+    edit.style.display=canEditResearch(selected)?'inline-block':'none';
     const rich=document.getElementById('richEditor');
     rich.innerHTML=DOMPurify.sanitize(draftHtml(draftState[slot]||''));
     document.getElementById('researchText').value=draftState[slot]||'';
