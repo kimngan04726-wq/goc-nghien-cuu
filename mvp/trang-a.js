@@ -3,7 +3,9 @@
 'use strict';
 const titles=['Lý do chọn đề tài','Mục đích, mục tiêu và câu hỏi nghiên cứu','Cơ sở lý thuyết','Mô hình nghiên cứu và giả thuyết','Các biến nghiên cứu','Thang đo và phương án đo lường','Phương pháp nghiên cứu'];
 const statuses=['Chưa viết','Đang viết','Chờ duyệt','Đã duyệt'];
-let rows=[],selected=null,dirty=false,timer=null,loading=false,conflictOpen=false,initializing=false;
+let rows=[],selected=null,dirty=false,timer=null,loading=false,conflictOpen=false,initializing=false,userId=null,profiles=[];
+const weight={'Chưa viết':0,'Đang viết':25,'Chờ duyệt':75,'Đã duyệt':100};
+const summary=group=>{const percent=Math.round(group.reduce((n,r)=>n+weight[r.status],0)/group.length);const status=group.every(r=>r.status==='Chưa viết')?'Chưa viết':group.every(r=>r.status==='Đã duyệt')?'Đã duyệt':group.every(r=>weight[r.status]>=75)?'Chờ duyệt':'Đang viết';return {percent,status}};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const client=()=>typeof db!=='undefined'?db:null;
@@ -33,10 +35,10 @@ function pick(n,sub){
  renderList();$('mvpTitle').textContent=titles[selected.task_key-1]+' / '+selected.title;$('mvpContent').value=selected.content;
  $('mvpVersion').textContent='Phiên bản '+selected.version;
  $('mvpStatus').innerHTML=statuses.map(s=>'<option>'+s+'</option>').join('');$('mvpStatus').value=selected.status;
- const can=!!window.mvpUserId&&(admin()||selected.owner_id===window.mvpUserId);
+ const can=!!userId&&(admin()||(selected.owner_id===userId&&selected.status!=='Đã duyệt'));
  $('mvpContent').disabled=!can;$('mvpStatus').disabled=!can||(!admin()&&selected.status==='Đã duyệt');
  if(!admin())$('mvpStatus').querySelector('option[value="Đã duyệt"]').disabled=true;
- $('mvpOwner').disabled=!admin();$('mvpOwner').innerHTML='<option value="">Chưa giao</option>'+((window.mvpProfiles||[]).map(p=>'<option value="'+esc(p.user_id)+'">'+esc(p.display_name||p.user_id)+'</option>').join(''));
+ $('mvpOwner').disabled=!admin();$('mvpOwner').innerHTML='<option value="">Chưa giao</option>'+(profiles.map(p=>'<option value="'+esc(p.user_id)+'">'+esc(p.display_name||p.user_id)+'</option>').join(''));
  $('mvpOwner').value=selected.owner_id||'';
  $('mvpSaveInfo').textContent=can?'Tự lưu sau 1,2 giây':'Chỉ đọc — chưa được phân công';
 }
@@ -53,6 +55,7 @@ async function save(){
  if(!selected||loading||!dirty||conflictOpen)return;
  const c=client();if(!c){message('Lưu thất bại – thử lại (chưa kết nối Supabase). Nội dung vẫn còn.');return}
  loading=true;const r=selected,content=$('mvpContent').value,status=$('mvpStatus').value,version=r.version;
+ if(!Number.isSafeInteger(version)||version<0){loading=false;message('Không xác định được phiên bản; không gửi yêu cầu lưu.');return}
  message('Đang lưu...');
  try{
   const {data,error}=await c.rpc('mvp_save_subsection',{p_task_key:r.task_key,p_subsection_key:r.subsection_key,p_expected_version:version,p_content:content,p_status:status});
@@ -61,7 +64,7 @@ async function save(){
    case 'saved':
     r.version=data.version;r.content=content;r.status=data.status||status;
     dirty=$('mvpContent').value!==content||$('mvpStatus').value!==status;
-    $('mvpVersion').textContent='Phiên bản '+r.version;message(dirty?'Đã lưu bản trước, đang lưu thay đổi mới...':'Đã lưu thành công');
+    $('mvpVersion').textContent='Phiên bản '+r.version;message(dirty?'Đã lưu bản trước, đang lưu thay đổi mới...':'Đã lưu lúc '+new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}));
     renderList();refreshBadges();break;
    case 'conflict':
     message('Có người vừa sửa. Vui lòng chọn cách xử lý.');
@@ -75,18 +78,18 @@ async function save(){
  finally{loading=false;if(dirty&&!conflictOpen&&r.version!==version)schedule()}
 }
 async function assignOwner(){
- if(!admin()||!selected)return;
+ if(!admin()||!selected||loading||dirty){message('Hãy lưu nội dung trước khi giao người phụ trách.');return}
  const old=selected.owner_id,next=$('mvpOwner').value||null;
- const {data,error}=await client().from('mvp_subsections').update({owner_id:next}).eq('task_key',selected.task_key).eq('subsection_key',selected.subsection_key).select('owner_id').single();
- if(error){alert('Không thể giao: '+error.message);$('mvpOwner').value=old||'';return}
+ let data,error;try{({data,error}=await client().from('mvp_subsections').update({owner_id:next}).eq('task_key',selected.task_key).eq('subsection_key',selected.subsection_key).select('owner_id').single())}catch(e){error=e}
+ if(error){message('Không thể giao người phụ trách: '+error.message);$('mvpOwner').value=old||'';return}
  selected.owner_id=data.owner_id;
 }
 async function refresh(){
  const c=client();if(!c){$('mvpInfo').textContent='Không thể kết nối Supabase. Vui lòng tải lại trang.';return}
- const uid=await currentUser();if(!uid){rows=[];window.mvpUserId=null;$('mvpInfo').textContent='Khách chưa đăng nhập: cần đăng nhập để xem và soạn thảo Trang A.';$('mvpList').replaceChildren();$('mvpTitle').textContent='Vui lòng đăng nhập';$('mvpContent').disabled=true;$('mvpStatus').disabled=true;$('mvpOwner').disabled=true;return}
- let data,error,profiles;try{const results=await Promise.all([c.from('mvp_subsections').select('*').order('task_key').order('subsection_key'),c.from('group_profiles').select('user_id,display_name,role')]);({data,error}=results[0]);profiles=results[1].data}catch(e){$('mvpInfo').textContent='Không tải được Trang A: '+(e?.message||'Lỗi mạng');return}
+ const uid=await currentUser();if(!uid){rows=[];userId=null;$('mvpInfo').textContent='Khách chưa đăng nhập: cần đăng nhập để xem và soạn thảo Trang A.';$('mvpList').replaceChildren();$('mvpTitle').textContent='Vui lòng đăng nhập';$('mvpContent').disabled=true;$('mvpStatus').disabled=true;$('mvpOwner').disabled=true;return}
+ let data,error,loadedProfiles;try{const results=await Promise.all([c.from('mvp_subsections').select('*').order('task_key').order('subsection_key'),c.from('group_profiles').select('user_id,display_name,role')]);({data,error}=results[0]);loadedProfiles=results[1].data}catch(e){$('mvpInfo').textContent='Không tải được Trang A: '+(e?.message||'Lỗi mạng');return}
  if(error){$('mvpInfo').textContent='Không tải được: '+error.message;return}
- rows=data||[];window.mvpProfiles=profiles||[];window.mvpUserId=uid;
+ rows=data||[];profiles=loadedProfiles||[];userId=uid;
  $('mvpInfo').textContent=rows.length+' tiểu mục · '+rows.filter(r=>r.status==='Đã duyệt').length+' đã duyệt';
  dirty=false;renderList();pick(selected?.task_key||1,selected?.subsection_key);refreshBadges();
 }
@@ -95,17 +98,17 @@ function refreshBadges(){
   const page=typeof editingPageId!=='undefined'&&editingPageId?Number(editingPageId):Number(document.querySelector('#research .card.active')?.dataset?.pageId||0);
   const group=rows.filter(x=>x.task_key===page);if(!group.length)return;
   let b=box.querySelector('.mvpWorkBadge');if(!b){b=document.createElement('div');b.className='mvpWorkBadge';box.prepend(b)}
-  b.textContent='Tiến độ '+Math.round(100*group.filter(x=>x.status==='Đã duyệt').length/group.length)+'% · '+group.filter(x=>x.status==='Đã duyệt').length+'/'+group.length+' đã duyệt';
+  const sum=summary(group);b.textContent='Tiến độ '+sum.percent+'% · '+sum.status;
  });
  document.querySelectorAll('#research .card').forEach((card,i)=>{
   const group=rows.filter(x=>x.task_key===i+1);if(!group.length)return;
   let badge=card.querySelector('.mvpBadge');if(!badge){badge=document.createElement('div');badge.className='mvpBadge';card.append(badge)}
-  badge.textContent=Math.round(100*group.filter(x=>x.status==='Đã duyệt').length/group.length)+'% · '+group.filter(x=>x.status==='Đã duyệt').length+'/'+group.length+' đã duyệt';
+  const sum=summary(group);badge.textContent='Tiến độ '+sum.percent+'% · '+sum.status;
   if(!card.querySelector('.mvpOpen')){const b=document.createElement('button');b.className='mvpOpen';b.textContent='Mở soạn thảo';b.onclick=e=>{e.stopPropagation();open(i+1)};card.append(b)}
  });
 }
 async function open(n){ensure();if(pending()){alert('Có thay đổi chưa lưu. Vui lòng xử lý trước khi mở lại.');return}$('mvpA').hidden=false;$('mvpInfo').textContent='Đang tải...';selected=null;await refresh();if(n&&rows.length)pick(n)}
 window.openMvpResearchA=open;
-const boot=()=>{ensure();setInterval(async()=>{if(!$('app')||$('app').classList.contains('hidden'))return;if(rows.length){refreshBadges();return}if(initializing)return;initializing=true;try{await refresh()}finally{initializing=false}},3000)};
+const boot=()=>{try{ensure();setInterval(async()=>{try{if(!$('app')||$('app').classList.contains('hidden'))return;if(rows.length){refreshBadges();return}if(initializing)return;initializing=true;await refresh()}catch(e){console.error('Trang A:',e)}finally{initializing=false}},3000)}catch(e){console.error('Trang A không khởi tạo được:',e)}};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
