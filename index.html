@@ -928,6 +928,71 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
 @media(max-width:850px){#taskStats{gap:8px!important}#taskStats .task-stat{gap:7px;min-height:90px!important}#taskStats .task-stat:before{font-size:27px}#taskStats .task-stat strong{font-size:28px!important}#taskStats .task-stat span{font-size:14px!important}.task-compact-row{grid-template-columns:35px minmax(0,1fr) 95px 42px!important;gap:6px!important}.task-row-file-icon{width:34px;height:34px;font-size:22px}.task-compact-row>span:last-child{display:none}.task-compact-label strong{font-size:17px!important}.task-compact-label small{font-size:13px!important}.task-compact-status{font-size:12px!important}}
 @media(max-width:500px){#taskStats{grid-template-columns:repeat(2,minmax(0,1fr))!important}.task-detail-review-actions{flex-direction:column}}
 </style>
+
+<style id="task-design-reference-final">
+#tasks{font-family:"Times New Roman",Times,serif!important;color:#0b2e51}
+#tasks>h2{font-size:clamp(29px,3.3vw,44px)!important;color:#0b2e51!important;margin:10px 0 22px!important}
+#taskDashboard{border:0!important;background:transparent!important;padding:0!important;box-shadow:none!important}
+#taskStats{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:22px!important;margin:0 0 25px!important}
+#taskStats .task-stat{cursor:pointer!important;min-height:108px!important;border-radius:17px!important;background:#fffaf5!important;border:1px solid #e5d9cf!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;padding:14px 18px 14px 100px!important;position:relative!important;box-sizing:border-box!important}
+#taskStats .task-stat:before{position:absolute!important;left:28px!important;top:50%!important;transform:translateY(-50%)!important;font-size:46px!important}
+#taskStats .task-stat:nth-child(1):before{content:'▤'!important;color:#b18b54!important}
+#taskStats .task-stat:nth-child(2):before{content:'◷'!important;color:#b18b54!important}
+#taskStats .task-stat:nth-child(3):before{content:'⚲'!important;color:#6fa8cd!important}
+#taskStats .task-stat:nth-child(4):before{content:'✓'!important;color:#47956c!important}
+#taskStats .task-stat strong{font-size:39px!important;line-height:1.05!important}
+#taskStats .task-stat span{font-size:20px!important;white-space:nowrap}
+#taskStats .task-stat:has(:focus-visible),#taskStats .task-stat:hover{border-color:#b58a58!important}
+#taskStats .task-stat[aria-pressed="true"]{border:2px solid #956e3e!important}
+.task-visual-progress{display:grid;grid-template-columns:auto minmax(0,1fr);gap:32px;align-items:center;padding:0 14px 25px;border-bottom:1px solid #e7ddd4;margin-bottom:18px}
+.task-visual-progress strong{font-size:20px;white-space:nowrap}
+.task-visual-progress .task-progress-track{height:23px!important;margin:0!important;background:#ece8e3!important;border-radius:40px!important}
+#taskProgressFill{background:#0e3658!important;border-radius:40px!important}
+#taskProgressExplanation{display:none!important}
+#taskDashboard .task-filters{display:none!important}
+#taskFilterCount,#taskFilterMessage{display:none!important}
+.task-visual-list-header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:8px 0 22px}
+.task-visual-list-header h3{font-size:30px;color:#0c3155;margin:0;white-space:nowrap}
+.task-compact-toolbar{display:flex!important;gap:20px!important;margin:0!important;align-items:center!important}
+.task-compact-toolbar input{min-height:54px!important;width:330px!important;border-radius:14px!important;background:#fffaf7!important;font-size:18px!important}
+.task-compact-toolbar select{min-height:54px!important;width:215px!important;padding:10px!important;border:1px solid #ded5cd!important;border-radius:14px!important;background:#fffaf7!important;font-size:18px!important;color:#0c3155!important}
+.task-visual-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
+.task-visual-layout.has-selection{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}
+#taskList.task-compact-root,#taskList.task-compact-root.with-detail{width:100%!important;display:flex!important;flex-direction:column!important;gap:10px!important}
+.task-compact-row{grid-template-columns:58px minmax(0,1fr) 128px 55px 18px!important;min-height:92px!important;background:#fffdfa!important;border:1px solid #e8dfd6!important;border-radius:16px!important;box-shadow:none!important}
+.task-compact-row.selected{border-color:#d4a66b!important;background:#fff9f2!important}
+.task-row-file-icon{background:#faf7f3!important;color:#143a5c!important}
+.task-compact-label strong{font-size:21px!important}
+.task-compact-label small{font-size:16px!important}
+.task-compact-status{border-radius:30px!important}
+.task-compact-detail:not([hidden]){display:block!important;position:relative!important;width:100%!important;margin:0!important;box-sizing:border-box!important;min-height:480px!important;border:1px solid #e8dacf!important;background:#fffcf8!important;border-radius:22px!important;padding:26px!important}
+.task-compact-detail-head h3{font-size:27px!important}
+.task-detail-meta{margin:26px 0!important}
+.task-detail-tabs button{min-width:0!important}
+.task-draft-preview summary{padding:17px!important}
+.task-detail-review{margin-top:22px!important}
+.task-compact-pages{margin-top:20px!important}
+@media(max-width:1150px){
+ #taskStats{gap:10px!important}
+ #taskStats .task-stat{padding-left:64px!important}
+ #taskStats .task-stat:before{left:15px!important;font-size:35px!important}
+ #taskStats .task-stat strong{font-size:30px!important}
+ #taskStats .task-stat span{font-size:16px!important}
+ .task-visual-list-header h3{font-size:24px}
+ .task-compact-toolbar input{width:230px!important}
+ .task-compact-toolbar select{width:170px!important}
+ .task-visual-layout.has-selection{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:700px){
+ #taskStats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .task-visual-progress{grid-template-columns:1fr;gap:10px}
+ .task-visual-list-header{flex-direction:column;align-items:stretch}
+ .task-visual-list-header h3{white-space:normal}
+ .task-compact-toolbar input{width:100%!important;flex:1;min-width:0}
+ .task-compact-toolbar select{width:140px!important}
+ .task-compact-row{grid-template-columns:35px minmax(0,1fr) 88px 42px!important}
+}
+</style>
 </head>
 <body>
 
@@ -3040,6 +3105,7 @@ researchSetup();
    box.append(num,caption);box.setAttribute('role','button');box.tabIndex=0;box.title='Lọc theo '+label;box.onclick=()=>{const filter=document.getElementById('taskFilterStatus');filter.value=filter.value===label?'all':label;taskPage=1;renderTaskBoard();};box.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();box.click();}};stats.append(box);
   });
   document.getElementById('taskProgressFill').style.width=pct+'%';
+  const visualProgress=document.getElementById('taskVisualProgressLabel');if(visualProgress)visualProgress.textContent='Tiến độ chung: '+pct+'%  ('+done+'/'+all.length+' công việc)';
   let explanation=document.getElementById('taskProgressExplanation');
   if(!explanation){explanation=document.createElement('p');explanation.id='taskProgressExplanation';explanation.style.cssText='font-size:14px;color:#506579;margin:8px 0 15px';document.getElementById('taskProgressFill').parentElement.insertAdjacentElement('afterend',explanation)}
   explanation.textContent='Tiến độ '+(group==='all'?'chung hai nhóm':'Nhóm '+group)+': '+pct+'% trên thang 100% ('+all.length+' công việc). Quy ước: Chưa làm 0%, Đang làm 50%, Chờ rà soát 90%, Hoàn thành 100%.';
@@ -3052,11 +3118,26 @@ researchSetup();
  const taskPageSize=5;
  const taskRoot=document.getElementById('taskList');
  taskRoot.classList.add('task-compact-root');
+ const taskSection=document.getElementById('tasks');
+ const taskHeading=taskSection.querySelector('h2');
+ if(taskHeading)taskHeading.textContent='♟ Công việc nhóm';
+ const progressTrack=document.getElementById('taskProgressFill').parentElement;
+ const progressLine=document.createElement('div');progressLine.className='task-visual-progress';
+ const progressLabel=document.createElement('strong');progressLabel.id='taskVisualProgressLabel';
+ progressLine.append(progressLabel,progressTrack);
+ document.getElementById('taskStats').after(progressLine);
+ const listHeader=document.createElement('div');listHeader.className='task-visual-list-header';
+ const listHeading=document.createElement('h3');listHeading.id='taskVisualListHeading';listHeading.textContent='▤ Danh sách nhiệm vụ';
+ listHeader.append(listHeading);
+ document.getElementById('taskDashboard').after(listHeader);
  const taskToolbar=document.createElement('div');taskToolbar.className='task-compact-toolbar';
  const taskSearchInput=document.createElement('input');taskSearchInput.type='search';taskSearchInput.placeholder='⌕ Tìm nhiệm vụ...';taskSearchInput.setAttribute('aria-label','Tìm nhiệm vụ');
  taskSearchInput.oninput=()=>{taskSearch=taskSearchInput.value.trim().toLocaleLowerCase('vi');taskPage=1;renderTaskBoard();};
- taskToolbar.append(taskSearchInput);
+ const statusSelect=document.getElementById('taskFilterStatus');
+ taskToolbar.append(taskSearchInput,statusSelect);
+ listHeader.append(taskToolbar);
  taskRoot.before(taskToolbar);
+ const taskLayout=document.createElement('div');taskLayout.className='task-visual-layout';taskRoot.before(taskLayout);taskLayout.append(taskRoot);
  const taskDetail=document.createElement('aside');taskDetail.className='task-compact-detail';taskDetail.hidden=true;taskRoot.after(taskDetail);
  const taskPagination=document.createElement('div');taskPagination.className='task-compact-pages';taskDetail.after(taskPagination);
  function renderTaskBoard(){
@@ -3069,11 +3150,12 @@ researchSetup();
    (!taskSearch||String(t.title).toLocaleLowerCase('vi').includes(taskSearch))
   );
   document.getElementById('taskFilterCount').textContent='Đang hiển thị '+data.length+' / '+cachedKanbanTasks.length+' công việc';
+  document.getElementById('taskVisualListHeading').textContent='▤ Danh sách nhiệm vụ ('+cachedKanbanTasks.length+')';
   document.getElementById('taskFilterMessage').textContent=data.length?'Chọn một nhiệm vụ để xem chi tiết.':'Không tìm thấy công việc phù hợp.';
   document.getElementById('taskFilterGroup').options[1].textContent='Nhóm 1 ('+cachedKanbanTasks.filter(t=>String(t.group_number||1)==='1').length+')';
   document.getElementById('taskFilterGroup').options[2].textContent='Nhóm 2 ('+cachedKanbanTasks.filter(t=>String(t.group_number||1)==='2').length+')';
   taskRoot.replaceChildren();taskPagination.replaceChildren();
-  taskRoot.classList.toggle('with-detail',taskSelectedId!==null);
+
   const pages=Math.max(1,Math.ceil(data.length/taskPageSize));taskPage=Math.min(taskPage,pages);
   const pageData=data.slice((taskPage-1)*taskPageSize,taskPage*taskPageSize);
   pageData.forEach(task=>{
@@ -3098,6 +3180,7 @@ researchSetup();
   const selected=cachedKanbanTasks.find(t=>String(t.id)===String(taskSelectedId));
   taskDetail.replaceChildren();taskDetail.hidden=!selected;
   taskRoot.classList.toggle('with-detail',!!selected);
+  taskLayout.classList.toggle('has-selection',!!selected);
   if(selected){
    const head=document.createElement('div');head.className='task-compact-detail-head';
    const title=document.createElement('h3');title.textContent=selected.title;
