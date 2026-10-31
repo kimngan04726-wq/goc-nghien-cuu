@@ -2028,7 +2028,7 @@ researchSetup();
   const workBox=document.createElement('section');workBox.className='research-work-box';
   const workHeading=document.createElement('h3');workHeading.textContent='📝 Bài làm của thành viên';
   workBox.append(workHeading,body,edit);
-  // Lịch sử phiên bản độc lập: chỉ dành cho Bài làm thống nhất.
+  // Lịch sử phiên bản độc lập: chỉ dành cho Bài tổng hợp.
   let selectedSaved=null;
   const backupPanel=document.createElement('section');
   backupPanel.className='research-work-box';
@@ -2118,6 +2118,13 @@ researchSetup();
     backupData=data||[];
     renderBackups();
   }
+  async function loadLatestUnified(pageId){
+    const {data,error}=await db.from('research_page_backups').select('id,content').eq('page_id',pageId).order('created_at',{ascending:false}).order('id',{ascending:false}).limit(1);
+    if(selected!==pageId||selectedSaved?.pageId===pageId)return;
+    const latest=!error?data?.[0]:null;
+    if(latest){selectedSaved={id:latest.id,content:latest.content,pageId};showSaved(latest.content);}
+    else showSaved(researchPageCache.find(p=>Number(p.id)===pageId)?.content||'');
+  }
   function renderBackups(){
     backupRows.replaceChildren();
     backupStatus.textContent=backupData.length+' lần lưu.';
@@ -2195,7 +2202,7 @@ researchSetup();
     return {panel,owner,preview,button,save,history,historyBox};
   });
   const actions=document.createElement('div');actions.className='research-draft-actions';
-  const mergeButton=document.createElement('button');mergeButton.textContent='✦ Tổng hợp thông minh (miễn phí)';
+  const mergeButton=document.createElement('button');mergeButton.textContent='✦ Tổng hợp';
   const compareButton=document.createElement('button');compareButton.textContent='⇄ So sánh và lọc ý';
   const result=document.createElement('section');result.className='research-draft-result';
   result.hidden=true;actions.append(mergeButton,compareButton);
@@ -2212,7 +2219,7 @@ researchSetup();
     if(error){
       draftNodes.forEach(x=>{x.preview.textContent='Chưa kết nối bảng research_drafts trong Supabase.';x.button.disabled=!canEditResearch(id);});
       actions.querySelectorAll('button').forEach(x=>x.disabled=true);
-      result.hidden=false;result.textContent='Cần tạo bảng research_drafts và cấu hình quyền trong Supabase trước khi lưu bản nháp. Bài làm thống nhất vẫn hoạt động như cũ.';
+      result.hidden=false;result.textContent='Cần tạo bảng research_drafts và cấu hình quyền trong Supabase trước khi lưu bản nháp. Bài tổng hợp vẫn hoạt động như cũ.';
       return;
     }
     actions.querySelectorAll('button').forEach(x=>x.disabled=false);
@@ -2222,7 +2229,14 @@ researchSetup();
       draftState[slot]=row?.content||'';
       const x=draftNodes[slot-1];
       x.owner.textContent=row?.author_id?'Đã có người phụ trách':'Chưa phân công thành viên';
-      x.preview.textContent=stripText(draftState[slot].startsWith('<!--RICH_RESEARCH_V1-->')?draftState[slot].slice('<!--RICH_RESEARCH_V1-->'.length):draftState[slot])||'Chưa có nội dung.';
+      const {data:versions,error:historyError}=await db.from('research_draft_backups').select('id,content').eq('page_id',id).eq('slot',slot).order('created_at',{ascending:false}).order('id',{ascending:false}).limit(1);
+      if(selected!==id)return;
+      if(draftSelections[slot]?.pageId!==id){
+        const latest=!historyError?versions?.[0]:null;
+        draftSelections[slot]=latest?{id:latest.id,content:latest.content,pageId:id}:null;
+      }
+      const display=draftSelections[slot]?.pageId===id?draftSelections[slot].content:draftState[slot];
+      x.preview.textContent=stripText(display.startsWith('<!--RICH_RESEARCH_V1-->')?display.slice('<!--RICH_RESEARCH_V1-->'.length):display)||'Chưa có nội dung.';
       x.button.disabled=!(isAdmin&&adminMode==='edit'||isMember&&assignedResearchPages.has(id));
     }
   }
@@ -2354,7 +2368,7 @@ researchSetup();
     activeDraft=null;
     cancelResearch();
     await loadDrafts();
-    alert('Đã lưu Bản nháp '+slot+'. Bài làm thống nhất không thay đổi.');
+    alert('Đã lưu Bản nháp '+slot+'. Bài tổng hợp không thay đổi.');
   };
   cancelResearch=function(){
     activeDraft=null;
@@ -2388,10 +2402,8 @@ researchSetup();
     mergeButton.disabled=true;
     compareButton.disabled=true;
     try{
-      const {data,error}=await db.from('research_drafts').select('slot,content').eq('page_id',pageId);
+      if(document.getElementById('researchEditor')?.style.display==='block')throw new Error('Hãy hoàn tất hoặc đóng trình soạn thảo trước khi tổng hợp.');
       if(pageId!==selected)return;
-      if(error)throw error;
-      for(const slot of [1,2])draftState[slot]=(data||[]).find(row=>Number(row.slot)===slot)?.content||'';
       const plain=raw=>{
         const html=raw.startsWith(RICH_MARKER)?raw.slice(RICH_MARKER.length):raw;
         if(!raw.startsWith(RICH_MARKER))return html;
@@ -2401,10 +2413,10 @@ researchSetup();
         node.querySelectorAll('p,div,li,h1,h2,h3,h4,h5,h6').forEach(el=>el.append(document.createTextNode('\n')));
         return node.textContent||'';
       };
-      const a=sentences(plain(draftState[1]));
-      const b=sentences(plain(draftState[2]));
+      const a=sentences(plain(draftSelections[1]?.pageId===pageId?draftSelections[1].content:draftState[1]));
+      const b=sentences(plain(draftSelections[2]?.pageId===pageId?draftSelections[2].content:draftState[2]));
       if(!a.length||!b.length){
-        result.textContent='Chưa đủ hai bản nháp đã lưu. Bản nháp 1: '+a.length+' câu; Bản nháp 2: '+b.length+' câu. Hãy lưu cả hai bản rồi thử lại.';
+        result.textContent='Cần có nội dung ở cả hai bản nháp. Bản nháp 1: '+a.length+' câu; Bản nháp 2: '+b.length+' câu.';
         return;
       }
       const keysA=new Set(a.map(normalize));
@@ -2482,17 +2494,17 @@ researchSetup();
         result.append(copy);
         const paste=document.createElement('button');
         paste.type='button';
-        paste.textContent='Dán vào Bài làm thống nhất';
+        paste.textContent='Dán vào Bài tổng hợp';
         paste.style.marginLeft='10px';
         paste.onclick=async()=>{
           if(selected!==pageId)return alert('Bạn đã chuyển sang bài khác. Hãy tổng hợp lại trước khi dán.');
-          if(!canEditResearch(pageId))return alert('Bạn không có quyền sửa Bài làm thống nhất.');
+          if(!canEditResearch(pageId))return alert('Bạn không có quyền sửa Bài tổng hợp.');
           const editorPanel=document.getElementById('researchEditor');
           if(editorPanel&&getComputedStyle(editorPanel).display!=='none')return alert('Bạn đang mở trình soạn thảo. Hãy lưu hoặc đóng bài đang sửa trước khi dán để tránh mất thay đổi.');
           const dialog=document.createElement('dialog');
           dialog.style.cssText='max-width:min(470px,calc(100vw - 32px));border:1px solid #d7c4ac;border-radius:14px;padding:24px;box-shadow:0 16px 50px #0004';
           const title=document.createElement('h3');title.textContent='Xác nhận lưu bài làm';
-          const description=document.createElement('p');description.textContent='Bạn có chắc chắn muốn lưu bài tổng hợp vào Bài làm thống nhất không? Nội dung hiện tại sẽ được thay thế, hai bản nháp vẫn giữ nguyên.';
+          const description=document.createElement('p');description.textContent='Bạn có chắc chắn muốn lưu bài tổng hợp vào Bài tổng hợp không? Nội dung hiện tại sẽ được thay thế, hai bản nháp vẫn giữ nguyên.';
           const buttons=document.createElement('div');buttons.style.cssText='display:flex;flex-wrap:wrap;gap:9px;margin-top:18px';
           const replace=document.createElement('button');replace.textContent='OK';
           const cancel=document.createElement('button');cancel.textContent='Cancel';
@@ -2516,7 +2528,7 @@ researchSetup();
               close();
               await loadResearch();
               if(typeof refresh==='function')refresh();
-              alert('Đã lưu bài tổng hợp vào Bài làm thống nhất.');
+              alert('Đã lưu bài tổng hợp vào Bài tổng hợp.');
             }catch(err){alert('Chưa dán được: '+(err?.message||'Lỗi không xác định'));replace.disabled=false;cancel.disabled=false;}
           };
           replace.onclick=()=>apply();
@@ -2529,7 +2541,7 @@ researchSetup();
         add('Ý riêng Bản nháp 2',uniqueB);
       }
       const note=document.createElement('p');
-      note.textContent='Đây là bản tổng hợp tham khảo từ hai bản nháp. Bạn nên đọc lại, điều chỉnh cách diễn đạt và liên kết các đoạn trước khi sử dụng. Nội dung này không tự thay đổi Bài làm thống nhất.';
+      note.textContent='Đây là bản tổng hợp tham khảo từ hai bản nháp. Bạn nên đọc lại, điều chỉnh cách diễn đạt và liên kết các đoạn trước khi sử dụng. Nội dung này không tự thay đổi Bài tổng hợp.';
       note.style.fontSize='12pt';
       note.style.fontStyle='italic';
       note.style.lineHeight='1.5';
@@ -2543,7 +2555,7 @@ researchSetup();
   }
   mergeButton.onclick=()=>showAnalysis('merge');
   compareButton.onclick=()=>showAnalysis('compare');
-  workHeading.textContent='📄 Bài làm thống nhất';
+  workHeading.textContent='📄 Bài tổng hợp';
   detail.append(back,heading,taskBox,draftsArea,workBox,backupPanel);
   section.insertBefore(detail,document.getElementById('researchEditor'));
 
@@ -2561,7 +2573,8 @@ researchSetup();
       if(window.DOMPurify)body.innerHTML=DOMPurify.sanitize(source.innerHTML);
       else body.textContent=source.textContent;
     }else body.textContent=source.textContent;
-    showSaved(selectedSaved?.pageId===selected?selectedSaved.content:'');
+    if(selectedSaved?.pageId===selected)showSaved(selectedSaved.content);
+    else loadLatestUnified(selected);
     edit.style.display=canEditResearch(selected)?'inline-block':'none';
     saveVersion.style.display=canEditResearch(selected)?'inline-block':'none';
     loadDrafts();
