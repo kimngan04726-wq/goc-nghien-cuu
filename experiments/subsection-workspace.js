@@ -2,6 +2,31 @@
 (function(global){
 'use strict';
 const validId=s=>typeof s==='string'&&/^[a-z0-9][a-z0-9_-]{0,79}$/i.test(s);
+// A bounded line diff: unmatched lines are marked; never parse user text as HTML.
+function highlightLineDifferences(left,right,leftNode,rightNode){
+ const a=String(left).split('\\n'),b=String(right).split('\\n');
+ leftNode.replaceChildren();rightNode.replaceChildren();
+ const limit=250;
+ if(a.length>limit||b.length>limit){
+  leftNode.textContent=left;rightNode.textContent=right;
+  return 'Nội dung dài: hiển thị nguyên văn, không đánh dấu khác biệt (giới hạn 250 dòng mỗi bản).';
+ }
+ const dp=Array.from({length:a.length+1},()=>new Uint16Array(b.length+1));
+ for(let i=a.length-1;i>=0;i--)for(let j=b.length-1;j>=0;j--)
+  dp[i][j]=a[i]===b[j]?1+dp[i+1][j+1]:Math.max(dp[i+1][j],dp[i][j+1]);
+ let i=0,j=0,changes=0;
+ function add(node,line,changed){
+  const span=document.createElement('span');span.textContent=line+'\\n';
+  if(changed){span.className='sw-diff-changed';changes++}
+  node.append(span);
+ }
+ while(i<a.length||j<b.length){
+  if(i<a.length&&j<b.length&&a[i]===b[j]){add(leftNode,a[i],false);add(rightNode,b[j],false);i++;j++}
+  else if(j===b.length||(i<a.length&&dp[i+1][j]>=dp[i][j+1])){add(leftNode,a[i++],true)}
+  else{add(rightNode,b[j++],true)}
+ }
+ return 'Đã đánh dấu '+changes+' dòng khác nhau ở hai phiên bản.';
+}
 function createResearchSubsectionUI({mount,db,pageId,subsections,canEdit=()=>false}){
  if(!(mount instanceof HTMLElement)||!db||!Number.isInteger(pageId)||!Array.isArray(subsections))throw Error('Invalid configuration');
  const root=document.createElement('div');root.className='subsection-workspace';
@@ -92,10 +117,9 @@ function createResearchSubsectionUI({mount,db,pageId,subsections,canEdit=()=>fal
     .eq('page_id',pageId).eq('sub_id',ctx.subId).eq('slot',ctx.slot).maybeSingle();
    if(error)throw error;
    if(!current||current.subId!==ctx.subId||current.slot!==ctx.slot)return;
-   localText.textContent=editor.value||'(Trống)';
    serverHeading.textContent='Nội dung máy chủ · phiên bản '+Number(data?.version||0);
-   serverText.textContent=data?.content||'(Trống)';
-   remote.hidden=false;conflictStatus.textContent='Nội dung máy chủ chỉ để xem, chưa thay thế bản của bạn.';
+   const differenceMessage=highlightLineDifferences(editor.value||'',data?.content||'',localText,serverText);
+   remote.hidden=false;conflictStatus.textContent=differenceMessage+' Nội dung máy chủ chỉ để xem, chưa thay thế bản của bạn.';
   }catch(e){conflictStatus.textContent='Không tải được phiên bản máy chủ: '+(e.message||e)}
  };
  reload.onclick=async()=>{
