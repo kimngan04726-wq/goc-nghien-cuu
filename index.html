@@ -1092,6 +1092,13 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
 #tasks .task-compact-pages button:disabled{opacity:.45!important;cursor:default!important}
 @media(min-width:1000px) and (min-height:650px){#tasks .task-visual-layout{height:calc(100dvh - 365px)!important;max-height:calc(100dvh - 365px)!important}}
 </style>
+
+<style id="task-pagination-no-overlay">
+/* Phân trang nằm trong luồng bố cục, ở khoảng trắng dưới danh sách. */
+#tasks .task-compact-pages:not([hidden]){position:relative!important;bottom:auto!important;z-index:1!important;margin:14px auto 12px!important;transform:none!important;clear:both!important;}
+#tasks .task-visual-layout{margin-bottom:0!important;}
+@media(min-width:1000px) and (min-height:650px){#tasks .task-visual-layout{height:calc(100dvh - 375px)!important;max-height:calc(100dvh - 375px)!important;}}
+</style>
 </head>
 <body>
 
