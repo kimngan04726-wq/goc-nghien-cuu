@@ -1082,6 +1082,16 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
  #tasks .task-compact-toolbar input{flex:1!important;min-width:0!important}
 }
 </style>
+
+<style id="task-pagination-visible-fixed">
+/* Giữ dãy nút chuyển trang luôn nhìn thấy ở chân bảng nhiệm vụ. */
+#tasks .task-compact-pages:not([hidden]){display:flex!important;position:sticky!important;bottom:8px!important;z-index:25!important;align-items:center!important;justify-content:center!important;gap:8px!important;width:max-content!important;max-width:100%!important;margin:8px auto 0!important;padding:7px 12px!important;border:1px solid #eee3d9!important;border-radius:12px!important;background:#fffcf8f5!important;box-shadow:0 3px 12px #12314b18!important}
+#tasks .task-compact-pages[hidden]{display:none!important}
+#tasks .task-compact-pages button{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;padding:0!important;border:1px solid #ded5cc!important;border-radius:7px!important;background:#fffaf7!important;color:#173855!important;font-family:"Times New Roman",serif!important;font-size:16px!important;cursor:pointer!important}
+#tasks .task-compact-pages button.active{background:#10395d!important;color:#fff!important;border-color:#10395d!important}
+#tasks .task-compact-pages button:disabled{opacity:.45!important;cursor:default!important}
+@media(min-width:1000px) and (min-height:650px){#tasks .task-visual-layout{height:calc(100dvh - 365px)!important;max-height:calc(100dvh - 365px)!important}}
+</style>
 </head>
 <body>
 
@@ -3227,7 +3237,7 @@ researchSetup();
  listHeader.append(taskToolbar);
  const taskLayout=document.createElement('div');taskLayout.className='task-visual-layout';taskRoot.before(taskLayout);taskLayout.append(taskRoot);
  const taskDetail=document.createElement('aside');taskDetail.className='task-compact-detail';taskDetail.hidden=true;taskRoot.after(taskDetail);
- const taskPagination=document.createElement('div');taskPagination.className='task-compact-pages';taskLayout.after(taskPagination);
+ const taskPagination=document.createElement('div');taskPagination.className='task-compact-pages';taskPagination.setAttribute('aria-label','Chuyển trang nhiệm vụ');taskLayout.after(taskPagination);
  function renderTaskBoard(){
   updateTaskDashboard();
   const group=document.getElementById('taskFilterGroup').value;
@@ -3263,11 +3273,13 @@ researchSetup();
   });
   if(!pageData.length){const empty=document.createElement('p');empty.textContent='Không có nhiệm vụ';taskRoot.append(empty);}
   if(pages>1){
+   taskPagination.hidden=false;
    const addPageButton=(label,target,disabled,active)=>{const btn=document.createElement('button');btn.type='button';btn.textContent=label;btn.disabled=disabled;btn.className=active?'active':'';btn.onclick=()=>{taskPage=target;renderTaskBoard();};taskPagination.append(btn);};
    addPageButton('‹',Math.max(1,taskPage-1),taskPage===1,false);
    for(let i=1;i<=pages;i++)addPageButton(String(i),i,false,i===taskPage);
    addPageButton('›',Math.min(pages,taskPage+1),taskPage===pages,false);
   }
+  if(pages<=1)taskPagination.hidden=true;
   const selected=cachedKanbanTasks.find(t=>String(t.id)===String(taskSelectedId));
   taskDetail.replaceChildren();taskDetail.hidden=!selected;
   taskRoot.classList.toggle('with-detail',!!selected);
