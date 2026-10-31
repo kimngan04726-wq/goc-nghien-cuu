@@ -2934,42 +2934,20 @@ body:not(.word-editor-open) #researchEditor .research-actions button{display:inl
 </style>
 <script>
 (function(){
-  // Không cho chuyển bài khi đang có thay đổi chưa lưu.
-  const panel=()=>document.getElementById('researchEditor');
-  const rich=()=>document.getElementById('richEditor');
-  let snapshot=null;
-  let currentLabel='';
-  function visible(){return panel()&&getComputedStyle(panel()).display!=='none';}
-  function remember(){
-    if(!visible())return;
-    snapshot=rich()?.innerHTML??'';
-    currentLabel=panel()?.querySelector('h2')?.textContent||'bài đang sửa';
-  }
   document.addEventListener('click',function(event){
-    const btn=event.target.closest('button');
-    if(!btn||!visible())return;
-    const label=(btn.textContent||'').trim();
-    // Chỉ chặn khi người dùng chọn một nút chỉnh sửa bài khác.
-    if(!/Chỉnh sửa/.test(label)||btn.closest('#researchEditor'))return;
-    if(snapshot!==null&&rich()&&rich().innerHTML!==snapshot){
-      if(!confirm('Bạn có thay đổi chưa lưu trong '+currentLabel+'. Chuyển sang bài khác sẽ mất các thay đổi đó. Bạn muốn HỦY thay đổi và chuyển bài?')){
-        event.preventDefault();event.stopImmediatePropagation();return;
-      }
+    const button=event.target.closest('button');
+    if(!button||button.closest('#researchEditor'))return;
+    if(!button.textContent.includes('Chỉnh sửa'))return;
+    const editor=document.getElementById('researchEditor');
+    if(!editor||getComputedStyle(editor).display==='none')return;
+    const approved=confirm('Bạn đang sửa một bài. Chuyển sang bài khác sẽ bỏ những thay đổi chưa lưu. Nhấn OK để bỏ thay đổi và chuyển, hoặc Cancel để ở lại.');
+    if(!approved){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return;
     }
-    snapshot=null;
+    cancelResearch();
   },true);
-  const observer=new MutationObserver(()=>{
-    if(!visible()){snapshot=null;return;}
-    // Sau khi editor mở hoặc thay bài, ghi nhận nội dung ban đầu.
-    if(snapshot===null)setTimeout(remember,180);
-  });
-  document.addEventListener('DOMContentLoaded',()=>{
-    if(panel())observer.observe(panel(),{attributes:true,attributeFilter:['style']});
-    const actions=panel()?.querySelector('.research-actions');
-    actions?.addEventListener('click',e=>{
-      if(e.target.closest('button'))setTimeout(()=>{if(!visible())snapshot=null;},200);
-    });
-  });
 })();
 </script>
 </body>
