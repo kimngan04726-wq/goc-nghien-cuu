@@ -2171,6 +2171,59 @@ researchSetup();
   edit.style.marginTop='0';
   workActions.append(edit,saveVersion,historyButton,docsButton);
   workBox.append(workActions);
+  // Khu kiểm duyệt đặt ngay dưới công cụ Bài tổng hợp.
+  const reviewBox=document.createElement('div');
+  reviewBox.className='research-review-box';
+  reviewBox.style.cssText='margin:14px 0;padding:15px;border:1px solid #e4d6c5;border-radius:10px;background:#faf8f3;font-family:"Times New Roman",serif';
+  const reviewTitle=document.createElement('strong');reviewTitle.textContent='🛡 Kiểm duyệt bài — Quản trị viên';
+  const reviewInfo=document.createElement('p');reviewInfo.style.margin='10px 0';reviewInfo.textContent='Đang kiểm tra trạng thái nhiệm vụ...';
+  const approve=document.createElement('button');approve.textContent='✓ Duyệt hoàn thành';
+  const requestChanges=document.createElement('button');requestChanges.textContent='↩ Yêu cầu chỉnh sửa';
+  reviewBox.append(reviewTitle,reviewInfo,approve,requestChanges);
+  workBox.append(reviewBox);
+  const linkedTask=async()=>{
+    if(selected===null)return null;
+    const page=researchPageCache.find(p=>Number(p.id)===selected);
+    if(!page)return null;
+    const {data,error}=await db.from('group_tasks').select('id,title,status').eq('title',page.title);
+    if(error)throw error;
+    if(data.length!==1)return null; // Không cập nhật nhầm khi tiêu đề trùng.
+    return data[0];
+  };
+  const updateReviewUI=async()=>{
+    reviewBox.hidden=true;
+    if(selected===null)return;
+    try{
+      const task=await linkedTask();
+      if(!task)return;
+      reviewBox.hidden=false;
+      reviewInfo.textContent='Trạng thái: '+task.status+(task.status==='Chờ rà soát'?' · 90%':task.status==='Hoàn thành'?' · 100%':'');
+      const admin=isAdmin&&adminMode==='edit';
+      reviewTitle.hidden=!admin;
+      approve.hidden=requestChanges.hidden=!admin||task.status!=='Chờ rà soát';
+      if(!admin&&task.status!=='Chờ rà soát'&&task.status!=='Hoàn thành')reviewBox.hidden=true;
+    }catch(e){console.warn('Không đọc được trạng thái kiểm duyệt:',e);}
+  };
+  const reviewAction=async(status)=>{
+    if(!(isAdmin&&adminMode==='edit'))return alert('Chỉ Admin được kiểm duyệt.');
+    const task=await linkedTask();
+    if(!task||task.status!=='Chờ rà soát')return alert('Nhiệm vụ chưa ở trạng thái Chờ rà soát hoặc chưa liên kết duy nhất với công việc.');
+    if(status==='Đang làm'){
+      const feedback=prompt('Nhận xét yêu cầu chỉnh sửa (bắt buộc):');
+      if(!feedback?.trim())return;
+      // Chưa có trường nhận xét an toàn trong CSDL: hiển thị để Admin gửi riêng, không giả vờ đã lưu.
+      if(!confirm('Nhận xét: '+feedback+'\n\nChuyển nhiệm vụ về Đang làm? (Nhận xét chưa được lưu trên hệ thống)'))return;
+    }else if(!confirm('Duyệt hoàn thành nhiệm vụ "'+task.title+'" lên 100%?'))return;
+    const {error}=await db.rpc('set_group_task_status',{p_task_id:task.id,p_status:status});
+    if(error)return alert('Không cập nhật được trạng thái: '+error.message);
+    await updateReviewUI();
+    if(typeof window.renderTaskBoard==='function')window.renderTaskBoard();
+    if(typeof loadTasks==='function')await loadTasks();
+  };
+  detail.addEventListener('click',()=>setTimeout(updateReviewUI,0));
+  approve.onclick=()=>reviewAction('Hoàn thành');
+  requestChanges.onclick=()=>reviewAction('Đang làm');
+
   detail.append(backupPanel);
   const savedText=raw=>{
     const marker='<!--RICH_RESEARCH_V1-->';
@@ -2407,6 +2460,8 @@ researchSetup();
         method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({requests,writeControl:doc.revisionId?{requiredRevisionId:doc.revisionId}:undefined})
       });
+      // Chỉ đánh dấu chờ rà soát sau khi Google Docs xác nhận ghi thành công.
+      try{const task=await linkedTask();if(task){const {error}=await db.rpc('set_group_task_status',{p_task_id:task.id,p_status:'Chờ rà soát'});if(error)throw error;await updateReviewUI();}}catch(syncError){alert('Đã xuất Google Docs nhưng chưa đồng bộ được tiến độ: '+syncError.message);}
       alert('Đã xuất vào thẻ "'+title+'". Bản sao lưu: '+backup.name);
       window.open('https://docs.google.com/document/d/'+encodeURIComponent(id)+'/edit?tab='+encodeURIComponent(tabId),'_blank','noopener');
     }catch(error){alert('Chưa xuất được: '+(error.message||error));}
