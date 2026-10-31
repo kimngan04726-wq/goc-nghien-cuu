@@ -3564,6 +3564,13 @@ try{
    syncTaskChoices();const title=el('taskTitle').value.trim();
    if(!title)return alert('Hãy chọn nhiệm vụ từ Trang Nội dung.');
    if(!validateTaskChoice(true))return;
+   const normalizeTaskName=value=>String(value||'').normalize('NFC').trim().replace(/\\s+/g,' ').toLocaleLowerCase('vi');
+   const selectedGroup=Number(group.value);
+   const {data:existingTasks,error:lookupError}=await db.from('group_tasks').select('id,title,group_number').eq('group_number',selectedGroup);
+   if(lookupError)return alert('Không kiểm tra được công việc trùng tên: '+lookupError.message);
+   if((existingTasks||[]).some(task=>normalizeTaskName(task.title)===normalizeTaskName(title))){
+     return alert('Nhiệm vụ "'+title+'" đã tồn tại trong Nhóm '+selectedGroup+'. Không thể thêm trùng.');
+   }
    const {error}=await db.from('group_tasks').insert({
      title,
      group_number:Number(group.value),
