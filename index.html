@@ -1384,6 +1384,35 @@ main .card{padding:clamp(12px,1.2vw,16px)}
  body:has(#research:not(.gallery-detail):not(.hidden)){overflow-y:auto!important}
 }
 </style>
+<style id="library-compact-viewport-2026">
+/* Compact library overview, preserve all inputs and allow internal scrolling for long lists. */
+@media(min-width:1001px) and (min-height:590px){
+ body:has(#library:not(.hidden)){overflow-y:hidden!important}
+ body:has(#library:not(.hidden)) main{height:100dvh!important;overflow:hidden!important;padding-top:8px!important;padding-bottom:8px!important}
+ #library:not(.hidden){height:calc(100dvh - 16px)!important;max-height:calc(100dvh - 16px)!important;overflow-y:auto!important;overscroll-behavior:contain;scrollbar-width:thin;margin:0!important;padding:5px 10px!important}
+ #library>h2{font-size:24px!important;margin:0 0 3px!important;gap:8px!important}
+ #library>h2:before{font-size:28px!important}
+ #library .library-subtitle{font-size:14px!important;margin:0 0 7px 36px!important}
+ #library .library-search-wrapper{margin:4px 0 7px!important}
+ #library .library-mock-search{height:36px!important;margin:3px 0!important;padding:0 9px!important}
+ #library .library-mock-search input{font-size:14px!important}
+ #library .quick-search-toolbar{gap:8px!important}
+ #library .library-mock-entry,#library .library-mock-apa,#library .library-entry-panel,#library .library-results-panel,#library .library-records-panel{padding:9px 11px!important;margin:7px 0!important}
+ #library .library-mock-entry h3,#library .library-mock-apa h3,#library .library-entry-panel h3{font-size:18px!important;margin:0 0 3px!important}
+ #library .library-mock-entry>p,#library .library-mock-apa>p{font-size:13px!important;margin:0 0 5px!important}
+ #library #referenceAutoLookup{padding:8px 11px!important;margin:6px 0!important}
+ #library #referenceAutoLookup h3{font-size:17px!important;margin:0 0 3px!important}
+ #library #referenceAutoLookup p{font-size:13px!important;margin:2px 0 5px!important}
+ #library .reference-auto-row{gap:6px!important}
+ #library .library-mock-table th,#library .library-mock-table td{padding:5px 6px!important;font-size:13px!important}
+ #library input,#library select,#library button{min-height:30px!important}
+ #library .library-mock-table input,#library .library-mock-table select{padding:4px 5px!important}
+ #library .library-mock-table{min-width:950px}
+ #library .quick-library-filters{gap:7px!important;margin:5px 0!important}
+ #library #libraryList{gap:7px!important}
+ #library #libraryList .reference-card{padding:9px!important}
+}
+</style>
 </head>
 <body>
 
