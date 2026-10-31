@@ -749,6 +749,11 @@ body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #rich
 .research-history-modal .research-history-expand-button{display:none!important}
 @media(max-width:650px){.research-history-modal{padding:10px}.research-history-modal .research-history-table{min-width:520px!important}}
 </style>
+<style>
+/* Đặt nút chỉnh sửa cùng hàng với lưu và lịch sử, không đổi hành vi */
+#researchDetail .research-draft-card .research-icon-button{position:static!important;top:auto!important;right:auto!important;float:none!important;margin:0!important}
+#researchDetail .research-draft-card .detail-content{padding-right:0!important}
+</style>
 </head>
 <body>
 
@@ -2197,8 +2202,8 @@ researchSetup();
     const save=document.createElement('button');iconOnly(save,'💾','Lưu bài làm');
     const history=document.createElement('button');iconOnly(history,'🗂','Lịch sử lưu bài');
     const historyBox=document.createElement('div');historyBox.style.cssText='display:none;margin-top:12px;width:100%;min-width:0';
-    controls.append(save,history);
-    panel.append(h,owner,preview,button,controls,historyBox);draftCards.append(panel);
+    controls.append(button,save,history);
+    panel.append(h,owner,preview,controls,historyBox);draftCards.append(panel);
     return {panel,owner,preview,button,save,history,historyBox};
   });
   const actions=document.createElement('div');actions.className='research-draft-actions';
