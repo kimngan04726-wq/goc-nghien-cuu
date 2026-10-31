@@ -2940,7 +2940,7 @@ body:not(.word-editor-open) #researchEditor .research-actions button{display:inl
     if(!button.textContent.includes('Chỉnh sửa'))return;
     const editor=document.getElementById('researchEditor');
     if(!editor||getComputedStyle(editor).display==='none')return;
-    const approved=confirm('Bạn đang sửa một bài. Chuyển sang bài khác sẽ bỏ những thay đổi chưa lưu. Nhấn OK để bỏ thay đổi và chuyển, hoặc Cancel để ở lại.');
+    const approved=confirm('Bạn đang chỉnh sửa bài này.\n\nOK = BỎ các thay đổi chưa lưu và CHUYỂN sang bài khác.\nHỦY = KHÔNG chuyển bài, TIẾP TỤC chỉnh sửa và GIỮ nội dung đang viết.');
     if(!approved){
       event.preventDefault();
       event.stopImmediatePropagation();
