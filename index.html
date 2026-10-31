@@ -648,7 +648,7 @@ body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #rich
 #dashSharedSources .shared-heading p{margin:5px 0 14px;color:#65748a}
 .shared-link-form{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0}
 .shared-link-form input{flex:1 1 200px;min-width:0;border:1px solid #e2d9cf;border-radius:9px;padding:11px}
-.shared-link-form input:nth-child(2){flex:2 1 300px}
+.shared-link-form input{flex:2 1 300px}
 .shared-link-form button{border-radius:9px}
 .shared-status{font-size:13px;color:#66778b;margin:7px 0}
 .shared-layout{display:grid;grid-template-columns:minmax(230px,34%) minmax(0,1fr);min-height:390px;border:1px solid #e4dcd4;border-radius:12px;overflow:hidden}
@@ -703,7 +703,6 @@ body.word-editor-open #researchEditor:has(#richToolbar.docs-style-toolbar) #rich
 <section class="dash-shared" id="dashSharedSources">
  <div class="shared-heading"><div><h3>📁 Nguồn thông tin chung</h3><p>Lưu liên kết Google Docs, Drive và các website để nhóm cùng tham khảo</p></div></div>
  <form id="sharedLinkForm" class="shared-link-form" hidden>
-  <input id="sharedLinkTitle" maxlength="160" placeholder="Tên nguồn thông tin" aria-label="Tên nguồn thông tin" required>
   <input id="sharedLinkUrl" type="url" maxlength="2048" placeholder="Dán liên kết Google Docs, Drive hoặc website..." aria-label="Liên kết nguồn" required>
   <button type="submit">＋ Thêm liên kết</button>
  </form>
@@ -3352,6 +3351,27 @@ body:not(.word-editor-open) #researchEditor .research-actions button{display:inl
  const $=id=>document.getElementById(id);
  let items=[],chosen=null,filter='all',loaded=false;
  const category=url=>/^(docs|drive)\.google\.com$/i.test(new URL(url).hostname)?'drive':'web';
+ const fallbackTitle=url=>{
+  const u=new URL(url);
+  const name=decodeURIComponent(u.pathname.split('/').filter(Boolean).pop()||'').replace(/[-_]+/g,' ').trim();
+  if(u.hostname==='docs.google.com')return 'Tài liệu Google Docs';
+  if(u.hostname==='drive.google.com')return 'Tệp Google Drive';
+  return (name&&name.length>3&&!/^[a-zA-Z0-9]{22,}$/.test(name)?name:u.hostname).slice(0,160);
+ };
+ async function fetchLinkTitle(url){
+  // Public metadata lookup: may fail for private Docs/Drive or sites blocking metadata.
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),5500);
+  try{
+   const response=await fetch('https://api.microlink.io?url='+encodeURIComponent(url)+'&data.title=true',{signal:controller.signal});
+   if(!response.ok)throw Error('metadata unavailable');
+   const result=await response.json();
+   const title=String(result?.data?.title||'').trim();
+   return title?title.slice(0,160):fallbackTitle(url);
+  }catch{return fallbackTitle(url);}
+  finally{clearTimeout(timeout);}
+ }
+
  const preview=url=>{
   const u=new URL(url),h=u.hostname;
   if(h==='docs.google.com'){
@@ -3404,11 +3424,11 @@ body:not(.word-editor-open) #researchEditor .research-actions button{display:inl
  $('sharedLinkForm').addEventListener('submit',async e=>{
   e.preventDefault();
   if(!(isAdmin&&adminMode==='edit'))return;
-  const title=$('sharedLinkTitle').value.trim(),raw=$('sharedLinkUrl').value.trim();
+  const raw=$('sharedLinkUrl').value.trim();
   let url;try{url=new URL(raw);if(!['http:','https:'].includes(url.protocol))throw Error();}catch{return alert('Vui lòng nhập liên kết http hoặc https hợp lệ.');}
-  if(!title)return;
   const button=$('sharedLinkForm').querySelector('button');button.disabled=true;
-  try{const {error}=await db.from('research_shared_links').insert({title,url:url.href});if(error)throw error;$('sharedLinkForm').reset();await load();}
+  $('sharedLinkStatus').textContent='Đang lấy tên nguồn từ liên kết...';
+  try{const title=await fetchLinkTitle(url.href);const {error}=await db.from('research_shared_links').insert({title,url:url.href});if(error)throw error;$('sharedLinkForm').reset();await load();}
   catch(err){alert('Không lưu được liên kết: '+(err.message||err));}finally{button.disabled=false;}
  });
  $('sharedLinkSearch').addEventListener('input',render);
