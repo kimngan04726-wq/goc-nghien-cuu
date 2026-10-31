@@ -1909,86 +1909,91 @@ researchSetup();
   const workBox=document.createElement('section');workBox.className='research-work-box';
   const workHeading=document.createElement('h3');workHeading.textContent='📝 Bài làm của thành viên';
   workBox.append(workHeading,body,edit);
-  // Sao lưu Bài làm thống nhất (không sao lưu hai bản nháp).
-  const backupsPanel=document.createElement('section');
-  backupsPanel.className='research-work-box';
-  const backupsTitle=document.createElement('h3');backupsTitle.textContent='🗂 Lịch sử sao lưu Bài làm thống nhất';
-  const backupsInfo=document.createElement('p');
-  backupsInfo.style.fontSize='12pt';
-  const backupNow=document.createElement('button');backupNow.textContent='＋ Tạo bản sao lưu mới';
-  const backupList=document.createElement('div');
-  backupList.style.cssText='display:grid;gap:9px;margin-top:12px';
-  backupsPanel.append(backupsTitle,backupsInfo,backupNow,backupList);
-  workBox.append(backupsPanel);
-  const backupText=raw=>{
+  // Lịch sử phiên bản độc lập: chỉ dành cho Bài làm thống nhất.
+  let selectedSaved=null;
+  const backupPanel=document.createElement('section');
+  backupPanel.className='research-work-box';
+  backupPanel.style.display='none';
+  const backupTitle=document.createElement('h3');backupTitle.textContent='🗂 Lịch sử lưu bài';
+  const backupStatus=document.createElement('p');
+  const backupTable=document.createElement('table');
+  backupTable.style.cssText='width:100%;border-collapse:collapse;text-align:left';
+  const backupHead=document.createElement('thead');
+  backupHead.innerHTML='<tr><th>Lần lưu</th><th>Ngày giờ lưu</th><th>Nội dung</th></tr>';
+  const backupRows=document.createElement('tbody');
+  backupTable.append(backupHead,backupRows);
+  backupPanel.append(backupTitle,backupStatus,backupTable);
+  const workActions=document.createElement('div');
+  workActions.style.cssText='display:flex;flex-wrap:wrap;gap:10px;margin:12px 0';
+  const saveVersion=document.createElement('button');saveVersion.textContent='💾 Lưu bài làm';
+  const historyButton=document.createElement('button');historyButton.textContent='🗂 Lịch sử lưu bài';
+  const docsButton=document.createElement('button');docsButton.textContent='↗ Xuất ra Google Docs';
+  workActions.append(saveVersion,historyButton,docsButton);
+  workBox.append(workActions);
+  detail.append(backupPanel);
+  const savedText=raw=>{
     const marker='<!--RICH_RESEARCH_V1-->';
     if(!raw.startsWith(marker))return raw;
     const node=document.createElement('div');
     node.innerHTML=window.DOMPurify?DOMPurify.sanitize(raw.slice(marker.length)):raw.slice(marker.length).replace(/<[^>]+>/g,' ');
     return node.textContent||'';
   };
+  const showSaved=raw=>{
+    const marker='<!--RICH_RESEARCH_V1-->';
+    body.className='detail-content'+(raw.startsWith(marker)?' rich-format':'');
+    if(raw.startsWith(marker)){
+      if(window.DOMPurify)body.innerHTML=DOMPurify.sanitize(raw.slice(marker.length));
+      else body.textContent=savedText(raw);
+    }else body.textContent=raw;
+  };
   async function loadBackups(){
-    if(selected===null||!isAdmin){backupsPanel.style.display='none';return;}
-    backupsPanel.style.display='block';
+    if(selected===null)return;
     const pageId=selected;
-    backupNow.disabled=!canEditResearch(pageId);
-    backupList.textContent='Đang tải lịch sử...';
-    const {data,error}=await db.from('research_page_backups').select('id,content,note,created_at').eq('page_id',pageId).order('created_at',{ascending:false}).limit(50);
-    if(pageId!==selected)return;
-    backupList.replaceChildren();
-    if(error){backupsInfo.textContent='Chưa kết nối bảng sao lưu. Cần chạy SQL thiết lập research_page_backups trong Supabase.';return;}
-    backupsInfo.textContent='Mỗi lần tạo sẽ thêm một bản riêng, không ghi đè bản cũ. Hiển thị tối đa 50 bản gần nhất.';
-    if(!data?.length){backupList.textContent='Chưa có bản sao lưu.';return;}
-    for(const item of data){
-      const row=document.createElement('div');
-      row.style.cssText='border:1px solid #d9cabb;border-radius:9px;padding:10px';
-      const label=document.createElement('p');
-      label.textContent=new Date(item.created_at).toLocaleString('vi-VN')+(item.note?' — '+item.note:'');
-      const view=document.createElement('button');view.textContent='Xem';
-      const restore=document.createElement('button');restore.textContent='Khôi phục';
-      restore.style.marginLeft='8px';
-      view.onclick=()=>{
-        const d=document.createElement('dialog');d.style.cssText='max-width:min(700px,95vw);max-height:80vh;overflow:auto;border:1px solid #ccbba8;border-radius:12px;padding:20px';
-        const heading=document.createElement('h3');heading.textContent='Nội dung bản sao lưu';
-        const p=document.createElement('div');p.style.cssText='white-space:pre-wrap;line-height:1.7';p.textContent=backupText(item.content);
-        const close=document.createElement('button');close.textContent='Đóng';close.onclick=()=>{d.close();d.remove()};
-        d.append(heading,p,close);document.body.append(d);d.showModal();
+    backupRows.replaceChildren();
+    backupStatus.textContent='Đang tải...';
+    const {data,error}=await db.from('research_page_backups').select('id,content,note,created_at').eq('page_id',pageId).order('created_at',{ascending:true}).limit(500);
+    if(selected!==pageId)return;
+    if(error){backupStatus.textContent='Không đọc được lịch sử lưu bài: '+error.message;return;}
+    backupStatus.textContent=data.length+' lần lưu.';
+    data.forEach((item,i)=>{
+      const tr=document.createElement('tr');
+      const count=document.createElement('td');count.textContent='Lần '+(i+1);
+      const date=document.createElement('td');date.textContent=new Date(item.created_at).toLocaleString('vi-VN');
+      const cell=document.createElement('td');
+      const btn=document.createElement('button');btn.textContent='Nội dung';
+      btn.onclick=()=>{
+        if(document.getElementById('researchEditor')?.style.display==='block')return alert('Hãy lưu hoặc đóng trình soạn thảo trước khi chọn phiên bản khác.');
+        selectedSaved={id:item.id,content:item.content,pageId};
+        showSaved(item.content);
+        backupStatus.textContent='Đang xem lần '+(i+1)+'. Bạn có thể chọn Chỉnh sửa để sửa phiên bản này rồi Lưu bài làm thành lần lưu mới.';
+        workBox.scrollIntoView({behavior:'smooth',block:'start'});
       };
-      restore.onclick=async()=>{
-        if(!canEditResearch(pageId)||selected!==pageId)return;
-        if(document.getElementById('researchEditor')?.style.display==='block')return alert('Hãy đóng trình soạn thảo trước khi khôi phục.');
-        if(!confirm('Khôi phục bản này vào Bài làm thống nhất? Nội dung hiện tại sẽ được tự động sao lưu trước khi thay thế.'))return;
-        restore.disabled=true;
-        try{
-          const {data:current,error:readError}=await db.from('research_pages').select('content').eq('id',pageId).single();
-          if(readError)throw readError;
-          const {error:backupError}=await db.from('research_page_backups').insert({page_id:pageId,content:current.content||'',note:'Tự động lưu trước khi khôi phục'});
-          if(backupError)throw backupError;
-          const {error:saveError}=await db.from('research_pages').update({content:item.content,updated_at:new Date().toISOString()}).eq('id',pageId);
-          if(saveError)throw saveError;
-          await loadResearch();
-          alert('Đã khôi phục. Nội dung trước khi khôi phục đã được sao lưu.');
-        }catch(e){alert('Không khôi phục được: '+(e.message||e));}
-        finally{restore.disabled=false;}
-      };
-      row.append(label,view,restore);backupList.append(row);
-    }
+      cell.append(btn);tr.append(count,date,cell);backupRows.append(tr);
+    });
   }
-  backupNow.onclick=async()=>{
+  historyButton.onclick=async()=>{
+    backupPanel.style.display=backupPanel.style.display==='none'?'block':'none';
+    if(backupPanel.style.display==='block')await loadBackups();
+  };
+  saveVersion.onclick=async()=>{
     if(selected===null||!canEditResearch(selected))return;
+    if(document.getElementById('researchEditor')?.style.display==='block')return alert('Hãy lưu nội dung đang chỉnh sửa trước.');
     const pageId=selected;
-    if(document.getElementById('researchEditor')?.style.display==='block')return alert('Hãy lưu hoặc đóng trình soạn thảo trước khi sao lưu.');
-    const note=prompt('Ghi chú cho bản sao lưu mới (có thể để trống):','');
-    if(note===null)return;
-    backupNow.disabled=true;
+    const content=selectedSaved?.pageId===pageId?selectedSaved.content:(researchPageCache.find(p=>Number(p.id)===pageId)?.content||'');
+    if(!content.trim())return alert('Chưa có nội dung để lưu. Hãy chọn Chỉnh sửa và nhập bài trước.');
+    if(!confirm('Lưu nội dung đang chọn thành một phiên bản mới? Phiên bản cũ sẽ được giữ nguyên.'))return;
+    saveVersion.disabled=true;
     try{
-      const {data,error}=await db.from('research_pages').select('content').eq('id',pageId).single();
+      const {error}=await db.from('research_page_backups').insert({page_id:pageId,content,note:'Lưu bài làm'});
       if(error)throw error;
-      const {error:saveError}=await db.from('research_page_backups').insert({page_id:pageId,content:data.content||'',note:note.slice(0,200)});
-      if(saveError)throw saveError;
-      await loadBackups();alert('Đã tạo bản sao lưu mới.');
-    }catch(e){alert('Không sao lưu được: '+(e.message||e));}
-    finally{backupNow.disabled=false;}
+      backupPanel.style.display='block';await loadBackups();
+      alert('Đã lưu thêm một phiên bản mới.');
+    }catch(e){alert('Không lưu được: '+(e.message||e));}
+    finally{saveVersion.disabled=false;}
+  };
+  docsButton.onclick=()=>{
+    alert('Chưa bật xuất tự động: Google Docs cần xác thực Google an toàn. Không ghi đè bản Final khi chưa kết nối thành công.');
+    window.open('https://docs.google.com/document/d/1xcBZnQNKFz9dIw_g2PSh3ABRuBmHarSHvnJ5dFSlYrE/edit?usp=drivesdk','_blank','noopener');
   };
   // Hai bản nháp độc lập; bài chung và trình soạn thảo cũ không bị thay đổi.
   const draftsArea=document.createElement('div');draftsArea.className='research-drafts-area';
@@ -2283,7 +2288,7 @@ researchSetup();
   mergeButton.onclick=()=>showAnalysis('merge');
   compareButton.onclick=()=>showAnalysis('compare');
   workHeading.textContent='📄 Bài làm thống nhất';
-  detail.append(back,heading,taskBox,draftsArea,workBox);
+  detail.append(back,heading,taskBox,draftsArea,workBox,backupPanel);
   section.insertBefore(detail,document.getElementById('researchEditor'));
 
   function refresh(){
@@ -2300,11 +2305,15 @@ researchSetup();
       if(window.DOMPurify)body.innerHTML=DOMPurify.sanitize(source.innerHTML);
       else body.textContent=source.textContent;
     }else body.textContent=source.textContent;
+    showSaved(selectedSaved?.pageId===selected?selectedSaved.content:'');
     edit.style.display=canEditResearch(selected)?'inline-block':'none';
+    saveVersion.style.display=canEditResearch(selected)?'inline-block':'none';
     loadDrafts();
-    loadBackups();
+    if(backupPanel.style.display==='block')loadBackups();
   }
   function open(id){
+    selectedSaved=null;
+    backupPanel.style.display='none';
     selected=id;
     section.classList.add('gallery-detail');
     refresh();
@@ -2340,7 +2349,7 @@ researchSetup();
     });
   };
   back.onclick=close;
-  edit.onclick=()=>{if(selected!==null&&canEditResearch(selected)){edit.style.display='none';openResearchEditor(selected);}};
+  edit.onclick=async()=>{if(selected!==null&&canEditResearch(selected)){edit.style.display='none';await openResearchEditor(selected);if(selectedSaved?.pageId===selected){const raw=selectedSaved.content;const textarea=document.getElementById('researchText');textarea.value=raw;const rich=document.getElementById('richEditor');if(rich){const marker='<!--RICH_RESEARCH_V1-->';if(raw.startsWith(marker)){rich.innerHTML=window.DOMPurify?DOMPurify.sanitize(raw.slice(marker.length)):raw.slice(marker.length)}else rich.textContent=raw;}}}};
   const oldCancel=cancelResearch;
   cancelResearch=function(){oldCancel();if(selected!==null)refresh();};
   const oldLoad=loadResearch;
