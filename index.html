@@ -1983,8 +1983,7 @@ researchSetup();
   mergeButton.onclick=()=>showAnalysis('merge');
   compareButton.onclick=()=>showAnalysis('compare');
   workHeading.textContent='📄 Bài làm thống nhất';
-  workBox.before(draftsArea);
-  detail.append(back,heading,taskBox,workBox);
+  detail.append(back,heading,taskBox,draftsArea,workBox);
   section.insertBefore(detail,document.getElementById('researchEditor'));
 
   function refresh(){
