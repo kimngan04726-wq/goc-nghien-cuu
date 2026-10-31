@@ -16,7 +16,7 @@ function highlightLineDifferences(left,right,leftNode,rightNode){
   dp[i][j]=a[i]===b[j]?1+dp[i+1][j+1]:Math.max(dp[i+1][j],dp[i][j+1]);
  let i=0,j=0,changes=0;
  function add(node,line,changed){
-  const span=document.createElement('span');span.textContent=line+'\\n';
+  const span=document.createElement('span');span.textContent=line+'\n';
   if(changed){span.className='sw-diff-changed';changes++}
   node.append(span);
  }
