@@ -1462,6 +1462,26 @@ main .card{padding:clamp(12px,1.2vw,16px)}
  #research:not(.gallery-detail) .card .research-delete-button{bottom:5px!important}
 }
 </style>
+<style id="research-square-cards-2026">
+/* Square research tiles: appearance only, all existing actions remain intact. */
+@media(min-width:1001px){
+ #research:not(.gallery-detail) #researchGroup1{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ #research:not(.gallery-detail) #researchGroup2{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ #research:not(.gallery-detail) .grid .card{aspect-ratio:1/1!important;height:auto!important;max-height:none!important;min-height:0!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;position:relative!important;overflow:hidden!important;padding:0 0 8px!important}
+ #research:not(.gallery-detail) .grid .card:before{height:52%!important;flex:0 0 52%!important;min-height:0!important;background-size:cover!important;background-position:center!important}
+ #research:not(.gallery-detail) .grid .card h3{margin:10px 10px 5px!important;font-size:clamp(14px,1.2vw,18px)!important;line-height:1.2!important}
+ #research:not(.gallery-detail) .grid .card:after{margin:5px 10px 0 auto!important}
+ #research:not(.gallery-detail) .grid .card:has(.research-rename-button:not(.hidden)):after{margin-bottom:0!important}
+ body:has(#research:not(.gallery-detail):not(.hidden)){overflow-y:auto!important}
+ body:has(#research:not(.gallery-detail):not(.hidden)) main{height:auto!important;min-height:100dvh!important;overflow:visible!important}
+ #app:has(#research:not(.gallery-detail):not(.hidden)){height:auto!important;overflow:visible!important}
+ #research:not(.gallery-detail):not(.hidden){height:auto!important;max-height:none!important;overflow:visible!important;display:block!important}
+}
+@media(max-width:1000px){
+ #research:not(.gallery-detail) .grid .card{aspect-ratio:1/1!important;height:auto!important;min-height:0!important}
+ #research:not(.gallery-detail) .grid .card:before{height:48%!important;flex:0 0 48%!important}
+}
+</style>
 </head>
 <body>
 
