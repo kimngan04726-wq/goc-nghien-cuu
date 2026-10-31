@@ -4956,6 +4956,6 @@ html:has(#research.gallery-detail:not(.hidden)),body:has(#research.gallery-detai
 #researchDetail .research-draft-result:not([hidden]){flex:0 0 auto!important;max-height:none!important;overflow:visible!important}
 @media(max-width:900px){#research.gallery-detail #researchDetail{width:calc(100% - 20px)!important}#researchDetail .research-draft-grid{grid-template-columns:1fr!important}#researchDetail .research-task-box{grid-template-columns:minmax(0,1fr)!important}#researchDetail .research-task-box>button{grid-column:1!important;grid-row:auto!important;justify-self:start!important}}
 </style>
-<script src="mvp/trang-a.js"></script>
+<script>if(new URLSearchParams(location.search).get("mvp")==="1"){const s=document.createElement("script");s.src="mvp/trang-a.js";document.body.appendChild(s);}</script>
 </body>
 </html>
