@@ -777,6 +777,13 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
  #researchEditor:has(#richToolbar) .research-actions #wordEditorSizeButton{padding:5px 7px!important;font-size:13px!important}
 }
 </style>
+<style id="research-summary-actions-and-history-sort">
+#researchDetail .research-work-box .research-actions-inline{display:flex;gap:10px;flex-wrap:wrap}
+#researchDetail .research-history-toolbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-left:auto}
+#researchDetail .research-history-toolbar-actions .research-history-sort{width:46px!important;min-width:46px!important;max-width:46px!important;height:38px!important;min-height:38px!important;padding:5px 3px!important;text-align:center!important;text-align-last:center!important;font-size:21px!important;cursor:pointer}
+#researchDetail .research-history-toolbar-actions .research-history-expand-button{flex:none}
+#researchDetail .research-work-box>.research-icon-button{position:static!important}
+</style>
 </head>
 <body>
 
@@ -2055,7 +2062,7 @@ researchSetup();
   taskBox.append(taskHeading,taskText,taskEdit);
   const workBox=document.createElement('section');workBox.className='research-work-box';
   const workHeading=document.createElement('h3');workHeading.textContent='📝 Bài làm của thành viên';
-  workBox.append(workHeading,body,edit);
+  workBox.append(workHeading,body);
   // Lịch sử phiên bản độc lập: chỉ dành cho Bài tổng hợp.
   let selectedSaved=null;
   const backupPanel=document.createElement('section');
@@ -2071,14 +2078,16 @@ researchSetup();
   const backupToolbar=historyToolbar('🗂 Lịch sử lưu bài','Xem lại các phiên bản đã lưu và chọn nội dung cần xem.',v=>{backupSort=v;renderBackups();});
   const iconOnly=(button,icon,label)=>{button.textContent=icon;button.title=label;button.setAttribute('aria-label',label);button.classList.add('research-icon-button');return button;};
   const backupExpand=historyExpandButton(()=>historyExpand(backupPanel,renderBackups));
-  backupToolbar.append(backupExpand);
+  backupToolbar.querySelector('.research-history-toolbar-actions').append(backupExpand);
   backupPanel.append(backupToolbar,backupStatus,backupScroll);
   const workActions=document.createElement('div');
   workActions.style.cssText='display:flex;flex-wrap:wrap;gap:10px;margin:12px 0';
   const saveVersion=document.createElement('button');iconOnly(saveVersion,'💾','Lưu bài làm');
   const historyButton=document.createElement('button');iconOnly(historyButton,'🗂','Lịch sử lưu bài');
   const docsButton=document.createElement('button');iconOnly(docsButton,'↗','Xuất ra Google Docs');
-  workActions.append(saveVersion,historyButton,docsButton);
+  iconOnly(edit,'✎','Chỉnh sửa');
+  edit.style.marginTop='0';
+  workActions.append(edit,saveVersion,historyButton,docsButton);
   workBox.append(workActions);
   detail.append(backupPanel);
   const savedText=raw=>{
@@ -2124,8 +2133,11 @@ researchSetup();
     const info=document.createElement('div');const title=document.createElement('h3');title.textContent=heading;
     const hint=document.createElement('p');hint.textContent=subtitle;info.append(title,hint);
     const sort=document.createElement('select');sort.className='research-history-sort';sort.setAttribute('aria-label','Sắp xếp lịch sử');
-    [['new','↓ Mới nhất trước'],['old','↑ Cũ nhất trước']].forEach(([value,label])=>{const opt=document.createElement('option');opt.value=value;opt.textContent=label;sort.append(opt);});
-    sort.onchange=()=>onSort(sort.value);bar.append(info,sort);return bar;
+    [['new','⇅'],['old','⇵']].forEach(([value,label])=>{const opt=document.createElement('option');opt.value=value;opt.textContent=label;sort.append(opt);});
+    const updateSortLabel=()=>{const label=sort.value==='new'?'Mới nhất trước':'Cũ nhất trước';sort.title=label;sort.setAttribute('aria-label','Sắp xếp: '+label);};
+    sort.onchange=()=>{updateSortLabel();onSort(sort.value);};updateSortLabel();
+    const actions=document.createElement('div');actions.className='research-history-toolbar-actions';actions.append(sort);
+    bar.append(info,actions);return bar;
   }
   const showSaved=raw=>{
     const marker='<!--RICH_RESEARCH_V1-->';
@@ -2283,7 +2295,7 @@ researchSetup();
     const list=document.createElement('div');list.className='research-history-scroll';
     const bar=historyToolbar('🗂 Lịch sử lưu bài','Các phiên bản đã lưu của Bản nháp '+slot,v=>{direction=v;render();});
     const expand=historyExpandButton(()=>historyExpand(panel,render));
-    bar.append(expand);
+    bar.querySelector('.research-history-toolbar-actions').append(expand);
     panel.append(bar,list);x.historyBox.append(panel);
     function render(){
       list.replaceChildren();
