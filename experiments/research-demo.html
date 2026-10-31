@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thử nghiệm Trang A / Trang B — không kết nối dữ liệu thật</title>
+<link rel="stylesheet" href="./subsection-workspace.css"><link rel="stylesheet" href="./research-compare.css"><link rel="stylesheet" href="./research-merge-preview.css">
+<style>body{font-family:system-ui,sans-serif;margin:0;background:#f4f7fa;color:#182635}header{padding:16px 24px;background:white;border-bottom:1px solid #d9e0e8}main{max-width:1300px;margin:auto;padding:20px}header button{padding:8px 14px;margin-right:8px}section[hidden]{display:none!important}.notice{background:#fff6db;padding:12px;border:1px solid #ead69a;border-radius:8px;margin-bottom:14px}</style>
+</head><body><header><strong>Góc nghiên cứu — bản xem thử độc lập</strong><nav aria-label="Chuyển trang"><button id="tabA" type="button">Trang A · Soạn thảo</button><button id="tabB" type="button">Trang B · So sánh</button></nav></header>
+<main><p class="notice">CHẾ ĐỘ MÔ PHỎNG: Dữ liệu chỉ tồn tại trong bộ nhớ tab này, không kết nối Supabase và không thay đổi website thật. Tải lại trang sẽ xóa dữ liệu mô phỏng.</p>
+<section id="viewA"><div id="editor"></div></section>
+<section id="viewB" hidden><div id="compare"></div><div id="preview"></div></section></main>
+<script src="./subsection-workspace.js"></script><script src="./research-compare.js"></script><script src="./research-compare-bridge.js"></script><script src="./research-merge-preview.js"></script>
+<script src="./research-demo.js"></script></body></html>
