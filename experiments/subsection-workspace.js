@@ -27,6 +27,7 @@ function highlightLineDifferences(left,right,leftNode,rightNode){
  }
  return 'Đã đánh dấu '+changes+' dòng khác nhau ở hai phiên bản.';
 }
+global.researchDiffForTests=highlightLineDifferences;
 function createResearchSubsectionUI({mount,db,pageId,subsections,canEdit=()=>false}){
  if(!(mount instanceof HTMLElement)||!db||!Number.isInteger(pageId)||!Array.isArray(subsections))throw Error('Invalid configuration');
  const root=document.createElement('div');root.className='subsection-workspace';
