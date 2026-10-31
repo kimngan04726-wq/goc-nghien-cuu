@@ -3816,6 +3816,21 @@ body:not(.word-editor-open) #researchEditor .research-actions button{display:inl
    button.onclick=()=>{chosen=x.id;$('sharedViewerTitle').textContent=x.title;const link=$('sharedViewerOpen');link.href=x.url;link.hidden=false;$('sharedViewerEmpty').hidden=true;const frame=$('sharedViewerFrame');frame.src=preview(x.url);frame.hidden=false;$('sharedViewerHint').hidden=false;render();};
    row.append(button);
    if(canManageSources()){
+    const rename=document.createElement('button');rename.type='button';rename.textContent='Lấy tên';rename.title='Lấy tên thật từ Google hoặc nhập tên thủ công';
+    rename.onclick=async()=>{
+     if(!canManageSources())return;
+     rename.disabled=true;rename.textContent='Đang lấy...';
+     try{
+      const name=await fetchLinkTitle(x.url);
+      const generic=/^(Tài liệu Google Docs|Tệp Google Drive|Google Docs \\(chưa lấy được tên\\)|Google Drive \\(chưa lấy được tên\\))$/.test(name);
+      const title=generic?prompt('Google chưa trả về tên thật. Nhập tên tài liệu:',x.title):name;
+      if(!title||!title.trim())return;
+      const {error}=await db.from('research_shared_links').update({title:title.trim().slice(0,160)}).eq('id',x.id);
+      if(error)throw error;
+      await load();if(chosen===x.id)$('sharedViewerTitle').textContent=title.trim();
+     }catch(err){alert('Không cập nhật được tên: '+(err.message||err));}
+     finally{rename.disabled=false;rename.textContent='Lấy tên';}
+    };row.append(rename);
     const del=document.createElement('button');del.type='button';del.textContent='Xóa';del.title='Xóa liên kết';
     del.onclick=async()=>{
      if(!canManageSources())return alert('Chỉ quản trị viên được xóa nguồn.');
