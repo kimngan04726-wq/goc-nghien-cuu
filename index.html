@@ -2122,7 +2122,7 @@ researchSetup();
         const editable=document.createElement('textarea');
         editable.value=article;
         editable.rows=7;
-        editable.style.cssText='display:block;width:100%;box-sizing:border-box;min-height:150px;margin:8px 0 12px;padding:12px;border:1px solid #cdbca7;border-radius:9px;font-family:'Times New Roman',serif;font-size:18px;line-height:1.7;color:#153456;overflow-wrap:break-word;word-break:normal;white-space:pre-wrap';
+        editable.style.cssText='display:block;width:100%;box-sizing:border-box;min-height:150px;margin:8px 0 12px;padding:12px;border:1px solid #cdbca7;border-radius:9px;font-family:Times New Roman,serif;font-size:18px;line-height:1.7;color:#153456;overflow-wrap:break-word;word-break:normal;white-space:pre-wrap';
         editable.addEventListener('input',()=>{article=editable.value;content.textContent=article;});
         result.append(editLabel,editable);
         const copy=document.createElement('button');
