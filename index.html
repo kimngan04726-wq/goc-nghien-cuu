@@ -1477,6 +1477,20 @@ body:has(#research:not(.gallery-detail):not(.hidden)) main{height:100dvh!importa
 }
 }
 </style>
+<style id="research-gallery-overlap-and-inset-fix-2026">
+@media(min-width:1001px) and (min-height:650px){
+#research:not(.gallery-detail):not(.hidden){padding-left:12px!important;padding-right:12px!important;box-sizing:border-box!important}
+#research:not(.gallery-detail) #researchGroup1,
+#research:not(.gallery-detail) #researchGroup2{justify-content:flex-start!important;align-items:flex-start!important;gap:12px!important;padding-left:0!important;padding-right:0!important}
+#research:not(.gallery-detail) .grid .card{box-sizing:border-box!important;overflow:hidden!important}
+#research:not(.gallery-detail) .grid .card:before{height:53%!important;flex:0 0 53%!important}
+#research:not(.gallery-detail) .grid .card h3{font-size:clamp(14px,1.9vh,17px)!important;line-height:1.15!important;margin:7px 9px 0!important;padding-left:28px!important;max-height:2.4em!important}
+#research:not(.gallery-detail) .grid .card h3:before{left:0!important;top:0!important;font-size:21px!important}
+#research:not(.gallery-detail) .grid .card:after{position:absolute!important;right:9px!important;bottom:42px!important;left:auto!important;top:auto!important;font-size:12px!important;margin:0!important;white-space:nowrap!important}
+#research:not(.gallery-detail) .grid .card .research-delete-button,
+#research:not(.gallery-detail) .grid .card .research-rename-button{bottom:8px!important;font-size:11px!important;padding:4px 6px!important}
+}
+</style>
 </head>
 <body>
 
