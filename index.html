@@ -1525,6 +1525,31 @@ body.word-editor-open #researchEditor{position:fixed!important;inset:50% auto au
 body.word-editor-open #researchEditor #richEditor{background:white!important;border:1px solid #cbd1d8!important;box-shadow:0 5px 18px #152f4614!important;min-height:240px!important}
 @media(max-width:700px){#research.gallery-detail #researchDetail{padding:12px!important}#researchDetail .research-draft-grid{grid-template-columns:1fr!important}#researchDetail .research-draft-card.research-work-box{min-height:190px!important}body.word-editor-open #researchEditor{width:98vw!important;max-width:98vw!important;padding:12px!important}}
 </style>
+<style id="research-real-square-tiles-2026">
+/* True small square tiles: shrink width AND height, retain existing click targets. */
+@media(min-width:1001px) and (min-height:590px){
+ #research:not(.gallery-detail) #researchGroup1,
+ #research:not(.gallery-detail) #researchGroup2{
+  display:flex!important;flex:1 1 0!important;min-height:0!important;
+  flex-direction:row!important;flex-wrap:nowrap!important;justify-content:center!important;
+  align-items:center!important;gap:clamp(8px,1.2vw,18px)!important;
+  grid-template-columns:none!important;grid-auto-rows:auto!important;
+ }
+ #research:not(.gallery-detail) .grid .card{
+  box-sizing:border-box!important;
+  width:min(calc((100dvh - 250px)/2),calc((100vw - 280px)/4 - 18px))!important;
+  height:min(calc((100dvh - 250px)/2),calc((100vw - 280px)/4 - 18px))!important;
+  aspect-ratio:1/1!important;flex:0 0 auto!important;
+  min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;
+  position:relative!important;overflow:hidden!important;padding:0 0 5px!important;
+ }
+ #research:not(.gallery-detail) .grid .card:before{height:45%!important;flex:0 0 45%!important;min-height:0!important}
+ #research:not(.gallery-detail) .grid .card h3{font-size:clamp(12px,1.6vh,15px)!important;margin:5px 7px 2px!important;line-height:1.12!important}
+ #research:not(.gallery-detail) .grid .card:after{font-size:11px!important;margin:0 7px 0 auto!important}
+ #research:not(.gallery-detail) .grid .card .research-rename-button,
+ #research:not(.gallery-detail) .grid .card .research-delete-button{font-size:10px!important;padding:2px 5px!important;min-height:21px!important;bottom:4px!important}
+}
+</style>
 </head>
 <body>
 
