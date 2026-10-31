@@ -1062,6 +1062,26 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
  .task-row-file-icon{width:27px!important}
 }
 </style>
+
+<style id="task-toolbar-pagination-correction">
+/* Tìm kiếm và lọc nằm cùng dòng tiêu đề, không bị chuyển xuống dòng riêng. */
+#tasks .task-visual-list-header{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;flex-wrap:wrap!important;gap:8px!important;margin:0 0 8px!important}
+#tasks .task-visual-list-header h3{margin:0!important;font-size:clamp(18px,2vw,24px)!important}
+#tasks .task-compact-toolbar{margin:0!important;display:flex!important;align-items:center!important;gap:8px!important}
+#tasks .task-compact-toolbar input,#tasks .task-compact-toolbar select{height:36px!important;min-height:36px!important}
+#tasks .task-visual-layout{margin-top:0!important}
+#tasks .task-compact-pages{display:flex!important;position:relative!important;z-index:2!important;justify-content:center!important;align-items:center!important;min-height:36px!important;margin:7px 0!important;visibility:visible!important}
+#tasks .task-compact-pages button{display:inline-flex!important;align-items:center;justify-content:center;min-width:34px!important;height:34px!important}
+#tasks .task-compact-pages button:disabled{opacity:.4;cursor:not-allowed}
+@media(min-width:1000px) and (min-height:650px){
+ #tasks .task-visual-layout{height:calc(100dvh - 340px)!important;max-height:calc(100dvh - 340px)!important}
+}
+@media(max-width:650px){
+ #tasks .task-visual-list-header{flex-wrap:wrap!important}
+ #tasks .task-compact-toolbar{width:100%!important}
+ #tasks .task-compact-toolbar input{flex:1!important;min-width:0!important}
+}
+</style>
 </head>
 <body>
 
@@ -3205,10 +3225,9 @@ researchSetup();
  const statusSelect=document.getElementById('taskFilterStatus');
  taskToolbar.append(taskSearchInput,statusSelect);
  listHeader.append(taskToolbar);
- taskRoot.before(taskToolbar);
  const taskLayout=document.createElement('div');taskLayout.className='task-visual-layout';taskRoot.before(taskLayout);taskLayout.append(taskRoot);
  const taskDetail=document.createElement('aside');taskDetail.className='task-compact-detail';taskDetail.hidden=true;taskRoot.after(taskDetail);
- const taskPagination=document.createElement('div');taskPagination.className='task-compact-pages';taskDetail.after(taskPagination);
+ const taskPagination=document.createElement('div');taskPagination.className='task-compact-pages';taskLayout.after(taskPagination);
  function renderTaskBoard(){
   updateTaskDashboard();
   const group=document.getElementById('taskFilterGroup').value;
