@@ -13,32 +13,38 @@ function createResearchSubsectionUI({mount,db,pageId,subsections,canEdit=()=>fal
  const save=document.createElement('button');save.type='button';save.textContent='Lưu phiên bản';
  const switcher=document.createElement('select');switcher.setAttribute('aria-label','Chọn bản thảo');
  [['0','Bài tổng hợp'],['1','Bản nháp 1'],['2','Bản nháp 2']].forEach(([value,label])=>{const o=document.createElement('option');o.value=value;o.textContent=label;switcher.append(o)});
- let current=null,version=0,dirty=false,busy=false,loading=false,revision=0,timeout=null,pendingSave=null;
+ let current=null,version=0,dirty=false,busy=false,loading=false,revision=0,timeout=null,pendingSave=null,saveRevision=-1,saveFailed=false;
  function report(message){status.textContent=message;info.textContent=(current?'Tiểu mục: '+current.subId+' · Bản: '+current.slot+' · Phiên bản: '+version+' · ':'')+message}
  function stopTimer(){clearTimeout(timeout);timeout=null}
  function editable(){return !!current&&!editor.readOnly&&canEdit(current.subId,current.slot)}
- function markDirty(){revision++;dirty=true;report('Có thay đổi chưa lưu');stopTimer();if(editable())timeout=setTimeout(()=>{void saveNow()},2000)}
+ function markDirty(){revision++;dirty=true;saveFailed=false;report('Có thay đổi chưa lưu');stopTimer();if(editable())timeout=setTimeout(()=>{void saveNow()},2000)}
  async function saveNow(){
   stopTimer();
-  if(busy)return pendingSave?await pendingSave:!dirty;
+  if(busy){
+   const prior=pendingSave?await pendingSave:false;
+   if(!prior&&dirty&&revision===saveRevision)return false;
+   return dirty?saveNow():prior;
+  }
   if(!editable()||loading||!dirty)return !dirty;
+  if(saveFailed)return false;
   busy=true;save.disabled=true;report('Đang lưu...');
   const snapshot=editor.value,rev=revision,ctx={...current},expected=version;
+  saveRevision=rev;
   pendingSave=(async()=>{try{
    const {data,error}=await db.rpc('save_research_subsection_document',{p_page_id:pageId,p_sub_id:ctx.subId,p_slot:ctx.slot,p_expected_version:expected,p_content:snapshot});
    if(error)throw error;
    const result=Array.isArray(data)?data[0]:data;
    if(!Number.isSafeInteger(Number(result?.saved_version)))throw Error('Server did not return a version');
-   version=Number(result.saved_version);
+   version=Number(result.saved_version);saveFailed=false;
    dirty=revision!==rev;
    report(dirty?'Đã lưu bản trước; còn thay đổi mới':'Đã lưu phiên bản '+version);
    return !dirty;
   }catch(e){
-   dirty=true;report('Chưa lưu được hoặc xung đột phiên bản. Nội dung vẫn ở trình soạn thảo: '+(e.message||e));
+   dirty=true;saveFailed=true;report('Chưa lưu được hoặc xung đột phiên bản. Nội dung vẫn ở trình soạn thảo: '+(e.message||e));
    return false;
   }finally{
    busy=false;save.disabled=!editable();
-   if(dirty&&revision!==rev&&editable())timeout=setTimeout(()=>{void saveNow()},2000);
+   if(dirty&&!saveFailed&&revision!==rev&&editable())timeout=setTimeout(()=>{void saveNow()},2000);
   }})();
   try{return await pendingSave}finally{pendingSave=null}
  }
@@ -50,7 +56,7 @@ function createResearchSubsectionUI({mount,db,pageId,subsections,canEdit=()=>fal
   try{
    const {data,error}=await db.from('research_subsection_documents').select('content,version').eq('page_id',pageId).eq('sub_id',subId).eq('slot',slot).maybeSingle();
    if(error)throw error;
-   current={subId,slot};version=Number(data?.version||0);editor.value=data?.content||'';dirty=false;revision++;
+   current={subId,slot};version=Number(data?.version||0);editor.value=data?.content||'';dirty=false;saveFailed=false;revision++;
    switcher.value=String(slot);editor.readOnly=!canEdit(subId,slot);for(const b of nav.querySelectorAll('button'))b.setAttribute('aria-current',String(b.dataset.subId===subId));
    report(data?'Đã tải phiên bản '+version:'Tiểu mục chưa có nội dung');return true;
   }catch(e){report('Không tải được: '+(e.message||e));switcher.value=String(current?.slot??0);return false}
