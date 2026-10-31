@@ -20,10 +20,15 @@ ALTER TABLE public.mvp_subsections ENABLE ROW LEVEL SECURITY;
 CREATE POLICY mvp_read ON public.mvp_subsections FOR SELECT TO authenticated USING (
  EXISTS (SELECT 1 FROM public.group_profiles p WHERE p.user_id = (SELECT auth.uid()) AND p.role IN ('admin','member'))
 );
--- Chỉ admin được giao người và quản lý cấu hình trực tiếp; nội dung lưu qua RPC.
+-- Admin chi duoc UPDATE truc tiep cot owner_id; content/status/version chi luu qua RPC.
+-- RLS gioi han nguoi dung (Admin); GRANT gioi han cot duoc UPDATE.
 CREATE POLICY mvp_admin_update ON public.mvp_subsections FOR UPDATE TO authenticated
  USING (public.is_group_admin()) WITH CHECK (public.is_group_admin());
-GRANT SELECT, UPDATE ON public.mvp_subsections TO authenticated;
+REVOKE UPDATE ON TABLE public.mvp_subsections FROM PUBLIC, anon, authenticated;
+REVOKE UPDATE (task_key, subsection_key, title, owner_id, status, content, version, edited_by, edited_at)
+ ON TABLE public.mvp_subsections FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON TABLE public.mvp_subsections TO authenticated;
+GRANT UPDATE (owner_id) ON TABLE public.mvp_subsections TO authenticated;
 
 CREATE FUNCTION public.mvp_save_subsection(
  p_task_key smallint, p_subsection_key text, p_expected_version bigint,
