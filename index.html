@@ -1195,6 +1195,13 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
 #tasks .task-compact-admin button{padding:5px 12px!important;font-size:14px!important}
 @media(max-width:900px){#tasks .task-visual-layout.has-selection{grid-template-columns:minmax(0,1fr)!important}#tasks .task-compact-detail:not([hidden]){max-width:100%!important}}
 </style>
+
+<style id="task-review-visible-and-two-tabs">
+#tasks .task-detail-tabs{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#tasks .task-detail-review{display:block!important;margin-top:14px!important;padding-top:13px!important;border-top:1px solid #e6dacf!important}
+#tasks .task-review-notice{font-size:14px!important;color:#6b6f76!important;line-height:1.4!important;margin:0 0 11px!important}
+#tasks .task-detail-review-actions button:disabled{opacity:.48!important;cursor:not-allowed!important;filter:grayscale(.35)!important}
+</style>
 </head>
 <body>
 
@@ -3450,13 +3457,13 @@ researchSetup();
     const d=document.createElement('p');d.textContent='Hạn hoàn thành: '+labelDate(selected.due_date);
     container.append(p,g,d);
    });
-   makeTab('Lịch sử',container=>{
-    const p=document.createElement('p');p.textContent='Lịch sử cập nhật chi tiết chưa được lưu trong hệ thống. Có thể xem lịch sử nội dung ở trang nghiên cứu.';container.append(p);
-   });
    contentTab.click();
-   if(adminEditingEnabled()&&selected.status==='Chờ rà soát'){
+   if(adminEditingEnabled()){
     const review=document.createElement('div');review.className='task-detail-review';
     const heading=document.createElement('h4');heading.textContent='♢  Kiểm duyệt bài — Quản trị viên';review.append(heading);
+    if(selected.status!=='Chờ rà soát'){
+     const note=document.createElement('p');note.className='task-review-notice';note.textContent=selected.status==='Hoàn thành'?'Nhiệm vụ đã được duyệt hoàn thành.':'Chỉ có thể kiểm duyệt khi nhiệm vụ đã xuất Google Docs thành công và chuyển sang Chờ rà soát (90%).';review.append(note);
+    }
     const actions=document.createElement('div');actions.className='task-detail-review-actions';
     const approve=document.createElement('button');approve.className='approve';approve.textContent='✓  Duyệt hoàn thành';
     const reject=document.createElement('button');reject.className='reject';reject.textContent='↶  Yêu cầu chỉnh sửa';
@@ -3467,6 +3474,7 @@ researchSetup();
      if(error)return alert('Không cập nhật được: '+error.message);
      await loadTasks();
     };
+    approve.disabled=selected.status!=='Chờ rà soát';reject.disabled=selected.status!=='Chờ rà soát';
     approve.onclick=()=>change('Hoàn thành');reject.onclick=()=>change('Đang làm');
     actions.append(approve,reject);review.append(actions);taskDetail.append(review);
    }
