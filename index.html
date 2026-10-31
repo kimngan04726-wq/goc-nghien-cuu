@@ -1241,6 +1241,38 @@ main .card{padding:clamp(12px,1.2vw,16px)}
  #tasks .task-compact-detail-head h3{font-size:20px!important}
 }
 </style>
+<style id="site-visible-density-fix">
+/* Stronger compact scale overrides legacy oversized presentation rules. */
+body{font-size:15px!important;line-height:1.4!important}
+header{padding:22px 16px 18px!important}
+header h1{font-size:28px!important;letter-spacing:.02em!important}
+header p{font-size:14px!important;margin:5px 0!important}
+main{margin:14px auto!important}
+main>section{padding:16px!important;margin-bottom:14px!important}
+main section>h2,main section>div>h2{font-size:24px!important;line-height:1.2!important}
+main nav{gap:6px!important;margin-bottom:12px!important}
+main nav button{padding:7px 11px!important;font-size:15px!important;min-height:34px!important}
+#tasks>h2{font-size:25px!important;margin:4px 0 8px!important}
+#tasks #taskDashboard{margin:6px 0 10px!important}
+#tasks #taskStats{gap:8px!important}
+#tasks #taskStats .task-stat{min-height:62px!important;padding:9px 12px 9px 43px!important}
+#tasks #taskStats .task-stat strong{font-size:23px!important;line-height:1.1!important}
+#tasks #taskStats .task-stat span{font-size:13px!important}
+#tasks .task-compact-row{padding:9px 12px!important;min-height:61px!important;gap:9px!important}
+#tasks .task-row-file-icon{width:36px!important;height:36px!important;font-size:21px!important}
+#tasks .task-compact-row h3,#tasks .task-compact-row strong{font-size:17px!important;line-height:1.2!important}
+#tasks .task-compact-detail{padding:14px!important;border-radius:14px!important}
+#tasks .task-compact-detail-head h3{font-size:21px!important}
+#tasks .task-detail-meta{font-size:14px!important;margin:9px 0!important;gap:8px!important}
+#tasks .task-detail-tabs{margin-bottom:10px!important}
+#tasks .task-detail-tabs button{min-height:38px!important;padding:7px 10px!important;font-size:15px!important}
+#tasks .task-info-panel{padding:10px!important}
+#tasks .task-info-header h4{font-size:19px!important}
+#tasks .task-info-cell{padding:9px!important}
+#tasks .task-info-cell strong{font-size:15px!important}
+main input:not([type=checkbox]):not([type=radio]),main select,main button{font-size:15px!important}
+@media(max-width:700px){header{padding:16px 10px!important}header h1{font-size:23px!important}main>section{padding:12px!important}#tasks #taskStats .task-stat{min-height:58px!important}}
+</style>
 </head>
 <body>
 
