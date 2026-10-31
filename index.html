@@ -1343,6 +1343,15 @@ main .card{padding:clamp(12px,1.2vw,16px)}
  #app>nav button.sidebar-person>span:last-child{min-width:0!important;overflow-wrap:anywhere!important}
 }
 </style>
+<style id="task-stats-overlap-fix-2026">
+/* Fix numeric label/icon overlap after compacting statistic cards. */
+@media(min-width:701px){
+ #tasks #taskStats .task-stat{position:relative!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:3px!important;min-height:70px!important;height:70px!important;padding:9px 14px 9px 58px!important;overflow:hidden!important}
+ #tasks #taskStats .task-stat::before{position:absolute!important;left:16px!important;top:50%!important;transform:translateY(-50%)!important;font-size:27px!important;line-height:1!important;width:30px!important;text-align:center!important}
+ #tasks #taskStats .task-stat strong{position:static!important;display:block!important;font-size:24px!important;line-height:1.05!important;margin:0!important}
+ #tasks #taskStats .task-stat span{position:static!important;display:block!important;line-height:1.2!important;margin:0!important}
+}
+</style>
 </head>
 <body>
 
