@@ -19,13 +19,13 @@ function ensure(){
  $('mvpOwner').onchange=assignOwner;
 }
 function renderList(){
- $('mvpList').innerHTML=rows.map(r=>'<button class="mvp-item '+(selected?.task_key===r.task_key?'active':'')+'" data-task="'+r.task_key+'">'+esc(r.task_key+'. '+r.title)+' · '+esc(r.status)+'</button>').join('');
- $('mvpList').querySelectorAll('button').forEach(b=>b.onclick=()=>pick(Number(b.dataset.task)));
+ $('mvpList').innerHTML=rows.map(r=>'<button class="mvp-item '+(selected?.task_key===r.task_key&&selected?.subsection_key===r.subsection_key?'active':'')+'" data-task="'+r.task_key+'" data-sub="'+r.subsection_key+'">'+esc(r.task_key+'.'+r.subsection_key+' '+r.title)+' · '+esc(r.status)+'</button>').join('');
+ $('mvpList').querySelectorAll('button').forEach(b=>b.onclick=()=>pick(Number(b.dataset.task),b.dataset.sub));
 }
-function pick(n){
+function pick(n,sub){
  if(dirty){alert('Đang có thay đổi chưa lưu. Vui lòng chờ lưu xong.');return}
- selected=rows.find(r=>r.task_key===n);if(!selected)return;
- renderList();$('mvpTitle').textContent=selected.title;$('mvpContent').value=selected.content;
+ selected=rows.find(r=>r.task_key===n&&(!sub||r.subsection_key===sub));if(!selected)return;
+ renderList();$('mvpTitle').textContent=titles[selected.task_key-1]+' / '+selected.title;$('mvpContent').value=selected.content;
  $('mvpVersion').textContent='Phiên bản '+selected.version;
  $('mvpStatus').innerHTML=statuses.map(s=>'<option>'+s+'</option>').join('');$('mvpStatus').value=selected.status;
  const can=admin()||selected.owner_id===window.mvpUserId;
@@ -46,7 +46,7 @@ async function save(){
  if(data?.result==='conflict'){
   $('mvpSaveInfo').textContent='Có người vừa sửa';
   const choice=prompt('Có người vừa sửa. Chọn: 1 = Xem bản mới / 2 = Giữ bản của tôi / 3 = Hủy','1');
-  if(choice==='1'){r.version=data.version;r.content=data.content;r.status=data.status;dirty=false;pick(r.task_key)}
+  if(choice==='1'){r.version=data.version;r.content=data.content;r.status=data.status;dirty=false;pick(r.task_key,r.subsection_key)}
   else if(choice==='2'){r.version=data.version;dirty=true;schedule()}
   else $('mvpSaveInfo').textContent='Đã hủy thao tác. Bản của bạn vẫn ở ô soạn thảo';
   return;
@@ -70,19 +70,19 @@ async function refresh(){
  if(error){$('mvpInfo').textContent='Không tải được: '+error.message;return}
  rows=data||[];window.mvpProfiles=profiles||[];window.mvpUserId=await currentUser();
  $('mvpInfo').textContent=rows.length+' tiểu mục · '+rows.filter(r=>r.status==='Đã duyệt').length+' đã duyệt';
- dirty=false;renderList();pick(selected?.task_key||1);refreshBadges();
+ dirty=false;renderList();pick(selected?.task_key||1,selected?.subsection_key);refreshBadges();
 }
 function refreshBadges(){
  document.querySelectorAll('#researchDetail .research-work-box').forEach(box=>{
   const page=typeof editingPageId!=='undefined'&&editingPageId?Number(editingPageId):Number(document.querySelector('#research .card.active')?.dataset?.pageId||0);
-  const r=rows.find(x=>x.task_key===page);if(!r)return;
+  const group=rows.filter(x=>x.task_key===page);if(!group.length)return;
   let b=box.querySelector('.mvpWorkBadge');if(!b){b=document.createElement('div');b.className='mvpWorkBadge';box.prepend(b)}
-  b.textContent='Tiến độ '+(r.status==='Đã duyệt'?'100':'0')+'% · '+r.status;
+  b.textContent='Tiến độ '+Math.round(100*group.filter(x=>x.status==='Đã duyệt').length/group.length)+'% · '+group.filter(x=>x.status==='Đã duyệt').length+'/'+group.length+' đã duyệt';
  });
  document.querySelectorAll('#research .card').forEach((card,i)=>{
-  const r=rows.find(x=>x.task_key===i+1);if(!r)return;
+  const group=rows.filter(x=>x.task_key===i+1);if(!group.length)return;
   let badge=card.querySelector('.mvpBadge');if(!badge){badge=document.createElement('div');badge.className='mvpBadge';card.append(badge)}
-  badge.textContent=(r.status==='Đã duyệt'?'100':'0')+'% · '+r.status;
+  badge.textContent=Math.round(100*group.filter(x=>x.status==='Đã duyệt').length/group.length)+'% · '+group.filter(x=>x.status==='Đã duyệt').length+'/'+group.length+' đã duyệt';
   if(!card.querySelector('.mvpOpen')){const b=document.createElement('button');b.className='mvpOpen';b.textContent='Mở soạn thảo';b.onclick=e=>{e.stopPropagation();open(i+1)};card.append(b)}
  });
 }
