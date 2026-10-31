@@ -1999,14 +1999,14 @@ researchSetup();
     return node.textContent||'';
   };
   const historyPreview=raw=>savedText(raw).replace(/\s+/g,' ').trim().slice(0,110)||'Không có nội dung xem trước';
-  const historyToolbar=(heading,subtitle,onSort)=>{
+  function historyToolbar(heading,subtitle,onSort){
     const bar=document.createElement('div');bar.className='research-history-toolbar';
     const info=document.createElement('div');const title=document.createElement('h3');title.textContent=heading;
     const hint=document.createElement('p');hint.textContent=subtitle;info.append(title,hint);
     const sort=document.createElement('select');sort.className='research-history-sort';sort.setAttribute('aria-label','Sắp xếp lịch sử');
     [['new','↓ Mới nhất trước'],['old','↑ Cũ nhất trước']].forEach(([value,label])=>{const opt=document.createElement('option');opt.value=value;opt.textContent=label;sort.append(opt);});
     sort.onchange=()=>onSort(sort.value);bar.append(info,sort);return bar;
-  };
+  }
   const showSaved=raw=>{
     const marker='<!--RICH_RESEARCH_V1-->';
     body.className='detail-content'+(raw.startsWith(marker)?' rich-format':'');
