@@ -2076,9 +2076,10 @@ researchSetup();
       return;
     }
 
+    const savedPageId=editingPageId;
     cancelResearch();
     await loadResearch();
-    await window.syncResearchWritingProgress?.(editingPageId);
+    await window.syncResearchWritingProgress?.(savedPageId);
     if (!silentDone) alert("Đã lưu và trở về chế độ xem!");
   };
 
