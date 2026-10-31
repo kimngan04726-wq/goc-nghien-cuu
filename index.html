@@ -1,6 +1,7 @@
 
 <!DOCTYPE html>
 <html lang="vi">
+ 
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1413,6 +1414,23 @@ main .card{padding:clamp(12px,1.2vw,16px)}
  #library #libraryList .reference-card{padding:9px!important}
 }
 </style>
+ 
+<style>
+/* Căn thẳng các dòng tên tài liệu */
+#dashSharedSources .shared-link-entry > button:first-child {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 9px !important;
+  text-align: left !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+#dashSharedSources .shared-link-entry > button:first-child svg {
+  flex-shrink: 0 !important;
+}
+</style>
+
 </head>
 <body>
 
