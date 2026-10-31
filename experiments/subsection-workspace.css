@@ -14,3 +14,10 @@
 .subsection-workspace .sw-side p{overflow-wrap:anywhere}
 @media(max-width:900px){.subsection-workspace{grid-template-columns:minmax(150px,210px) minmax(0,1fr)}.subsection-workspace .sw-side{grid-column:1/-1}}
 @media(max-width:620px){.subsection-workspace{grid-template-columns:minmax(0,1fr)}.subsection-workspace .sw-side{grid-column:auto}.subsection-workspace .sw-nav{max-height:180px;overflow:auto}.subsection-workspace .sw-main textarea{min-height:42vh}}
+
+.subsection-workspace .sw-conflict{border:1px solid #d69c53;border-radius:10px;padding:14px;background:#fff9ed}
+.subsection-workspace .sw-conflict[hidden],.subsection-workspace .sw-conflict-compare[hidden]{display:none}
+.subsection-workspace .sw-conflict-compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.subsection-workspace .sw-conflict-compare section{min-width:0}
+.subsection-workspace .sw-conflict-compare pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:340px;overflow:auto;background:#fff;padding:12px;border:1px solid #d9e0e8;border-radius:8px;font:inherit}
+@media(max-width:620px){.subsection-workspace .sw-conflict-compare{grid-template-columns:1fr}}
