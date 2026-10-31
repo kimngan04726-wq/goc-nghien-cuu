@@ -3,7 +3,7 @@
 'use strict';
 const titles=['Lý do chọn đề tài','Mục đích, mục tiêu và câu hỏi nghiên cứu','Cơ sở lý thuyết','Mô hình nghiên cứu và giả thuyết','Các biến nghiên cứu','Thang đo và phương án đo lường','Phương pháp nghiên cứu'];
 const statuses=['Chưa viết','Đang viết','Chờ duyệt','Đã duyệt'];
-let rows=[],selected=null,dirty=false,timer=null,loading=false,conflictOpen=false,requestId=0;
+let rows=[],selected=null,dirty=false,timer=null,loading=false,conflictOpen=false,initializing=false;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const client=()=>typeof db!=='undefined'?db:null;
@@ -106,6 +106,6 @@ function refreshBadges(){
 }
 async function open(n){ensure();if(pending()){alert('Có thay đổi chưa lưu. Vui lòng xử lý trước khi mở lại.');return}$('mvpA').hidden=false;$('mvpInfo').textContent='Đang tải...';selected=null;await refresh();if(n&&rows.length)pick(n)}
 window.openMvpResearchA=open;
-const boot=()=>{ensure();setInterval(()=>{if($('app')&&!$('app').classList.contains('hidden')&&rows.length)refreshBadges()},3000)};
+const boot=()=>{ensure();setInterval(async()=>{if(!$('app')||$('app').classList.contains('hidden'))return;if(rows.length){refreshBadges();return}if(initializing)return;initializing=true;try{await refresh()}finally{initializing=false}},3000)};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
