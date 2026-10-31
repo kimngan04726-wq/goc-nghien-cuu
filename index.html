@@ -1356,7 +1356,7 @@ function researchSetup() {
       placeholder="Viết nội dung nghiên cứu tại đây...">
     </textarea>
     <div class="research-actions">
-      <button onclick="saveResearch()">Lưu & xong</button>
+      <button type="button">Xong</button>
       <button onclick="cancelResearch()">Hủy</button>
     </div>
     <p id="researchMessage"></p>
@@ -3316,7 +3316,7 @@ body.word-editor-open #researchEditor #researchMessage{flex:none;margin:0!import
  cancelResearch=function(){setWordEditorExpanded(false);return priorCancel()};
  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.body.classList.contains('word-editor-open')){event.preventDefault();setWordEditorExpanded(false)}});
 })();
-</script><script>(function(){const a=document.querySelector('#researchEditor .research-actions');if(!a)return;const b=a.querySelectorAll('button');if(b.length<2)return;b[0].textContent='Xong';b[0].setAttribute('title','Hoàn tất chỉnh sửa');b[0].onclick=async function(event){event.preventDefault();if(b[0].disabled)return;b[0].disabled=true;try{await saveResearch(true)}finally{b[0].disabled=false}};b[1].remove();})();</script><style id="compact-docs-toolbar-v4">
+</script><script>(function(){const a=document.querySelector('#researchEditor .research-actions');if(!a)return;const b=a.querySelectorAll('button');if(b.length<2)return;b[0].removeAttribute('onclick');b[0].textContent='Xong';b[0].setAttribute('title','Hoàn tất chỉnh sửa');b[0].onclick=async function(event){event.preventDefault();if(b[0].disabled)return;b[0].disabled=true;try{await saveResearch(true)}finally{b[0].disabled=false}};b[1].remove();})();</script><style id="compact-docs-toolbar-v4">
 body.word-editor-open #researchEditor>h2{display:none!important}
 body.word-editor-open #researchEditor{padding:5px 8px!important}
 body.word-editor-open #researchEditor .research-actions{top:7px!important;right:10px!important}
