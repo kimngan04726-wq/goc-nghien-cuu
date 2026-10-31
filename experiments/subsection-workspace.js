@@ -17,7 +17,12 @@ function createResearchSubsectionUI({mount,db,pageId,subsections,canEdit=()=>fal
  const copy=document.createElement('button');copy.type='button';copy.textContent='Sao chép nội dung chưa lưu';
  const inspect=document.createElement('button');inspect.type='button';inspect.textContent='Xem phiên bản trên máy chủ';
  const reload=document.createElement('button');reload.type='button';reload.textContent='Tải phiên bản mới (bỏ nội dung chưa lưu)';
- const remote=document.createElement('pre');remote.hidden=true;remote.style.whiteSpace='pre-wrap';remote.style.overflowWrap='anywhere';
+ const remote=document.createElement('div');remote.hidden=true;remote.className='sw-conflict-compare';
+ const localPanel=document.createElement('section');const localHeading=document.createElement('h4');localHeading.textContent='Nội dung chưa lưu trên thiết bị';
+ const localText=document.createElement('pre');localPanel.append(localHeading,localText);
+ const serverPanel=document.createElement('section');const serverHeading=document.createElement('h4');serverHeading.textContent='Nội dung mới nhất trên máy chủ';
+ const serverText=document.createElement('pre');serverPanel.append(serverHeading,serverText);
+ remote.append(localPanel,serverPanel);
  const conflictStatus=document.createElement('p');conflictStatus.setAttribute('role','status');
  conflict.append(conflictTitle,conflictHelp,copy,inspect,reload,remote,conflictStatus);
  const switcher=document.createElement('select');switcher.setAttribute('aria-label','Chọn bản thảo');
@@ -87,7 +92,9 @@ function createResearchSubsectionUI({mount,db,pageId,subsections,canEdit=()=>fal
     .eq('page_id',pageId).eq('sub_id',ctx.subId).eq('slot',ctx.slot).maybeSingle();
    if(error)throw error;
    if(!current||current.subId!==ctx.subId||current.slot!==ctx.slot)return;
-   remote.textContent='Phiên bản trên máy chủ: '+Number(data?.version||0)+'\\n\\n'+(data?.content||'(Trống)');
+   localText.textContent=editor.value||'(Trống)';
+   serverHeading.textContent='Nội dung máy chủ · phiên bản '+Number(data?.version||0);
+   serverText.textContent=data?.content||'(Trống)';
    remote.hidden=false;conflictStatus.textContent='Nội dung máy chủ chỉ để xem, chưa thay thế bản của bạn.';
   }catch(e){conflictStatus.textContent='Không tải được phiên bản máy chủ: '+(e.message||e)}
  };
