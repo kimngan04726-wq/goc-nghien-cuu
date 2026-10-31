@@ -11,17 +11,12 @@ create index if not exists research_draft_backups_idx on public.research_draft_b
 alter table public.research_draft_backups enable row level security;
 drop policy if exists draft_backup_read on public.research_draft_backups;
 create policy draft_backup_read on public.research_draft_backups for select to authenticated using (
- exists(select 1 from public.research_page_assignments a where a.page_id=research_draft_backups.page_id and a.user_id=auth.uid())
- or exists(select 1 from public.group_profiles p where p.user_id=auth.uid() and p.role='admin')
+ exists(select 1 from public.group_profiles p where p.user_id=auth.uid() and p.role='admin')
 );
 drop policy if exists draft_backup_insert on public.research_draft_backups;
 create policy draft_backup_insert on public.research_draft_backups for insert to authenticated with check (
- created_by=auth.uid() and (
- exists(select 1 from public.research_page_assignments a where a.page_id=research_draft_backups.page_id and a.user_id=auth.uid())
- or exists(select 1 from public.group_profiles p where p.user_id=auth.uid() and p.role='admin')
- ));
+ created_by=auth.uid() and exists(select 1 from public.group_profiles p where p.user_id=auth.uid() and p.role='admin'));
 drop policy if exists draft_backup_delete on public.research_draft_backups;
 create policy draft_backup_delete on public.research_draft_backups for delete to authenticated using (
  exists(select 1 from public.group_profiles p where p.user_id=auth.uid() and p.role='admin')
- or created_by=auth.uid()
 );
