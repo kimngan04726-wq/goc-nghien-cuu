@@ -1,0 +1,21 @@
+-- REVIEW ONLY. Do not execute until live RLS policies and schema are audited.
+-- Explicit permission helper for document slots.
+-- Slot 0 (consolidated article): admin only.
+-- Slot 1/2: admin or member assigned to the page AND matching slot.
+-- WARNING: research_page_assignments currently exposes page_id only in the app.
+-- Member-to-slot mapping is NOT verified; no member write policies are granted here.
+-- This script is documentation and should not be run as a migration.
+
+-- Production rollout must answer:
+-- 1. Does research_page_assignments include slot/owner data?
+-- 2. Can group_profiles RLS be queried safely inside policies?
+-- 3. Are all authenticated users allowed to read drafts, or only assigned members?
+-- 4. Who can restore history and approve the consolidated article?
+-- 5. Should delete be disallowed even for admins (recommended for history)?
+
+-- Recommended policy matrix (to implement after audit):
+-- guest: no read/write of drafts or history
+-- assigned member: read own page drafts; write own slot; read shared consolidated article
+-- admin: read all; write consolidated article; explicit override for drafts
+-- history: append-only on successful version-checked save
+-- stale version: reject without altering document or history
