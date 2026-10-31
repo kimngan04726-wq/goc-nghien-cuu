@@ -3035,11 +3035,11 @@ researchSetup();
   const today=localDateISO(),overdue=all.filter(t=>t.due_date&&t.due_date<today&&t.status!=='Hoàn thành').length;
   const pct=all.length?Math.round(all.reduce((total,t)=>total+taskProgressWeight(t),0)/all.length):0;
   const stats=document.getElementById('taskStats');stats.replaceChildren();
-  [['Tổng công việc',all.length],['Hoàn thành',done],['Đang thực hiện',all.filter(t=>t.status==='Đang làm'||t.status==='Chờ rà soát').length],['Quá hạn',overdue],['Tiến độ',pct+'%']].forEach(([label,value])=>{
+  [['Chưa làm',all.filter(t=>t.status==='Chưa làm').length],['Đang làm',all.filter(t=>t.status==='Đang làm').length],['Chờ rà soát',all.filter(t=>t.status==='Chờ rà soát').length],['Hoàn thành',done]].forEach(([label,value])=>{
    const box=document.createElement('div');box.className='task-stat';
    const num=document.createElement('strong');num.textContent=value;
    const caption=document.createElement('span');caption.textContent=label;
-   box.append(num,caption);stats.append(box);
+   box.append(num,caption);box.setAttribute('role','button');box.tabIndex=0;box.title='Lọc theo '+label;box.onclick=()=>{const filter=document.getElementById('taskFilterStatus');filter.value=filter.value===label?'all':label;taskPage=1;renderTaskBoard();};box.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();box.click();}};stats.append(box);
   });
   document.getElementById('taskProgressFill').style.width=pct+'%';
   let explanation=document.getElementById('taskProgressExplanation');
