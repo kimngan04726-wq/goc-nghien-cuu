@@ -886,6 +886,48 @@ body.word-editor-open #researchEditor .research-actions{top:8px!important;right:
 @media(min-width:950px){#taskList.task-compact-root.with-detail{width:57%;display:inline-flex!important;vertical-align:top}.task-compact-detail:not([hidden]){display:inline-block;width:calc(43% - 20px);margin:0 0 0 20px;vertical-align:top;box-sizing:border-box}}
 @media(max-width:650px){#taskStats{grid-template-columns:repeat(2,minmax(0,1fr))!important}.task-compact-row{grid-template-columns:minmax(0,1fr) 95px 42px;gap:5px;padding:11px}.task-compact-row>span:last-child{display:none}.task-compact-label strong{font-size:16px}.task-compact-label small,.task-compact-status{font-size:12px}}
 </style>
+
+<style id="task-screenshot-fidelity">
+#tasks,#tasks button,#tasks input,#tasks select{font-family:"Times New Roman",Times,serif!important}
+#taskStats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:22px!important}
+#taskStats .task-stat{display:flex!important;flex-direction:row;align-items:center;justify-content:center;gap:18px;min-height:110px!important;background:#fffaf5!important;border:1px solid #e5d9ce!important;box-shadow:0 2px 5px #132c4009;position:relative}
+#taskStats .task-stat:before{font-family:Arial,sans-serif;font-size:43px;font-weight:400;color:#ae8649}
+#taskStats .task-stat:nth-child(1):before{content:'▤'}#taskStats .task-stat:nth-child(2):before{content:'◷'}#taskStats .task-stat:nth-child(3):before{content:'⚲';color:#70a7c7}#taskStats .task-stat:nth-child(4):before{content:'✓';color:#4b9a72}
+#taskStats .task-stat strong{font-size:40px!important;color:#0c3155!important;line-height:1}#taskStats .task-stat span{font-size:19px!important;color:#0c3155!important}
+#taskStats .task-stat:hover{border-color:#a57a48!important}
+#taskDashboard .task-progress-track{height:22px!important;border-radius:30px!important;background:#ece7e2!important;overflow:hidden}
+#taskProgressFill{height:100%;border-radius:30px;background:#0d3456!important}
+.task-compact-toolbar{margin:18px 0!important}
+.task-compact-toolbar input{font-size:18px!important;background:#fffaf7!important;min-height:52px}
+#taskList.task-compact-root{gap:10px!important}
+.task-compact-row{grid-template-columns:56px minmax(0,1fr) 136px 58px 18px!important;min-height:92px!important;padding:12px 18px!important;background:#fffcf9!important;border-radius:16px!important;box-shadow:0 1px 4px #142c4010}
+.task-row-file-icon{display:grid;place-items:center;width:52px;height:52px;background:#faf6f0;border-radius:13px;font:32px Arial,sans-serif;color:#143d60}
+.task-compact-row.selected{border-color:#cda46f!important;background:#fff9f0!important}
+.task-compact-label strong{font-size:22px!important}.task-compact-label small{font-size:17px!important}
+.task-compact-status{font-size:17px!important;font-weight:700!important;padding:8px 12px!important}
+.task-compact-row>b{font-size:21px}
+.task-compact-detail{background:#fffcf8!important;border-radius:22px!important;box-shadow:0 3px 14px #102c4010;padding:25px!important}
+.task-compact-detail-head h3{font-size:27px!important}
+.task-detail-meta{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin:24px 0;font-size:17px}
+.task-detail-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-bottom:18px}
+.task-detail-tabs button{border:1px solid #ded6cc;background:#fffaf6;padding:13px 8px;font-size:18px;font-weight:700}
+.task-detail-tabs button.active{background:#10395d;color:white}
+.task-detail-body{min-height:170px}
+.task-draft-preview{border:1px solid #e4dacf;border-radius:11px;margin-bottom:0;background:#fff}
+.task-draft-preview+ .task-draft-preview{border-top:0}
+.task-draft-preview summary{padding:15px 17px;cursor:pointer;font-size:19px;font-weight:bold;list-style:none}
+.task-draft-preview summary:after{content:'⌄';float:right;font-size:22px}
+.task-draft-preview[open] summary:after{content:'⌃'}
+.task-draft-text{padding:12px 18px;max-height:180px;overflow:auto;white-space:pre-wrap;font-size:17px}
+.task-detail-review{border-top:1px solid #e6dacf;margin-top:20px;padding-top:15px}
+.task-detail-review h4{font-size:20px;margin:5px 0 20px}
+.task-detail-review-actions{display:flex;gap:12px}.task-detail-review-actions button{flex:1;padding:15px 8px!important;font-weight:bold;font-size:18px!important}
+.task-detail-review-actions .approve{background:#21663e!important;color:#fff!important}.task-detail-review-actions .reject{background:#f9f6f2!important;border:1px solid #193d5f!important}
+.task-compact-pages button{min-width:44px;min-height:44px;font-size:18px}
+@media(min-width:950px){#taskList.task-compact-root.with-detail{width:57%!important}.task-compact-detail:not([hidden]){width:calc(43% - 20px)!important}}
+@media(max-width:850px){#taskStats{gap:8px!important}#taskStats .task-stat{gap:7px;min-height:90px!important}#taskStats .task-stat:before{font-size:27px}#taskStats .task-stat strong{font-size:28px!important}#taskStats .task-stat span{font-size:14px!important}.task-compact-row{grid-template-columns:35px minmax(0,1fr) 95px 42px!important;gap:6px!important}.task-row-file-icon{width:34px;height:34px;font-size:22px}.task-compact-row>span:last-child{display:none}.task-compact-label strong{font-size:17px!important}.task-compact-label small{font-size:13px!important}.task-compact-status{font-size:12px!important}}
+@media(max-width:500px){#taskStats{grid-template-columns:repeat(2,minmax(0,1fr))!important}.task-detail-review-actions{flex-direction:column}}
+</style>
 </head>
 <body>
 
@@ -3051,7 +3093,7 @@ researchSetup();
   renderTaskBoard();
  }
  let taskSearch='',taskPage=1,taskSelectedId=null;
- const taskPageSize=7;
+ const taskPageSize=5;
  const taskRoot=document.getElementById('taskList');
  taskRoot.classList.add('task-compact-root');
  const taskToolbar=document.createElement('div');taskToolbar.className='task-compact-toolbar';
@@ -3075,19 +3117,21 @@ researchSetup();
   document.getElementById('taskFilterGroup').options[1].textContent='Nhóm 1 ('+cachedKanbanTasks.filter(t=>String(t.group_number||1)==='1').length+')';
   document.getElementById('taskFilterGroup').options[2].textContent='Nhóm 2 ('+cachedKanbanTasks.filter(t=>String(t.group_number||1)==='2').length+')';
   taskRoot.replaceChildren();taskPagination.replaceChildren();
+  taskRoot.classList.toggle('with-detail',taskSelectedId!==null);
   const pages=Math.max(1,Math.ceil(data.length/taskPageSize));taskPage=Math.min(taskPage,pages);
   const pageData=data.slice((taskPage-1)*taskPageSize,taskPage*taskPageSize);
   pageData.forEach(task=>{
    const row=document.createElement('button');row.type='button';row.className='task-compact-row';
    if(String(task.id)===String(taskSelectedId))row.classList.add('selected');
    const label=document.createElement('span');label.className='task-compact-label';
+   const fileIcon=document.createElement('span');fileIcon.className='task-row-file-icon';fileIcon.textContent='▤';
    const name=document.createElement('strong');name.textContent=task.title;
    const meta=document.createElement('small');meta.textContent='Nhóm '+(task.group_number||1)+' · Hạn: '+labelDate(task.due_date);
    label.append(name,meta);
    const status=document.createElement('span');status.className='task-compact-status';status.dataset.status=task.status;status.textContent=task.status;
    const pct=document.createElement('b');pct.textContent=taskProgressWeight(task)+'%';
    const arrow=document.createElement('span');arrow.textContent='›';arrow.style.fontSize='24px';
-   row.append(label,status,pct,arrow);
+   row.append(fileIcon,label,status,pct,arrow);
    row.onclick=()=>{taskSelectedId=task.id;renderTaskBoard();};
    taskRoot.append(row);
   });
@@ -3103,12 +3147,73 @@ researchSetup();
    const title=document.createElement('h3');title.textContent=selected.title;
    const close=document.createElement('button');close.type='button';close.textContent='✕';close.setAttribute('aria-label','Đóng chi tiết');close.onclick=()=>{taskSelectedId=null;renderTaskBoard();};
    head.append(title,close);
-   const info=document.createElement('p');info.textContent='Nhóm '+(selected.group_number||1)+' · Hạn: '+labelDate(selected.due_date);
-   const state=document.createElement('p');state.textContent='Trạng thái: '+selected.status+' · Tiến độ: '+taskProgressWeight(selected)+'%';
-   taskDetail.append(head,info,state);
+   const info=document.createElement('div');info.className='task-detail-meta';
+   const groupInfo=document.createElement('span');groupInfo.textContent='♧ Nhóm '+(selected.group_number||1);
+   const dueInfo=document.createElement('span');dueInfo.textContent='▦ Hạn: '+labelDate(selected.due_date);
+   const badge=document.createElement('span');badge.className='task-compact-status';badge.dataset.status=selected.status;badge.textContent=selected.status+' · '+taskProgressWeight(selected)+'%';
+   info.append(groupInfo,dueInfo,badge);taskDetail.append(info);
+   const tabs=document.createElement('div');tabs.className='task-detail-tabs';
+   const body=document.createElement('div');body.className='task-detail-body';
+   taskDetail.append(tabs,body);
    const page=researchPageCache.find(p=>p.title===selected.title);
-   if(page){
-    const open=document.createElement('button');open.type='button';open.textContent='📖 Mở bài nghiên cứu';open.onclick=()=>{showPage('research');document.getElementById('researchContent'+page.id)?.closest('.card')?.querySelector('button')?.click();};taskDetail.append(open);
+   const makeTab=(name,render)=>{
+    const button=document.createElement('button');button.type='button';button.textContent=name;
+    button.onclick=()=>{tabs.querySelectorAll('button').forEach(b=>b.classList.remove('active'));button.classList.add('active');body.replaceChildren();render(body);};
+    tabs.append(button);return button;
+   };
+   const contentTab=makeTab('Nội dung',container=>{
+    if(!page){container.textContent='Chưa tìm thấy trang nội dung tương ứng.';return;}
+    const sections=[['Bản nháp 1',null],['Bản nháp 2',null],['Bài tổng hợp',page.content]];
+    sections.forEach(([name,value],index)=>{
+     const details=document.createElement('details');details.className='task-draft-preview';
+     const summary=document.createElement('summary');summary.textContent='▤  '+name;
+     const preview=document.createElement('div');preview.className='task-draft-text';
+     if(index===2){
+      const plain=document.createElement('div');plain.innerHTML=String(value||'').replace(/^<!--RICH_RESEARCH_V1-->/,'');
+      preview.textContent=plain.textContent?.trim()||'Chưa có nội dung.';
+     }else{
+      preview.textContent='Đang tải bản nháp...';
+      details.addEventListener('toggle',async()=>{
+       if(!details.open||details.dataset.loaded)return;
+       details.dataset.loaded='1';
+       try{
+        const {data,error}=await db.from('research_drafts').select('*').eq('page_id',page.id);
+        if(error)throw error;
+        const draft=(data||[]).find(d=>Number(d.draft_number||d.draft_index||d.slot||0)===index+1);
+        const raw=String(draft?.content||'');
+        const node=document.createElement('div');node.innerHTML=raw.replace(/^<!--RICH_RESEARCH_V1-->/,'');
+        preview.textContent=node.textContent?.trim()||'Chưa có nội dung.';
+       }catch(e){preview.textContent='Không tải được bản nháp. Hãy mở trang nghiên cứu để xem.';}
+      });
+     }
+     details.append(summary,preview);container.append(details);
+    });
+   });
+   makeTab('Thông tin',container=>{
+    const p=document.createElement('p');p.textContent='Nhiệm vụ: '+selected.title;
+    const g=document.createElement('p');g.textContent='Nhóm phụ trách: Nhóm '+(selected.group_number||1);
+    const d=document.createElement('p');d.textContent='Hạn hoàn thành: '+labelDate(selected.due_date);
+    container.append(p,g,d);
+   });
+   makeTab('Lịch sử',container=>{
+    const p=document.createElement('p');p.textContent='Lịch sử cập nhật chi tiết chưa được lưu trong hệ thống. Có thể xem lịch sử nội dung ở trang nghiên cứu.';container.append(p);
+   });
+   contentTab.click();
+   if(adminEditingEnabled()&&selected.status==='Chờ rà soát'){
+    const review=document.createElement('div');review.className='task-detail-review';
+    const heading=document.createElement('h4');heading.textContent='♢  Kiểm duyệt bài — Quản trị viên';review.append(heading);
+    const actions=document.createElement('div');actions.className='task-detail-review-actions';
+    const approve=document.createElement('button');approve.className='approve';approve.textContent='✓  Duyệt hoàn thành';
+    const reject=document.createElement('button');reject.className='reject';reject.textContent='↶  Yêu cầu chỉnh sửa';
+    const change=async(status)=>{
+     if(!adminEditingEnabled()||selected.status!=='Chờ rà soát')return;
+     if(!confirm(status==='Hoàn thành'?'Duyệt nhiệm vụ này hoàn thành?':'Chuyển nhiệm vụ về Đang làm để chỉnh sửa?'))return;
+     const {error}=await db.rpc('set_group_task_status',{p_task_id:selected.id,p_status:status});
+     if(error)return alert('Không cập nhật được: '+error.message);
+     await loadTasks();
+    };
+    approve.onclick=()=>change('Hoàn thành');reject.onclick=()=>change('Đang làm');
+    actions.append(approve,reject);review.append(actions);taskDetail.append(review);
    }
    if(adminEditingEnabled()){
     const controls=document.createElement('div');controls.className='task-compact-admin';
