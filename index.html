@@ -2078,6 +2078,7 @@ researchSetup();
 
     cancelResearch();
     await loadResearch();
+    await window.syncResearchWritingProgress?.(editingPageId);
     if (!silentDone) alert("Đã lưu và trở về chế độ xem!");
   };
 
@@ -2189,6 +2190,27 @@ researchSetup();
     if(error)throw error;
     if(data.length!==1)return null; // Không cập nhật nhầm khi tiêu đề trùng.
     return data[0];
+  };
+  // Tính 0/50 theo ba ô văn bản, chỉ thay đổi sau khi lưu thành công.
+  window.syncResearchWritingProgress=async(pageId)=>{
+    const page=researchPageCache.find(p=>Number(p.id)===Number(pageId));
+    if(!page)return;
+    const {data:tasks,error:taskError}=await db.from('group_tasks').select('id,status').eq('title',page.title);
+    if(taskError||tasks?.length!==1)return;
+    const {data:drafts,error:draftError}=await db.from('research_drafts').select('content').eq('page_id',pageId);
+    if(draftError)return;
+    const hasText=value=>{
+      const node=document.createElement('div');
+      node.innerHTML=String(value||'').replace(/^<!--RICH_RESEARCH_V1-->/,'');
+      return (node.textContent||'').replace(/\u00a0/g,' ').trim().length>0;
+    };
+    const current=researchPageCache.find(p=>Number(p.id)===Number(pageId));
+    const active=hasText(current?.content)||(drafts||[]).some(d=>hasText(d.content));
+    const status=active?'Đang làm':'Chưa làm';
+    if(tasks[0].status===status)return;
+    const {error}=await db.rpc('set_group_task_status',{p_task_id:tasks[0].id,p_status:status});
+    if(error)console.warn('Chưa đồng bộ được trạng thái từ bài viết:',error.message);
+    else if(typeof loadTasks==='function')await loadTasks();
   };
   const updateReviewUI=async()=>{
     reviewBox.hidden=true;
@@ -2670,6 +2692,7 @@ researchSetup();
     activeDraft=null;
     cancelResearch();
     await loadDrafts();
+    await window.syncResearchWritingProgress?.(pageId);
     if(!silentDone)alert('Đã cập nhật Bản nháp '+slot+'. Bài tổng hợp không thay đổi.');
   };
   cancelResearch=function(){
