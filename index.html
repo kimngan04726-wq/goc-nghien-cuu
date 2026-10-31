@@ -1491,6 +1491,19 @@ body:has(#research:not(.gallery-detail):not(.hidden)) main{height:100dvh!importa
 #research:not(.gallery-detail) .grid .card .research-rename-button{bottom:8px!important;font-size:11px!important;padding:4px 6px!important}
 }
 </style>
+<style id="research-scroll-hide-open-label-2026">
+/* Only requested changes: allow page scrolling; remove the decorative open label. */
+@media(min-width:1001px) and (min-height:650px){
+html:has(#research:not(.gallery-detail):not(.hidden)),
+body:has(#research:not(.gallery-detail):not(.hidden)){height:auto!important;overflow-y:auto!important}
+body:has(#research:not(.gallery-detail):not(.hidden)) main{height:auto!important;max-height:none!important;min-height:100dvh!important;overflow:visible!important}
+#app:has(#research:not(.gallery-detail):not(.hidden)){height:auto!important;min-height:0!important;overflow:visible!important}
+#research:not(.gallery-detail):not(.hidden){height:auto!important;max-height:none!important;overflow:visible!important;flex:0 0 auto!important}
+#research:not(.gallery-detail) #researchGroup1,
+#research:not(.gallery-detail) #researchGroup2{flex:0 0 auto!important;overflow:visible!important}
+}
+#research:not(.gallery-detail) .grid .card:after{content:none!important;display:none!important}
+</style>
 </head>
 <body>
 
