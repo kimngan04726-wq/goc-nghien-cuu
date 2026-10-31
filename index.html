@@ -1482,6 +1482,28 @@ main .card{padding:clamp(12px,1.2vw,16px)}
  #research:not(.gallery-detail) .grid .card:before{height:48%!important;flex:0 0 48%!important}
 }
 </style>
+<style id="research-no-scroll-final-2026">
+/* Fit all seven tiles in one desktop viewport, without vertical page scrolling. */
+@media(min-width:1001px) and (min-height:590px){
+ html:has(#research:not(.gallery-detail):not(.hidden)),body:has(#research:not(.gallery-detail):not(.hidden)){overflow-y:hidden!important}
+ body:has(#research:not(.gallery-detail):not(.hidden)) main{height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;padding-top:5px!important;padding-bottom:5px!important;display:flex!important;flex-direction:column!important}
+ #app:has(#research:not(.gallery-detail):not(.hidden)){height:100%!important;min-height:0!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
+ #app:has(#research:not(.gallery-detail):not(.hidden))>section:first-child{flex:0 0 auto!important;min-height:0!important;padding:4px 9px!important;margin-bottom:3px!important}
+ #research:not(.gallery-detail):not(.hidden){flex:1 1 0!important;min-height:0!important;height:auto!important;max-height:none!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;padding-top:3px!important;padding-bottom:3px!important}
+ #research:not(.gallery-detail)>h2,#research:not(.gallery-detail)>h3,#research:not(.gallery-detail)>p:first-of-type,#research:not(.gallery-detail) #researchAddControls{flex:0 0 auto!important}
+ #research:not(.gallery-detail)>h2{font-size:20px!important;margin:0 0 3px!important}
+ #research:not(.gallery-detail)>h3{font-size:18px!important;margin:3px 0 4px!important}
+ #research:not(.gallery-detail)>p:first-of-type{padding:5px 9px!important;margin:0 0 4px!important}
+ #research:not(.gallery-detail) #researchAddControls{margin:0 0 3px!important}
+ #research:not(.gallery-detail) #researchGroup1,#research:not(.gallery-detail) #researchGroup2{flex:1 1 0!important;min-height:0!important;display:grid!important;grid-auto-rows:minmax(0,1fr)!important;align-items:stretch!important;gap:9px!important;margin:0!important}
+ #research:not(.gallery-detail) .grid .card{aspect-ratio:auto!important;height:100%!important;max-height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;padding:0 0 4px!important}
+ #research:not(.gallery-detail) .grid .card:before{height:43%!important;flex:0 0 43%!important;min-height:0!important;background-position:center!important}
+ #research:not(.gallery-detail) .grid .card h3{font-size:clamp(12px,1.7vh,16px)!important;line-height:1.1!important;margin:5px 8px 2px!important}
+ #research:not(.gallery-detail) .grid .card:after{font-size:12px!important;margin:0 8px 0 auto!important}
+ #research:not(.gallery-detail) .grid .card:has(.research-rename-button:not(.hidden)):after{margin-bottom:0!important}
+ #research:not(.gallery-detail) .card .research-rename-button,#research:not(.gallery-detail) .card .research-delete-button{bottom:4px!important;padding:3px 6px!important;min-height:22px!important}
+}
+</style>
 </head>
 <body>
 
