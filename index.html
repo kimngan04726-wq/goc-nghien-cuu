@@ -5705,5 +5705,42 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
  }
 }
 </style>
+<script id="editor-references-sync">
+(function(){
+ let busy=false;
+ const fail=message=>({ok:false,message});
+ const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().replace(/\s+/g,' ').trim();
+ const cleanDoi=s=>{const m=String(s||'').trim().replace(/^https?:\/\/(dx\.)?doi\.org\//i,'');return /^10\.\d{4,9}\/\S+$/.test(m)?m:''};
+ const cleanUrl=s=>{try{const u=new URL(String(s||'').trim());return ['http:','https:'].includes(u.protocol)?u.href:''}catch{return ''}};
+ window.addEditorReference=async function(input){
+  if(busy)return fail('Đang lưu, vui lòng đợi.');
+  if(typeof canContributeLibrary!=='function'||!canContributeLibrary())return fail('Bạn không có quyền thêm tài liệu.');
+  const cellId=Number(input?.cellId),slot=String(input?.slot||'');
+  if(!Number.isInteger(cellId)||cellId<1||!['draft1','draft2','summary'].includes(slot))return fail('Không xác định được khung soạn thảo.');
+  const title=String(input.title||'').trim();
+  const authors=Array.isArray(input.authors)?input.authors.map(a=>typeof a==='string'?a:[a.family,a.given].filter(Boolean).join(', ')).filter(Boolean).join('; '):String(input.authors||'').trim();
+  const source=String(input.source||'').trim();
+  const year=Number(input.year);
+  const missing=[!title&&'tên tài liệu',!authors&&'tác giả',!source&&'tạp chí / nguồn',!year&&'năm xuất bản'].filter(Boolean);
+  if(missing.length)return fail('Còn thiếu: '+missing.join(', ')+'.');
+  const now=new Date().getFullYear();
+  if(!Number.isInteger(year)||year<now-2||year>now)return fail('Năm xuất bản ngoài phạm vi 3 năm gần nhất.');
+  const doi=cleanDoi(input.doi)||cleanDoi(input.url);
+  const url=doi?'':cleanUrl(input.url);
+  const items=typeof libraryItems!=='undefined'?libraryItems:[];
+  const duplicate=items.some(x=>{const m=quickMeta(x);return Number(m.editorCell)===cellId&&String(m.editorSlot)===slot&&((doi&&x.doi&&norm(x.doi)===norm(doi))||norm(x.title)===norm(title))});
+  if(duplicate)return fail('Tài liệu này đã có trong khung này.');
+  busy=true;
+  try{
+   const payload={title,authors,year,category:'Phương pháp nghiên cứu',doi,url,notes:JSON.stringify({quickReference:true,type:'article',source,volume:'',finder:String(input.finder||''),related:String(cellId),read:'Chưa đọc',memo:'',editorCell:cellId,editorSlot:slot})};
+   const {data,error}=await db.from('research_references').insert(payload).select('id');
+   if(error)return fail('Không lưu được: '+error.message);
+   await loadLibrary();
+   return {ok:true,id:data?.[0]?.id};
+  }catch(e){return fail('Không lưu được: '+(e.message||e))}
+  finally{busy=false}
+ };
+})();
+</script>
 </body>
 </html>
