@@ -5577,6 +5577,35 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
 
 /* Removed obsolete desktop viewport scroll lock for M04. */
 
+/* M04/B03: title beside the B02 back button, without the book icon. */
+@media (min-width:900px){
+ #research.gallery-detail #researchDetail{
+   grid-template-columns:max-content minmax(0,1fr) minmax(0,1fr)!important;
+ }
+ #research.gallery-detail #researchDetail > button:first-child{
+   grid-column:1!important;grid-row:1!important;
+ }
+ #research.gallery-detail #researchDetail > h2{
+   grid-column:2 / -1!important;grid-row:1!important;
+   margin:0!important;padding-left:0!important;min-height:0!important;
+   align-self:center!important;
+ }
+ #research.gallery-detail #researchDetail > h2::before,
+ #research.gallery-detail #researchDetail > h2::after{
+   content:none!important;display:none!important;
+ }
+ #research.gallery-detail #researchDetail > h2 .ed-detail-books{
+   display:none!important;
+ }
+ #research.gallery-detail #researchDetail > .research-task-box{
+   grid-column:1 / -1!important;grid-row:2!important;
+ }
+ #research.gallery-detail #researchDetail > .research-drafts-area,
+ #research.gallery-detail #researchDetail .research-draft-grid{
+   display:contents!important;
+ }
+}
+
 /* M04/B02: size the back button to its label, without changing its height. */
 #research.gallery-detail #researchDetail > button:first-child{
   width:max-content!important;max-width:100%!important;min-width:0!important;
