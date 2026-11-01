@@ -5208,6 +5208,70 @@ window.openResearchCompareUI=async function(){
  }catch(error){if(seq!==request)return;message('Không tải được bản nháp: '+error.message);suggest.disabled=true}
 };
 })();
+</script><script id="research-compare-selection-step2">
+(()=>{
+const view=document.getElementById('view-compare');if(!view)return;
+const panels=[...view.querySelectorAll('.cp-panel')],summary=panels[2].querySelector('.cp-items');
+const state=()=>window.ResearchCompareDrafts;
+const normalize=text=>String(text||'').normalize('NFC').trim().replace(/\s+/g,' ').toLocaleLowerCase('vi');
+const stop=new Set('và là của có cho trong được những các một với rằng cũng như thì khi để từ vào về này đó sẽ đã đang rất hơn mỗi chúng ta bạn họ nó việc điều cách thể nên cần giúp làm người'.split(' '));
+const words=text=>new Set((normalize(text).match(/[\p{L}\p{N}]+/gu)||[]).filter(w=>w.length>2&&!stop.has(w)));
+const similarity=(x,y)=>{const wx=words(x),wy=words(y);return [...wx].filter(w=>wy.has(w)).length/Math.max(1,Math.min(wx.size,wy.size))};
+const source=slot=>slot==='draft1'?state().draft1:state().draft2;
+const key=(slot,index)=>slot+':'+index;
+function render(){
+ const s=state();if(!s)return;
+ summary.replaceChildren();
+ if(!s.selected.length)summary.textContent='Chưa có ý nào được chọn';
+ s.selected.forEach(item=>{const label=document.createElement('label');label.className='cp-selected';const check=document.createElement('input');check.type='checkbox';check.checked=true;check.dataset.summaryKey=key(item.slot,item.index);const span=document.createElement('span');span.textContent=item.text;label.append(check,span);summary.append(label)});
+ for(const panel of panels.slice(0,2))panel.querySelectorAll('input[data-slot]').forEach(check=>{
+  const included=s.selected.some(item=>key(item.slot,item.index)===key(check.dataset.slot,Number(check.dataset.index)));
+  check.checked=included;check.closest('label')?.classList.toggle('cp-selected',included);
+  let mark=check.closest('label')?.querySelector('.cp-source-mark');
+  if(included&&!mark){mark=document.createElement('span');mark.className='cp-source-mark';mark.textContent=' ✓';check.closest('label').append(mark)}
+  if(!included)mark?.remove();
+ });
+}
+function add(slot,index){const s=state(),text=source(slot)?.[index];if(!text||s.selected.some(item=>key(item.slot,item.index)===key(slot,index)))return;s.selected.push({slot,index,text})}
+function remove(slot,index){const s=state();s.selected=s.selected.filter(item=>key(item.slot,item.index)!==key(slot,index))}
+function suggest(){
+ const s=state();if(!s?.ready)return;
+ const merged=s.draft1.map((text,index)=>({slot:'draft1',index,text}));
+ for(let index=0;index<s.draft2.length;index++){
+  const text=s.draft2[index];
+  if(merged.some(item=>normalize(item.text)===normalize(text)||similarity(item.text,text)>0.82))continue;
+  let best=-1,score=0;
+  merged.forEach((item,i)=>{const ratio=similarity(item.text,text);if(ratio>score){score=ratio;best=i}});
+  const entry={slot:'draft2',index,text};
+  if(best>=0&&score>=0.30)merged.splice(best+1,0,entry);else merged.push(entry);
+ }
+ s.selected=merged;render();
+}
+view.addEventListener('click',event=>{
+ const button=event.target.closest('[data-action]');
+ if(!button)return;
+ if(button.dataset.action==='auto-suggest'){
+  event.preventDefault();event.stopImmediatePropagation();suggest();
+ }else if(button.classList.contains('cp-transfer-arrow')){
+  event.preventDefault();event.stopImmediatePropagation();
+  const panel=button.closest('.cp-panel'),slot=panel===panels[0]?'draft1':'draft2';
+  if(!state()?.ready)return;
+  panel.querySelectorAll('input[data-slot]:checked').forEach(check=>add(slot,Number(check.dataset.index)));
+  render();
+ }
+},true);
+view.addEventListener('change',event=>{
+ const check=event.target;
+ if(check.matches('input[data-slot]')){
+  if(!state()?.ready)return;
+  if(check.checked)add(check.dataset.slot,Number(check.dataset.index));
+  else remove(check.dataset.slot,Number(check.dataset.index));
+  render();
+ }else if(check.matches('input[data-summary-key]')&&!check.checked){
+  const [slot,index]=check.dataset.summaryKey.split(':');remove(slot,Number(index));render();
+ }
+});
+})();
 </script><script id="research-workspace-card-progress">(function(){const svg='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#12405c" stroke-width="2" aria-hidden="true"><path d="M5 6h15M5 12h15M5 18h15M2 6h1M2 12h1M2 18h1"/></svg>';let tasks=[];const normalize=v=>String(v||'').normalize('NFC').trim().replace(/\s+/g,' ').toLocaleLowerCase('vi');window.getCellProgress=function(cellId){const page=researchPageCache.find(p=>Number(p.id)===Number(cellId));const matched=tasks.filter(t=>page&&normalize(t.title)===normalize(page.title)&&Number(t.group_number||1)===Number(page?.group_number||1));const t=matched.at(-1);const status=t?.status||'Chưa làm';const labels={'Chưa làm':['Chưa viết','idle',0],'Đang làm':['Đang viết','writing',50],'Chờ rà soát':['Chờ duyệt','review',90],'Hoàn thành':['Đã duyệt','done',100]};const [label,tone,fallback]=labels[status]||labels['Chưa làm'];const raw=t?.progress_percent??t?.progress??t?.percent;const percent=status==='Hoàn thành'?100:status==='Chưa làm'?0:Math.min(100,Math.max(0,Number.isFinite(Number(raw))&&raw!==null&&raw!==undefined?Number(raw):fallback));return {label,percent,tone}};function render(){const root=document.getElementById('research');if(!root)return;for(const group of [1,2]){const grid=document.getElementById('researchGroup'+group);if(!grid)continue;const cards=[...grid.querySelectorAll(':scope>.card')];const removeButton=document.querySelector('.rw-delete-cell[data-group="'+group+'"]');if(removeButton){removeButton.disabled=!cards.length;removeButton.title=cards.length?'Xóa ô trong nhóm '+group:'Nhóm chưa có ô';}for(const card of cards){const id=Number(card.querySelector('.research-content')?.id.replace('researchContent',''));if(!id)continue;const h=card.querySelector(':scope>h3');if(!h)continue;let head=card.querySelector('.rw-card-head');if(!head){head=document.createElement('div');head.className='rw-card-head';h.before(head);head.append(document.createRange().createContextualFragment(svg),h);const toggle=document.createElement('button');toggle.type='button';toggle.className='rw-menu-toggle';toggle.textContent='⋯';toggle.setAttribute('aria-label','Tùy chọn ô nghiên cứu');toggle.onclick=e=>{e.stopPropagation();const menu=card.querySelector('.rw-card-menu');if(menu)menu.hidden=!menu.hidden};head.append(toggle);const menu=document.createElement('div');menu.className='rw-card-menu';menu.hidden=true;for(const [text,action] of [['Đổi tiêu đề',()=>renameResearchCard(id)]]){const btn=document.createElement('button');btn.textContent=text;btn.onclick=e=>{e.stopPropagation();menu.hidden=true;action()};menu.append(btn)}card.append(menu);}const toggle=head.querySelector('.rw-menu-toggle');toggle.hidden=!adminEditingEnabled();const menu=card.querySelector('.rw-card-menu');if(menu&&!adminEditingEnabled())menu.hidden=true;let status=card.querySelector('.rw-status'),progress=card.querySelector('.rw-progress');if(!status){status=document.createElement('span');status.className='rw-status';head.after(status)}if(!progress){progress=document.createElement('div');progress.className='rw-progress';progress.innerHTML='<div class="rw-track"><div class="rw-fill"></div></div><span class="rw-pct"></span>';status.after(progress)}const data=getCellProgress(id);status.dataset.tone=data.tone;status.textContent=data.label;progress.dataset.tone=data.tone;progress.querySelector('.rw-fill').style.width=data.percent+'%';progress.querySelector('.rw-pct').textContent=data.percent+'%'}}document.querySelectorAll('.rw-add-cell,.rw-delete-cell').forEach(b=>b.classList.toggle('hidden',!adminEditingEnabled()))}window.renderResearchWorkspace=render;function closeMenus(){document.querySelectorAll('.rw-delete-menu').forEach(m=>m.hidden=true)}function showDeleteDialog(id,title){let dialog=document.getElementById('rwDeleteDialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='rwDeleteDialog';dialog.innerHTML='<p class="rw-delete-question"></p><div class="rw-dialog-actions"><button type="button" class="rw-cancel-delete">Hủy</button><button type="button" class="rw-confirm-delete">Xóa</button></div>';document.body.append(dialog)}dialog.querySelector('.rw-delete-question').textContent="Xóa ô '"+title.normalize('NFC')+"'? Hành động này không thể hoàn tác.";dialog.querySelector('.rw-cancel-delete').onclick=()=>dialog.close();dialog.querySelector('.rw-confirm-delete').onclick=async()=>{dialog.close();await deleteResearchCard(id,true);render()};dialog.showModal()}window.addEventListener('research-tasks-updated',e=>{tasks=e.detail.tasks||[];render()});document.addEventListener('click',e=>{if(!e.target.closest('.rw-menu-toggle,.rw-card-menu'))document.querySelectorAll('.rw-card-menu').forEach(m=>m.hidden=true)});document.querySelectorAll('.rw-add-cell').forEach(b=>b.addEventListener('click',()=>addResearchCard()));document.querySelectorAll('.rw-delete-cell').forEach(b=>{const menu=document.createElement('div');menu.className='rw-delete-menu';menu.hidden=true;b.parentElement.append(menu);b.addEventListener('click',e=>{e.stopPropagation();if(!adminEditingEnabled()||b.disabled)return;const wasOpen=!menu.hidden;closeMenus();if(wasOpen)return;menu.replaceChildren();const group=Number(b.dataset.group);for(const page of researchPageCache.filter(p=>Number(p.group_number||1)===group)){const item=document.createElement('button');item.type='button';item.textContent=(page.title||'Không tiêu đề').normalize('NFC');item.disabled=Number(page.id)<=7;item.title=item.disabled?'Ô gốc được bảo vệ, không thể xóa':'';item.onclick=e=>{e.stopPropagation();closeMenus();showDeleteDialog(page.id,item.textContent)};menu.append(item)}menu.hidden=false})});document.addEventListener('click',e=>{if(!e.target.closest('.rw-delete-menu,.rw-delete-cell'))closeMenus()});window.addEventListener('load',()=>{render();if(typeof loadTasks==='function')loadTasks()})})();</script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/7.9.1/tinymce.min.js" referrerpolicy="origin"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.9.0/mammoth.browser.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.3.1/html-docx.js"></script>
