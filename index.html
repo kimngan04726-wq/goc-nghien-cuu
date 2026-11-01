@@ -5173,12 +5173,14 @@ let request=0;
 const paragraphTexts=html=>{
  const root=document.createElement('div');
  root.innerHTML=window.DOMPurify?DOMPurify.sanitize(String(html||'')):'';
- const nodes=[...root.querySelectorAll('p,li')].filter(el=>!el.parentElement?.closest('p,li'));
- return (nodes.length?nodes:[root]).map(el=>(el.textContent||'').trim()).filter(Boolean);
+ root.querySelectorAll('br').forEach(br=>br.replaceWith(document.createTextNode('\n')));
+ const blocks=[...root.querySelectorAll('p,li,div,h1,h2,h3,td')].filter(el=>!el.parentElement?.closest('p,li,div,h1,h2,h3,td'));
+ return (blocks.length?blocks:[root]).flatMap(el=>(el.textContent||'').split(/\n+/).map(t=>t.trim()).filter(Boolean));
 };
 const message=text=>{let el=view.querySelector('.cp-load-message');if(!el){el=document.createElement('p');el.className='cp-load-message';view.querySelector('.cp-sub')?.after(el)}el.textContent=text};
 const render=(panel,items,slot)=>{
  const box=panel.querySelector('.cp-items');box.replaceChildren();
+ if(!items.length){const empty=document.createElement('i');empty.textContent='Chưa có nội dung.';box.append(empty);return}
  items.forEach((value,index)=>{const label=document.createElement('label');const check=document.createElement('input');check.type='checkbox';check.dataset.slot=slot;check.dataset.index=String(index);const span=document.createElement('span');span.textContent=value;label.append(check,span);box.append(label)});
 };
 window.ResearchCompareDrafts={draft1:[],draft2:[],selected:[],ready:false,id:null};
@@ -5197,14 +5199,16 @@ window.openResearchCompareUI=async function(){
   if(!storage)throw Error('Chưa sẵn sàng tải bản nháp');
   const [a,b]=await Promise.all([storage.loadDraft(id,'draft1'),storage.loadDraft(id,'draft2')]);
   if(seq!==request)return;
+  if(!a)console.warn('Không tìm thấy bản nháp:',{id,slot:'draft1'});
+  if(!b)console.warn('Không tìm thấy bản nháp:',{id,slot:'draft2'});
   state.draft1=paragraphTexts(a?.content_html);state.draft2=paragraphTexts(b?.content_html);
   const page=typeof researchPageCache!=='undefined'?researchPageCache.find(p=>Number(p.id)===id):null;
   const group=Number(page?.group_number)===2?2:1;
   [0,1].forEach((i)=>{const n=(group-1)*2+i+1;const name=typeof canonicalMemberName==='function'?canonicalMemberName(n):'Thành viên '+n;panels[i].querySelector('h2').textContent='▤ Bản nháp '+(i+1)+' ('+name+')'});
   render(panels[0],state.draft1,'draft1');render(panels[1],state.draft2,'draft2');
-  state.ready=!!(state.draft1.length&&state.draft2.length);
+  state.ready=!!(state.draft1.length||state.draft2.length);
   suggest.disabled=!state.ready;
-  message(state.ready?'':'Cần có nội dung ở cả hai bản nháp');
+  message(state.ready?'':'Chưa có nội dung ở bản nháp nào');
  }catch(error){if(seq!==request)return;message('Không tải được bản nháp: '+error.message);suggest.disabled=true}
 };
 })();
