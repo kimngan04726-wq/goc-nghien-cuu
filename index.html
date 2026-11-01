@@ -5584,19 +5584,24 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
  #research.gallery-detail #researchDetail .research-task-box .research-task-text{max-height:none!important;overflow:visible!important}
 }
 
-/* M04/B14: undo the older desktop no-scroll lock for the detail view only. */
+/* M04/B14: independently scroll the right-side detail, even when cards fit. */
 @media (min-width:900px) and (min-height:640px){
- html:not(:has(body.ui-preview-screen)):has(#research.gallery-detail:not(.hidden)),
- body:not(.ui-preview-screen):has(#research.gallery-detail:not(.hidden)){
-   height:auto!important;min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;
- }
+ /* Keep the account strip and left sidebar in their existing positions. */
  #research.gallery-detail{
-   height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;
+   height:calc(100dvh - var(--rd-top,130px))!important;
+   max-height:calc(100dvh - var(--rd-top,130px))!important;
+   min-height:0!important;overflow:hidden!important;
  }
  #research.gallery-detail #researchDetail{
-   height:auto!important;max-height:none!important;min-height:0!important;
-   overflow:visible!important;grid-template-rows:max-content max-content max-content max-content!important;
-   align-content:start!important;padding:8px 0 32px!important;
+   display:grid!important;
+   height:100%!important;max-height:100%!important;min-height:0!important;
+   box-sizing:border-box!important;
+   overflow-y:auto!important;overflow-x:hidden!important;
+   overscroll-behavior-y:contain;scrollbar-width:thin;
+   grid-template-rows:max-content max-content max-content max-content!important;
+   align-content:start!important;
+   /* Deliberate scroll runway: allows movement even if all three cards fit. */
+   padding:8px 0 60dvh!important;
  }
  #research.gallery-detail #researchDetail .research-work-box:not(.research-history-panel){
    height:auto!important;min-height:230px!important;
