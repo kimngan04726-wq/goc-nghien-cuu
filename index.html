@@ -1772,7 +1772,23 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 .ed-side-dialog{width:min(900px,94vw);max-height:85vh;border:1px solid #ebddcf;border-radius:16px;background:#fffdfb;color:#12405c}
 .ed-side-dialog::backdrop{background:#12405c66}
 .ed-side-content{font-family:"Times New Roman",serif;line-height:1.6;overflow:auto;max-height:65vh;padding:20px;background:#fff7f0}
-</style></head>
+</style><style id="editor-toolbar-iframe-fix">
+/* Thanh công cụ gọn một hàng (tự xuống hàng khi quá hẹp), khung viết lấp đầy tờ giấy */
+#view-editor .tox .tox-toolbar__primary{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:0!important}
+#view-editor .tox .tox-toolbar__group{flex:0 0 auto!important;flex-wrap:nowrap!important;padding:2px 4px!important;margin:0!important;border-right:1px solid #ebddcf!important}
+#view-editor .tox .tox-toolbar__group:last-child{border-right:0!important}
+#view-editor .tox .tox-tbtn{margin:2px 1px!important}
+#view-editor .tox .tox-tbtn--select{width:auto!important}
+#view-editor .tox .tox-tbtn--select .tox-tbtn__select-label{width:auto!important;max-width:104px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#view-editor .tox .tox-tbtn--select:not(:first-child) .tox-tbtn__select-label{max-width:46px!important}
+#view-editor .tox .tox-edit-area__iframe{max-width:none!important;width:100%!important;margin:0!important;box-shadow:none!important}
+#view-editor .tox .tox-edit-area{background:#fffdfb!important}
+/* Menu Mục lục: chữ thường, gọn */
+#view-editor .ed-outline-popup{width:200px!important;padding:4px!important}
+#view-editor .ed-outline-popup button{font:400 14px var(--font-main)!important;padding:7px 9px!important;margin:0!important;border:0!important;background:transparent!important;border-radius:6px!important;width:100%!important;text-align:left!important}
+#view-editor .ed-outline-popup button:hover{background:#dcebfa!important}
+</style>
+</head>
 <body>
 
 <header>
@@ -5266,5 +5282,8 @@ function previewText(d){const root=document.createElement('div');root.innerHTML=
 async function refreshDetail(){if(!detail||!document.getElementById('research')?.classList.contains('gallery-detail'))return;const id=Number(detail.dataset.cellId||window.currentResearchCellId);if(!id)return;const h=detail.querySelector(':scope>h2');if(h&&!h.querySelector('.ed-detail-books')){h.insertAdjacentHTML('afterbegin','<span class="ed-detail-books">'+svg('book')+'</span>')}const cards=[...detail.querySelectorAll('.research-draft-card')];const summary=detail.querySelector('.research-work-box:not(.research-draft-card)');for(const [i,slot] of slots.entries()){const card=i<2?cards[i]:summary;if(!card)continue;let d;try{d=await adapter.loadDraft(id,slot)}catch{continue}let box=card.querySelector('.ed-detail-live');if(!box){box=document.createElement('div');box.className='ed-detail-live';const actions=card.querySelector('.research-draft-actions,.research-actions-inline');(actions||card).before(box)}box.replaceChildren();const rows=[['file','Nội dung:',previewText(d)],['clock','Cập nhật:',time(d?.updated_at)]];if(slot==='summary'){const progress=window.getCellProgress?.(id);rows.push(['check','Trạng thái:',progress?.label||'Chưa viết'])}for(const [icon,label,value] of rows){const line=document.createElement('div');line.className='ed-detail-row';line.innerHTML=svg(icon);const b=document.createElement('strong');b.textContent=label;const v=document.createElement(label==='Cập nhật:'?'button':'span');v.textContent=value;v.className=label==='Cập nhật:'?'ed-detail-updated':'ed-detail-preview';if(label==='Cập nhật:')v.onclick=()=>{window.openResearchEditorUI(id,slot);setTimeout(()=>document.querySelector('#view-editor [data-action="history"]')?.click(),450)};line.append(b,v);box.append(line)}const buttons=[...card.querySelectorAll('.research-icon-button')];for(const [index,button] of buttons.entries()){if(index>0){button.remove();continue}button.innerHTML=svg('edit');button.onclick=e=>{e.stopPropagation();window.openResearchEditorUI(id,slot)}}if(slot==='summary'){let open=card.querySelector('.ed-open-summary');if(!open){open=document.createElement('button');open.className='ed-open-summary';open.textContent='Mở soạn thảo';open.onclick=()=>window.openResearchEditorUI(id,'summary');card.append(open)}}}}
 if(detail){const observer=new MutationObserver(()=>{const page=researchPageCache.find(p=>safe(p.title).trim()===safe(detail.querySelector(':scope>h2')?.textContent?.trim()).replace(/\\s+/g,' ').trim());if(page){detail.dataset.cellId=page.id;window.currentResearchCellId=Number(page.id)}if(detail.closest('.gallery-detail'))refreshDetail()});observer.observe(detail,{childList:true,subtree:false});document.addEventListener('research:draft-saved',()=>refreshDetail());document.addEventListener('click',e=>{const card=e.target.closest('#researchDetail .research-draft-card');if(card&&e.target.closest('button')&&/soạn thảo/i.test(e.target.textContent||'')){window.currentResearchSlot=[...detail.querySelectorAll('.research-draft-card')].indexOf(card)===0?'draft1':'draft2'}})}
 })();
-</script></body>
+</script><script id="ed-popup-close-on-outside-click">
+document.addEventListener('pointerdown',function(e){document.querySelectorAll('#view-editor .ed-outline-popup:not([hidden])').forEach(function(p){if(!p.contains(e.target)&&!e.target.closest('[data-action="outline-menu"]'))p.hidden=true})});
+</script>
+</body>
 </html>
