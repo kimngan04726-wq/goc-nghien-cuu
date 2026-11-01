@@ -5115,9 +5115,9 @@ body.word-editor-open #researchEditor #richEditor{width:calc(100% - 110px)!impor
 <style id="research-single-viewport-20261101">
 /* Presentation only. Scroll is confined to four text surfaces. */
 @media (min-width:900px) and (min-height:640px){
-html:has(#research.gallery-detail:not(.hidden)),body:has(#research.gallery-detail:not(.hidden)){height:100%;margin:0;overflow:hidden!important}
-#research.gallery-detail{height:100dvh!important;max-height:100dvh!important;min-height:0!important;box-sizing:border-box!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
-#research.gallery-detail #researchDetail{height:100%!important;min-height:0!important;max-height:none!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;gap:clamp(5px,.8vh,12px)!important;padding:clamp(8px,1.1vh,16px) 0!important;overflow:visible!important}
+html:has(#research.gallery-detail:not(.hidden)),body:has(#research.gallery-detail:not(.hidden)){height:auto;min-height:100%;margin:0;overflow-y:auto!important;overflow-x:hidden!important}
+#research.gallery-detail{height:auto!important;max-height:none!important;min-height:0!important;box-sizing:border-box!important;overflow:visible!important;display:block!important}
+#research.gallery-detail #researchDetail{height:auto!important;min-height:0!important;max-height:none!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;gap:clamp(5px,.8vh,12px)!important;padding:clamp(8px,1.1vh,16px) 0!important;overflow:visible!important}
 #researchDetail>button:first-child{flex:0 0 auto!important;align-self:flex-start!important;padding:clamp(5px,.75vh,10px) clamp(12px,1.2vw,20px)!important;font-size:clamp(13px,1.65vh,18px)!important}
 #researchDetail>h2{flex:0 0 auto!important;min-height:0!important;margin:0!important;padding-left:clamp(42px,5vh,65px)!important;font-size:clamp(23px,3.1vh,36px)!important;line-height:1.1!important}
 #researchDetail>h2:before{font-size:clamp(30px,5vh,50px)!important}
@@ -5572,17 +5572,7 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
  #research.gallery-detail #researchDetail .research-draft-grid{display:contents!important}
 }
 
-/* 4) Không cuộn trang (desktop đủ cao). --rd-top là phần phía trên (thanh tài khoản, padding của main): ĐO bằng DevTools và chỉnh cho đúng */
-@media(min-width:900px) and (min-height:640px){
- :root{--rd-top:130px}
- html:not(:has(body.ui-preview-screen)):has(#research.gallery-detail:not(.hidden)),body:not(.ui-preview-screen):has(#research.gallery-detail:not(.hidden)){height:100dvh!important;min-height:0!important;overflow:hidden!important}
- body:not(.ui-preview-screen):has(#research.gallery-detail:not(.hidden)) header{display:none!important}
- body:not(.ui-preview-screen):has(#research.gallery-detail:not(.hidden)) main{padding-bottom:8px!important}
- #research.gallery-detail{height:calc(100dvh - var(--rd-top))!important;max-height:calc(100dvh - var(--rd-top))!important;min-height:0!important;overflow:hidden!important;box-sizing:border-box!important}
- #research.gallery-detail #researchDetail{height:100%!important;max-height:100%!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:contain;scrollbar-width:thin;grid-template-rows:max-content max-content max-content max-content!important;align-content:start!important;padding:8px 0 18px!important}
- #research.gallery-detail #researchDetail .research-work-box:not(.research-history-panel){height:auto!important;min-height:230px!important}
- #research.gallery-detail #researchDetail .research-task-box .research-task-text{max-height:none!important;overflow:visible!important}
-}
+/* Removed obsolete desktop viewport scroll lock for M04. */
 
 /* M04: scroll the entire browser document, not a nested research-detail panel. */
 @media (min-width:900px) and (min-height:640px){
