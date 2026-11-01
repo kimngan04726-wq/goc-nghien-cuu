@@ -21,6 +21,10 @@ alter table public.research_drafts add column if not exists content_text text no
 alter table public.research_drafts add column if not exists word_count integer not null default 0;
 alter table public.research_drafts add column if not exists status text not null default 'Đang viết';
 alter table public.research_drafts add column if not exists updated_at timestamptz not null default now();
+-- Legacy drafts use numeric slots 1 and 2. Convert to requested text slots.
+-- This migration is intended to run once; existing legacy JS still reads numeric slots.
+alter table public.research_drafts alter column slot type text using
+ case when slot::text='1' then 'draft1' when slot::text='2' then 'draft2' else slot::text end;
 -- Migrate legacy page_id, author_id and content before creating unique index.
 do $migration$ begin
  if exists(select 1 from information_schema.columns where table_schema='public' and table_name='research_drafts' and column_name='page_id') then
