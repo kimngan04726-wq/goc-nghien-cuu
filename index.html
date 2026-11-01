@@ -5584,5 +5584,27 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
  #research.gallery-detail #researchDetail .research-task-box .research-task-text{max-height:11dvh!important;overflow:auto!important}
 }
 </style>
+
+<style id="research-detail-scroll-fix-20261101">
+/* Allow the detailed research task page to scroll independently of the sidebar. */
+#research.gallery-detail #researchDetail {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  grid-template-rows: none !important;
+  align-content: start !important;
+}
+@media (min-width: 1001px) and (min-height: 640px) {
+  #research.gallery-detail #researchDetail {
+    overflow-y: auto !important;
+    grid-template-rows: none !important;
+  }
+  #research.gallery-detail #researchDetail .research-work-box:not(.research-history-panel) {
+    height: auto !important;
+    min-height: 320px !important;
+  }
+}
+</style>
 </body>
 </html>
