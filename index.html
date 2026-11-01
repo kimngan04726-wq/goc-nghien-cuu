@@ -5383,7 +5383,55 @@ function renderResearchTools(ed){researchTools.replaceChildren();for(const [head
 document.addEventListener('pointerdown',e=>{if(!researchTools.hidden&&!researchTools.contains(e.target)&&!e.target.closest('.tox-tbtn'))researchTools.hidden=true});
 const actions=view.querySelector('.ed-actions');const menu=document.createElement('div');menu.className='ed-export-menu';menu.hidden=true;const docsEntry=document.createElement('button');docsEntry.type='button';docsEntry.textContent='Xuất sang Google Docs';docsEntry.onclick=()=>{menu.hidden=true;if(window.__legacyResearchDocsExport)window.__legacyResearchDocsExport();else alert('Chức năng Google Docs chưa sẵn sàng.');};menu.append(docsEntry);for(const [label,format] of [['Word (.docx)','docx'],['PDF (in ra PDF)','pdf'],['Văn bản thuần (.txt)','txt'],['HTML (.html)','html']]){const b=document.createElement('button');b.type='button';b.textContent=label;b.dataset.exportFormat=format;b.onclick=()=>{menu.hidden=true;exportFile(format)};menu.append(b)}actions.append(menu);
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)}
-function exportFile(format){const title=(document.getElementById('ed-page-title').textContent||'Nghiên cứu').replace('– Soạn thảo','').trim().replace(/[\\/:*?"<>|]/g,'-');const owner=view.querySelector('.ed-chip')?.textContent?.trim()||'Người phụ trách';const name=title+' - '+owner;if(format==='pdf'){if(editor)editor.execCommand('mcePrint');else window.print();return}if(format==='txt'){download(new Blob([getText()],{type:'text/plain;charset=utf-8'}),name+'.txt');return}const html='<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><style>'+css+'</style></head><body>'+getHTML()+'</body></html>';if(format==='html'){download(new Blob([html],{type:'text/html;charset=utf-8'}),name+'.html');return}if(window.htmlDocx){try{download(window.htmlDocx.asBlob(html),name+'.docx')}catch(err){alert('Không xuất được Word: '+err.message)}}else alert('Thư viện xuất Word chưa tải được')}
+function exportFile(format){const title=(document.getElementById('ed-page-title').textContent||'Nghiên cứu').replace('– Soạn thảo','').trim().replace(/[\\/:*?"<>|]/g,'-');const owner=view.querySelector('.ed-chip')?.textContent?.trim()||'Người phụ trách';const name=title+' - '+owner;if(format==='pdf'){if(editor)editor.execCommand('mcePrint');else window.print();return}if(format==='txt'){download(new Blob([getText()],{type:'text/plain;charset=utf-8'}),name+'.txt');return}const html='<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><style>'+css+'</style></head><body>'+getHTML()+'<style id="research-detail-mockup-v3">
+#research.gallery-detail #researchDetail{font-family:var(--font-main)!important;color:#123657!important}
+#research.gallery-detail #researchDetail .research-draft-actions,
+#research.gallery-detail #researchDetail .research-draft-result,
+#research.gallery-detail #researchDetail .research-history-panel,
+#research.gallery-detail #researchDetail .detail-content,
+#research.gallery-detail #researchDetail .research-draft-card>div:not(.ed-detail-live),
+#research.gallery-detail #researchDetail .research-work-box:not(.research-draft-card)>div:not(.ed-detail-live),
+#research.gallery-detail #researchDetail .research-work-box>.ed-open-summary,
+#research.gallery-detail #researchDetail .research-draft-owner,
+#research.gallery-detail #researchDetail .research-work-box>h3:not(.ed-mock-title),
+#research.gallery-detail #researchDetail .research-drafts-area>.research-draft-result{display:none!important}
+#research.gallery-detail #researchDetail .research-draft-grid{display:contents!important}
+#research.gallery-detail #researchDetail .research-drafts-area{display:contents!important}
+#research.gallery-detail #researchDetail .ed-mock-card{min-width:0!important;position:relative!important;display:flex!important;flex-direction:column!important;gap:0!important;box-sizing:border-box!important;background:#fffdfb!important;border:1px solid #e7be95!important;border-radius:26px!important;padding:22px 24px!important;overflow:hidden!important;box-shadow:0 4px 20px #1236570a!important}
+#research.gallery-detail #researchDetail .ed-mock-card:before{content:"";position:absolute;right:-22px;top:-56px;width:150px;height:115px;background:#dcebf9;border-radius:0 0 0 100%;pointer-events:none}
+#research.gallery-detail #researchDetail .ed-mock-title{position:relative;z-index:1;font:700 clamp(19px,2vw,29px)/1.3 var(--font-main)!important;color:#123657!important;margin:0 0 22px!important;padding:0!important;border:0!important;background:none!important}
+#research.gallery-detail #researchDetail .ed-detail-live{display:flex!important;flex-direction:column!important;gap:18px!important;padding:0!important;margin:0!important;border:0!important;background:none!important}
+#research.gallery-detail #researchDetail .ed-mock-row{display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:10px 16px!important;font:17px/1.4 var(--font-main)!important;color:#123657!important}
+#research.gallery-detail #researchDetail .ed-mock-row strong{font-weight:700!important}
+#research.gallery-detail #researchDetail .ed-mock-row button{font:700 17px var(--font-main)!important;border:0!important;border-radius:12px!important;padding:8px 14px!important;cursor:pointer;color:#123657!important}
+#research.gallery-detail #researchDetail .ed-mock-owner{border-bottom:1px solid #d9e1e8!important;padding-bottom:16px!important}
+#research.gallery-detail #researchDetail .ed-mock-owner button{background:#dcebf9!important}
+#research.gallery-detail #researchDetail .ed-mock-progress button{background:#d8f1f5!important}
+#research.gallery-detail #researchDetail .ed-mock-progress button[data-status="Chưa viết"]{background:#e9ecef!important}
+#research.gallery-detail #researchDetail .ed-mock-progress button[data-status="Chờ duyệt"]{background:#fff0bf!important}
+#research.gallery-detail #researchDetail .ed-mock-progress button[data-status="Đã duyệt"]{background:#d5f4dd!important}
+#research.gallery-detail #researchDetail .ed-mock-updated button{background:transparent!important;padding:4px 0!important;font-weight:400!important}
+#research.gallery-detail #researchDetail .ed-mock-edit{align-self:flex-end!important;margin-top:auto!important;background:#075078!important;color:white!important;border:0!important;border-radius:15px!important;width:60px!important;height:60px!important;font-size:28px!important;cursor:pointer!important}
+#research.gallery-detail #researchDetail .ed-mock-edit:disabled{opacity:.4!important;cursor:not-allowed!important}
+@media(min-width:900px){
+#research.gallery-detail{height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;box-sizing:border-box!important}
+#research.gallery-detail #researchDetail{height:100%!important;max-height:100%!important;overflow:hidden!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:auto auto minmax(0,1fr)!important;column-gap:18px!important;row-gap:16px!important;box-sizing:border-box!important;padding:14px 22px 22px!important}
+#research.gallery-detail #researchDetail>:not(.research-drafts-area):not(.research-work-box):not(.research-draft-grid){grid-column:1/-1!important}
+#research.gallery-detail #researchDetail .research-work-box:not(.research-draft-card):not(.ed-mock-card){grid-column:1/-1!important}
+#research.gallery-detail #researchDetail .ed-mock-card{grid-row:3!important;min-height:0!important;max-height:100%!important}
+#research.gallery-detail #researchDetail .research-work-box.ed-mock-card:not(.research-draft-card){grid-column:3!important}
+#research.gallery-detail #researchDetail .research-draft-card:first-child{grid-column:1!important}
+#research.gallery-detail #researchDetail .research-draft-card:nth-child(2){grid-column:2!important}
+#research.gallery-detail #researchDetail .research-draft-grid,#research.gallery-detail #researchDetail .research-drafts-area{min-height:0!important}
+}
+@media(max-width:899px){
+#research.gallery-detail{height:auto!important;max-height:none!important;overflow:auto!important}
+#research.gallery-detail #researchDetail{height:auto!important;max-height:none!important;overflow:visible!important;display:flex!important;flex-direction:column!important;gap:16px!important}
+#research.gallery-detail #researchDetail .research-draft-grid{display:grid!important;grid-template-columns:1fr!important;gap:16px!important}
+#research.gallery-detail #researchDetail .research-drafts-area{display:block!important}
+#research.gallery-detail #researchDetail .ed-mock-card{min-height:320px!important}
+}
+</style></body></html>';if(format==='html'){download(new Blob([html],{type:'text/html;charset=utf-8'}),name+'.html');return}if(window.htmlDocx){try{download(window.htmlDocx.asBlob(html),name+'.docx')}catch(err){alert('Không xuất được Word: '+err.message)}}else alert('Thư viện xuất Word chưa tải được')}
 view.addEventListener('click',async e=>{const b=e.target.closest('[data-action]');if(!b)return;const a=b.dataset.action;if(a==='save'){e.stopPropagation();save()}else if(a==='export'){e.stopPropagation();menu.hidden=!menu.hidden}else if(a==='add-subsection'){e.stopPropagation();await init();if(!readonly){editor.focus();editor.insertContent('<h2>Tiểu mục mới</h2><p></p>')}}else if(a==='import-docx'){document.getElementById('ed-word-file').click()}});document.addEventListener('click',e=>{if(!e.target.closest('.ed-export-menu,[data-action="export"]'))menu.hidden=true});
 document.getElementById('ed-word-file').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{await init();if(!window.mammoth)throw Error('Không tải được Mammoth');const result=await mammoth.convertToHtml({arrayBuffer:await file.arrayBuffer()});editor.setContent(result.value);if(result.messages?.length)console.warn('Thông báo nhập Word:',result.messages)}catch(err){alert('Không nhập được Word: '+err.message)}e.target.value=''});
 document.getElementById('ed-word-zoom').addEventListener('input',e=>setZoom(Number(e.target.value),false));view.querySelector('[data-action="zoom-out"]').addEventListener('click',()=>setZoom(zoom-10,false));view.querySelector('[data-action="zoom-in"]').addEventListener('click',()=>setZoom(zoom+10,false));view.querySelector('[data-action="fit-width"]').addEventListener('click',fitWidth);
