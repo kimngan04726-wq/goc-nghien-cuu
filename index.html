@@ -5624,6 +5624,25 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
  }
 }
 
+/* M04 header: avoid the first grid track expanding to a full draft-card width. */
+@media (min-width:900px){
+ #research.gallery-detail #researchDetail{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  column-gap:18px!important;
+ }
+ #research.gallery-detail #researchDetail > button:first-child{
+  grid-column:1 / -1!important;grid-row:1!important;
+  justify-self:start!important;z-index:1!important;
+ }
+ #research.gallery-detail #researchDetail > h2{
+  grid-column:1 / -1!important;grid-row:1!important;
+  justify-self:start!important;align-self:center!important;
+  margin-left:150px!important;margin-top:0!important;margin-bottom:0!important;
+  width:auto!important;max-width:calc(100% - 150px)!important;
+  text-align:left!important;
+ }
+}
+
 /* M04/B02: size the back button to its label, without changing its height. */
 #research.gallery-detail #researchDetail > button:first-child{
   width:max-content!important;max-width:100%!important;min-width:0!important;
