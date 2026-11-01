@@ -3817,6 +3817,8 @@ try{
     selectedSaved=null;
     backupPanel.style.display='none';
     selected=id;
+    window.currentResearchCellId=Number(id);
+    detail.dataset.cellId=String(id);
     section.classList.add('gallery-detail');
     refresh();
     window.scrollTo({top:0,behavior:'smooth'});
