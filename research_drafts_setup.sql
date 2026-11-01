@@ -27,6 +27,20 @@ create table if not exists public.research_editor_draft_versions (
 );
 create index if not exists research_editor_versions_latest on public.research_editor_draft_versions(draft_id,saved_at desc,id desc);
 create index if not exists research_editor_versions_auto on public.research_editor_draft_versions(draft_id,saved_by,saved_at desc) where kind='auto';
+-- The website expects this assignment table; create it if absent.
+create table if not exists public.research_page_assignments (
+ page_id bigint not null references public.research_pages(id) on delete cascade,
+ user_id uuid not null references auth.users(id) on delete cascade,
+ primary key(page_id,user_id)
+);
+create index if not exists research_page_assignments_user_idx on public.research_page_assignments(user_id,page_id);
+alter table public.research_page_assignments enable row level security;
+drop policy if exists "research assignments own read" on public.research_page_assignments;
+create policy "research assignments own read" on public.research_page_assignments
+ for select to authenticated using(user_id=auth.uid());
+grant select on public.research_page_assignments to authenticated;
+-- Assignment management must be performed by an administrator through SQL
+-- until an admin-only assignment UI/policy is implemented.
 create or replace function public.research_editor_is_admin()
 returns boolean language sql stable security definer set search_path=public as $$
  select exists(select 1 from public.group_profiles where user_id=auth.uid() and role='admin')
