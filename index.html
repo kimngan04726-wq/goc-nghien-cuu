@@ -5579,9 +5579,15 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
  body:not(.ui-preview-screen):has(#research.gallery-detail:not(.hidden)) header{display:none!important}
  body:not(.ui-preview-screen):has(#research.gallery-detail:not(.hidden)) main{padding-bottom:8px!important}
  #research.gallery-detail{height:calc(100dvh - var(--rd-top))!important;max-height:calc(100dvh - var(--rd-top))!important;min-height:0!important;overflow:hidden!important;box-sizing:border-box!important}
- #research.gallery-detail #researchDetail{height:100%!important;max-height:100%!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:contain;grid-template-rows:auto!important;align-content:start!important;padding:8px 0 10px!important}
+ #research.gallery-detail #researchDetail{height:100%!important;max-height:100%!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:contain;scrollbar-width:thin;grid-template-rows:max-content max-content max-content max-content!important;align-content:start!important;padding:8px 0 18px!important}
  #research.gallery-detail #researchDetail .research-work-box:not(.research-history-panel){height:auto!important;min-height:230px!important}
  #research.gallery-detail #researchDetail .research-task-box .research-task-text{max-height:none!important;overflow:visible!important}
+}
+
+/* M04/B14: scroll the whole right-side detail while preserving sidebar and cards. */
+@media (min-width:900px) and (min-height:640px){
+ #research.gallery-detail #researchDetail{overflow-y:auto!important;overflow-x:hidden!important;grid-template-rows:max-content max-content max-content max-content!important;align-content:start!important;scrollbar-width:thin!important}
+ #research.gallery-detail #researchDetail .research-work-box:not(.research-history-panel){height:auto!important;min-height:230px!important}
 }
 </style>
 </body>
