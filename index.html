@@ -5584,10 +5584,26 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
  #research.gallery-detail #researchDetail .research-task-box .research-task-text{max-height:none!important;overflow:visible!important}
 }
 
-/* M04/B14: scroll the whole right-side detail while preserving sidebar and cards. */
+/* M04/B14: undo the older desktop no-scroll lock for the detail view only. */
 @media (min-width:900px) and (min-height:640px){
- #research.gallery-detail #researchDetail{overflow-y:auto!important;overflow-x:hidden!important;grid-template-rows:max-content max-content max-content max-content!important;align-content:start!important;scrollbar-width:thin!important}
- #research.gallery-detail #researchDetail .research-work-box:not(.research-history-panel){height:auto!important;min-height:230px!important}
+ html:not(:has(body.ui-preview-screen)):has(#research.gallery-detail:not(.hidden)),
+ body:not(.ui-preview-screen):has(#research.gallery-detail:not(.hidden)){
+   height:auto!important;min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;
+ }
+ #research.gallery-detail{
+   height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;
+ }
+ #research.gallery-detail #researchDetail{
+   height:auto!important;max-height:none!important;min-height:0!important;
+   overflow:visible!important;grid-template-rows:max-content max-content max-content max-content!important;
+   align-content:start!important;padding:8px 0 32px!important;
+ }
+ #research.gallery-detail #researchDetail .research-work-box:not(.research-history-panel){
+   height:auto!important;min-height:230px!important;
+ }
+ #research.gallery-detail #researchDetail .research-task-box .research-task-text{
+   max-height:none!important;overflow:visible!important;
+ }
 }
 </style>
 </body>
