@@ -30,7 +30,19 @@ do $ begin
   execute 'update public.research_drafts set owner_id=author_id where owner_id is null';
  end if;
  if exists(select 1 from information_schema.columns where table_schema='public' and table_name='research_drafts' and column_name='content') then
-  execute 'update public.research_drafts set content_html=content where content_html='''''; 
+  execute $update public.research_drafts set content_html=content where content_html=''$; 
+ end if;
+end $;
+-- Legacy columns may be NOT NULL. New adapter uses cell_id/owner_id/content_html.
+do $ begin
+ if exists(select 1 from information_schema.columns where table_schema='public' and table_name='research_drafts' and column_name='page_id') then
+  execute 'alter table public.research_drafts alter column page_id drop not null';
+ end if;
+ if exists(select 1 from information_schema.columns where table_schema='public' and table_name='research_drafts' and column_name='author_id') then
+  execute 'alter table public.research_drafts alter column author_id drop not null';
+ end if;
+ if exists(select 1 from information_schema.columns where table_schema='public' and table_name='research_drafts' and column_name='content') then
+  execute 'alter table public.research_drafts alter column content set default ''''';
  end if;
 end $;
 create unique index if not exists research_drafts_cell_slot_unique on public.research_drafts(cell_id,slot);
