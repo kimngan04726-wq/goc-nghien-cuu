@@ -3411,6 +3411,11 @@ try{
   const result=document.createElement('section');result.className='research-draft-result';
   result.hidden=true;
   draftsArea.append(draftCards,actions,result);
+  function refreshDraftCardLabels(){
+    const id=Number(selected||document.querySelector('#researchDetail')?.dataset.cellId||window.currentResearchCellId);
+    const group=Number(researchPageCache.find(p=>Number(p.id)===id)?.group_number)===2?2:1;
+    draftNodes.forEach((x,index)=>{x.panel.querySelector('h3').textContent='📝 Bản nháp '+((group-1)*2+index+1)});
+  }
   const draftState={1:'',2:''};
   const stripText=html=>{const node=document.createElement('div');node.innerHTML=window.DOMPurify?DOMPurify.sanitize(html):html.replace(/<[^>]*>/g,' ');return node.textContent||'';};
   const sentences=text=>text.split(/(?<=[.!?。])\s+|\n+/u).map(x=>x.trim()).filter(Boolean);
@@ -3418,6 +3423,7 @@ try{
   async function loadDrafts(){
     if(selected===null)return;
     const id=selected;
+    refreshDraftCardLabels();
     const {data,error}=await db.from('research_drafts').select('slot,content,author_id').eq('page_id',id);
     if(id!==selected)return;
     if(error){
