@@ -3404,7 +3404,7 @@ try{
   const mergeButton=document.createElement('button');mergeButton.textContent='✦ Tổng hợp';
   const compareButton=document.createElement('button');compareButton.textContent='⇄ So sánh và lọc ý';
   const result=document.createElement('section');result.className='research-draft-result';
-  result.hidden=true;actions.append(compareButton);
+  result.hidden=true;
   draftsArea.append(draftCards,actions,result);
   const draftState={1:'',2:''};
   const stripText=html=>{const node=document.createElement('div');node.innerHTML=window.DOMPurify?DOMPurify.sanitize(html):html.replace(/<[^>]*>/g,' ');return node.textContent||'';};
