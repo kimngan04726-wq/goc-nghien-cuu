@@ -1796,6 +1796,48 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 #view-editor[data-slot="draft1"] [data-action="compare-drafts"],
 #view-editor[data-slot="draft2"] [data-action="compare-drafts"]{display:none!important}
 </style>
+<style id="member-profile-compact-2026">
+/* Compact profile layout; presentation only, no behavior changes. */
+#memberProfile{max-width:1100px;margin:0 auto!important}
+#memberProfile .profile-crumb{margin-bottom:8px!important;font-size:14px!important}
+#memberProfile .profile-head{margin-bottom:10px!important;gap:10px!important}
+#memberProfile .profile-head h2{font-size:clamp(23px,2.4vw,31px)!important}
+#memberProfile .profile-head p{font-size:14px!important}
+#memberProfile .profile-head>button{padding:8px 13px!important;font-size:14px!important}
+#memberProfile .profile-summary{grid-template-columns:minmax(185px,25%) minmax(0,1fr)!important;gap:12px!important;padding:10px!important}
+#memberProfile .profile-portrait{min-height:0!important;padding:13px 8px!important}
+#memberProfile .profile-avatar-big{width:126px!important;height:126px!important;border-width:4px!important;margin-bottom:7px!important}
+#memberProfile .profile-portrait h2,#memberProfile .profile-edit-portrait h2{font-size:23px!important;margin:6px 0 4px!important}
+#memberProfile .profile-group-pill{padding:4px 11px!important;font-size:14px!important}
+#memberProfile .profile-portrait p{font-size:13px!important;margin:6px!important}
+#memberProfile .profile-facts{padding:8px 12px!important;min-width:0}
+#memberProfile .profile-facts h3,#memberProfile .profile-edit-panel h3{font-size:20px!important}
+#memberProfile .profile-facts>p,#memberProfile .profile-edit-panel>p{font-size:13px!important;margin:3px 0 9px!important}
+#memberProfile .profile-facts-grid{gap:4px 16px!important}
+#memberProfile .profile-facts-grid>div{min-height:58px!important;gap:10px!important}
+#memberProfile .profile-facts-grid>div>span{font-size:23px!important;min-width:25px!important}
+#memberProfile .profile-facts-grid small{font-size:12px!important}
+#memberProfile .profile-facts-grid strong{font-size:15px!important;margin-top:2px!important;overflow-wrap:anywhere}
+#memberProfile .profile-intro{grid-template-columns:minmax(0,1fr) 22%!important;gap:9px!important;margin:10px 0!important;padding:7px!important}
+#memberProfile .profile-intro>div:first-child{padding:8px 12px!important}
+#memberProfile .profile-intro h3{font-size:19px!important}
+#memberProfile .profile-intro p{font-size:13px!important;margin:3px 0 7px!important}
+#memberProfile .profile-intro blockquote{font-size:15px!important}
+#memberProfile .profile-plant{min-height:90px!important}
+#memberProfile .profile-footer button{font-size:14px!important;padding:8px 5px!important}
+#memberProfile .profile-edit-layout{grid-template-columns:minmax(175px,23%) minmax(0,1fr)!important;gap:10px!important;padding:9px!important}
+#memberProfile .profile-edit-portrait{padding:12px 7px!important}
+#memberProfile .profile-edit-portrait .profile-avatar-big{width:120px!important;height:120px!important}
+#memberProfile .profile-edit-portrait .profile-plant{margin-top:10px!important}
+#memberProfile .profile-edit-panel{padding:12px!important;margin-bottom:9px!important}
+#memberProfile .profile-edit-fields{gap:10px 14px!important}
+#memberProfile .profile-edit-fields label{font-size:14px!important}
+#memberProfile .profile-edit-fields input,#memberProfile .profile-edit-fields select,#memberProfile .profile-edit-panel textarea{padding:8px 10px!important;font-size:14px!important;margin-top:4px!important;box-sizing:border-box}
+#memberProfile .profile-edit-panel textarea{min-height:80px}
+#memberProfile .profile-edit-actions button{padding:9px 15px!important}
+@media(max-width:760px){#memberProfile .profile-summary,#memberProfile .profile-edit-layout{grid-template-columns:1fr!important}#memberProfile .profile-portrait{display:grid;grid-template-columns:90px 1fr;align-items:center;text-align:left;column-gap:12px}#memberProfile .profile-portrait .profile-avatar-big{grid-row:span 3;width:82px!important;height:82px!important;margin:0!important}#memberProfile .profile-facts-grid{grid-template-columns:1fr 1fr!important}#memberProfile .profile-edit-portrait .profile-plant{display:none}#memberProfile .profile-intro{grid-template-columns:1fr!important}#memberProfile .profile-intro .profile-plant{display:none}}
+@media(max-width:480px){#memberProfile .profile-facts-grid,#memberProfile .profile-edit-fields{grid-template-columns:1fr!important}#memberProfile .profile-head{align-items:flex-start!important;flex-direction:column!important}#memberProfile .profile-footer{flex-wrap:wrap!important}}
+</style>
 </head>
 <body>
 
