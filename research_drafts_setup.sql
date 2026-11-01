@@ -29,11 +29,11 @@ create index if not exists research_editor_versions_latest on public.research_ed
 create index if not exists research_editor_versions_auto on public.research_editor_draft_versions(draft_id,saved_by,saved_at desc) where kind='auto';
 create or replace function public.research_editor_is_admin()
 returns boolean language sql stable security definer set search_path=public as $$
- select exists(select 1 from public.profiles where user_id=auth.uid() and role='admin')
+ select exists(select 1 from public.group_profiles where user_id=auth.uid() and role='admin')
 $$;
 create or replace function public.research_editor_is_member(p_cell bigint)
 returns boolean language sql stable security definer set search_path=public as $$
- select exists(select 1 from public.profiles where user_id=auth.uid() and role='member')
+ select exists(select 1 from public.group_profiles where user_id=auth.uid() and role='member')
  and exists(select 1 from public.research_page_assignments where user_id=auth.uid() and page_id=p_cell)
 $$;
 create or replace function public.research_editor_can_write(p_cell bigint,p_slot text,p_owner uuid)
