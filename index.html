@@ -2340,19 +2340,21 @@ window.addEventListener("load",async () => {
       throw new Error("Không tải được thư viện Supabase.");
     }
 
+    // Detect the recovery marker BEFORE Supabase consumes the URL fragment.
+    const recoveryLink=location.hash.includes('type=recovery')||location.search.includes('type=recovery')||sessionStorage.getItem('researchPasswordRecovery')==='yes';
+    if(recoveryLink)sessionStorage.setItem('researchPasswordRecovery','yes');
     db = window.supabase.createClient(
       SUPABASE_URL,
       SUPABASE_KEY,
       {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
     );
-
-    const recoveryLink=location.hash.includes('type=recovery')||location.search.includes('type=recovery')||sessionStorage.getItem('researchPasswordRecovery')==='yes';
-    if(recoveryLink)sessionStorage.setItem('researchPasswordRecovery','yes');
-    db.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){sessionStorage.setItem('researchPasswordRecovery','yes');el('passwordRecovery').classList.remove('hidden');el('login').classList.remove('hidden');el('error').textContent='Nhập mật khẩu mới để hoàn tất.';}});
+    const showRecovery=()=>{sessionStorage.setItem('researchPasswordRecovery','yes');el('passwordRecovery').classList.remove('hidden');el('login').classList.remove('hidden');el('error').textContent='Nhập mật khẩu mới để hoàn tất.';el('passwordRecovery').scrollIntoView({block:'center'});};
+    db.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY')showRecovery();});
     const {data:{session}} = await db.auth.getSession();
-    if(recoveryLink){await enterGuestMode();el('passwordRecovery').classList.remove('hidden');el('login').classList.remove('hidden');}
+    if(recoveryLink){await enterGuestMode();showRecovery();}
     else if(session) await initialize();
     else await enterGuestMode();
+    if(sessionStorage.getItem('researchPasswordRecovery')==='yes')showRecovery();
   } catch (err) {
     el("error").textContent = err.message;
   }
