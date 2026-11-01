@@ -3392,7 +3392,7 @@ try{
   const draftCards=document.createElement('div');draftCards.className='research-draft-grid';
   const draftNodes=[1,2].map(slot=>{
     const panel=document.createElement('section');panel.className='research-work-box research-draft-card';
-    const h=document.createElement('h3');h.textContent='📝 Bản nháp '+slot;
+    const h=document.createElement('h3');h.textContent='📝 Bản nháp '+(slot+2);
     const owner=document.createElement('p');owner.className='research-draft-owner';owner.textContent='Chưa phân công thành viên';
     const preview=document.createElement('div');preview.className='detail-content';preview.textContent='Chưa có nội dung.';
     const button=document.createElement('button');iconOnly(button,'✎','Chỉnh sửa');
