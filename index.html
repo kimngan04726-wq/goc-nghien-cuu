@@ -3851,7 +3851,7 @@ try{
     });
   };
   back.onclick=close;
-  edit.onclick=async()=>{if(selected!==null&&canEditResearch(selected)){edit.style.display='none';await openResearchEditor(selected);if(selectedSaved?.pageId===selected){const raw=selectedSaved.content;const textarea=document.getElementById('researchText');textarea.value=raw;const rich=document.getElementById('richEditor');if(rich){const marker='<!--RICH_RESEARCH_V1-->';if(raw.startsWith(marker)){rich.innerHTML=window.DOMPurify?DOMPurify.sanitize(raw.slice(marker.length)):raw.slice(marker.length)}else rich.textContent=raw;}}}};
+  edit.onclick=()=>{if(selected!==null&&canEditResearch(selected)){window.currentResearchCellId=Number(selected);window.openResearchEditorUI(Number(selected),'summary');}};
   const oldCancel=cancelResearch;
   cancelResearch=function(){oldCancel();if(selected!==null)refresh();};
   const oldLoad=loadResearch;
