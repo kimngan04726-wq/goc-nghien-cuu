@@ -5584,24 +5584,27 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
  #research.gallery-detail #researchDetail .research-task-box .research-task-text{max-height:none!important;overflow:visible!important}
 }
 
-/* M04/B14: independently scroll the right-side detail, even when cards fit. */
+/* M04: scroll the entire browser document, not a nested research-detail panel. */
 @media (min-width:900px) and (min-height:640px){
- /* Keep the account strip and left sidebar in their existing positions. */
+ html:has(#research.gallery-detail:not(.hidden)),
+ body:has(#research.gallery-detail:not(.hidden)){
+   height:auto!important;max-height:none!important;min-height:100%!important;
+   overflow-y:auto!important;overflow-x:hidden!important;
+ }
+ body:not(.ui-preview-screen):has(#research.gallery-detail:not(.hidden)) main,
+ body:not(.ui-preview-screen):has(#research.gallery-detail:not(.hidden)) #app{
+   height:auto!important;max-height:none!important;min-height:0!important;
+   overflow:visible!important;
+ }
  #research.gallery-detail{
-   height:calc(100dvh - var(--rd-top,130px))!important;
-   max-height:calc(100dvh - var(--rd-top,130px))!important;
-   min-height:0!important;overflow:hidden!important;
+   display:block!important;height:auto!important;max-height:none!important;
+   min-height:0!important;overflow:visible!important;
  }
  #research.gallery-detail #researchDetail{
-   display:grid!important;
-   height:100%!important;max-height:100%!important;min-height:0!important;
-   box-sizing:border-box!important;
-   overflow-y:auto!important;overflow-x:hidden!important;
-   overscroll-behavior-y:contain;scrollbar-width:thin;
+   display:grid!important;height:auto!important;max-height:none!important;
+   min-height:0!important;overflow:visible!important;
    grid-template-rows:max-content max-content max-content max-content!important;
-   align-content:start!important;
-   /* Deliberate scroll runway: allows movement even if all three cards fit. */
-   padding:8px 0 60dvh!important;
+   align-content:start!important;padding:8px 0 60dvh!important;
  }
  #research.gallery-detail #researchDetail .research-work-box:not(.research-history-panel){
    height:auto!important;min-height:230px!important;
