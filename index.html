@@ -135,7 +135,7 @@ main{margin:0 0 0 218px!important;max-width:none!important;padding:18px 23px 45p
 #app>nav button:nth-child(1):before{content:"⌂  "}
 #app>nav button:nth-child(2):before{content:"▣  "}
 #app>nav button:nth-child(3):before{content:"☷  "}
-#app>nav:after{content:"THÀNH VIÊN NHÓM\A\A ◉  Thành viên 1\A\A ◉  Thành viên 2\A\A ◉  Thành viên 3";white-space:pre-wrap;color:#33475b;font-size:14px;line-height:1.5;border-top:1px solid #ddd6ca;margin:20px 12px;padding-top:22px}
+#app>nav:after{content:"THÀNH VIÊN NHÓM\A\A ◉  QTrâm\A\A ◉  TThảo\A\A ◉  KN";white-space:pre-wrap;color:#33475b;font-size:14px;line-height:1.5;border-top:1px solid #ddd6ca;margin:20px 12px;padding-top:22px}
 #login{max-width:650px;margin:20px auto}
 #dashboardHome{order:-1;display:block}
 #dashboardHome.hidden{display:none}
@@ -1846,23 +1846,23 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 <h3>👥 &nbsp; Thành viên nhóm</h3>
 <div class="sidebar-member-group group-one">
 <div class="sidebar-group-heading"><span class="sidebar-group-icon">📁</span><div><strong>NHÓM 1</strong><span>Lý thuyết và định hướng</span></div></div>
-<button type="button" class="sidebar-person" onclick="openMemberProfile(1)"><span class="sidebar-avatar">●</span><span>Thành viên 1</span></button>
-<button type="button" class="sidebar-person" onclick="openMemberProfile(2)"><span class="sidebar-avatar">●</span><span>Thành viên 2</span></button>
+<button type="button" class="sidebar-person" onclick="openMemberProfile(1)"><span class="sidebar-avatar">●</span><span>QTrâm</span></button>
+<button type="button" class="sidebar-person" onclick="openMemberProfile(2)"><span class="sidebar-avatar">●</span><span>TThảo</span></button>
 </div>
 <div class="sidebar-member-group group-two">
 <div class="sidebar-group-heading"><span class="sidebar-group-icon">▥</span><div><strong>NHÓM 2</strong><span>Mô hình và triển khai</span></div></div>
-<button type="button" class="sidebar-person" onclick="openMemberProfile(3)"><span class="sidebar-avatar">●</span><span>Thành viên 3</span></button>
-<button type="button" class="sidebar-person" onclick="openMemberProfile(4)"><span class="sidebar-avatar">●</span><span>Thành viên 4</span></button>
+<button type="button" class="sidebar-person" onclick="openMemberProfile(3)"><span class="sidebar-avatar">●</span><span>KN</span></button>
+<button type="button" class="sidebar-person" onclick="openMemberProfile(4)"><span class="sidebar-avatar">●</span><span>MThư</span></button>
 </div>
 <div class="sidebar-member-photo" aria-hidden="true"></div>
 </div>
 </nav>
 
 <section id="memberProfile" class="hidden" aria-label="Hồ sơ thành viên">
-<div class="profile-crumb"><button onclick="showPage('home')">⌂</button> &nbsp; Thành viên nhóm &nbsp; / &nbsp; <span id="profileCrumbName">Thành viên 1</span></div>
+<div class="profile-crumb"><button onclick="showPage('home')">⌂</button> &nbsp; Thành viên nhóm &nbsp; / &nbsp; <span id="profileCrumbName">QTrâm</span></div>
 <div class="profile-head"><div><h2>▣ &nbsp; HỒ SƠ THÀNH VIÊN</h2><p>Một chút thông tin để cả nhóm hiểu nhau hơn</p></div><button id="profileEditButton" type="button" onclick="toggleMemberProfileEdit()">✎ &nbsp; Chỉnh sửa hồ sơ</button></div>
 <div id="profileReadView">
-<div class="profile-summary"><div class="profile-portrait"><div class="profile-avatar-big"><span>●</span></div><h2 id="profileDisplayName">Thành viên 1</h2><div class="profile-group-pill" id="profileGroupPill">📁 &nbsp; Nhóm 1</div><p id="profileGroupNote">Lý thuyết và định hướng</p></div>
+<div class="profile-summary"><div class="profile-portrait"><div class="profile-avatar-big"><span>●</span></div><h2 id="profileDisplayName">QTrâm</h2><div class="profile-group-pill" id="profileGroupPill">📁 &nbsp; Nhóm 1</div><p id="profileGroupNote">Lý thuyết và định hướng</p></div>
 <div class="profile-facts"><h3>♙ &nbsp; Thông tin thành viên</h3><p>Những thông tin cơ bản để các thành viên trong nhóm dễ dàng làm quen và phối hợp.</p><div class="profile-facts-grid">
 <div><span>♙</span><section><small>Họ và tên</small><strong id="profileFactName">Chưa cập nhật</strong></section></div>
 <div><span>♧</span><section><small>Lớp</small><strong id="profileFactClass">Chưa cập nhật</strong></section></div>
@@ -1874,7 +1874,7 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 <div class="profile-intro"><div><h3>❝ &nbsp; Đôi lời giới thiệu</h3><p>Viết một vài dòng để mọi người hiểu thêm về bạn.</p><blockquote id="profileIntroText">Thành viên chưa thêm lời giới thiệu.</blockquote></div><div class="profile-plant"></div></div>
 <div class="profile-footer"><button onclick="openMemberProfile((currentMemberNumber+2)%4+1)">← &nbsp; Thành viên trước</button><button onclick="showPage('home')">⌂ &nbsp; Về trang chủ</button><button onclick="openMemberProfile(currentMemberNumber%4+1)">Thành viên tiếp theo &nbsp; →</button></div>
 </div>
-<div id="profileEditView" class="hidden"><div class="profile-edit-layout"><div class="profile-edit-portrait"><div class="profile-avatar-big"><span>●</span></div><h2 id="profileEditName">Thành viên 1</h2><div class="profile-group-pill" id="profileEditGroup">📁 &nbsp; Nhóm 1</div><p>Thêm ảnh đại diện sau khi kết nối lưu hồ sơ</p><div class="profile-plant"></div></div><form id="memberProfileForm" onsubmit="saveMemberProfileDraft(event)"><div class="profile-edit-panel"><h3>♙ &nbsp; Thông tin cá nhân</h3><p>Những thông tin cơ bản để các thành viên trong nhóm dễ dàng làm quen và phối hợp.</p><div class="profile-edit-fields"><label>Họ và tên<input id="profileInputName" placeholder="Nhập họ và tên"></label><label>Lớp<input id="profileInputClass" placeholder="Nhập tên lớp"></label><label>Vai trò trong nhóm<input id="profileInputRole" placeholder="Nhập vai trò"></label><label>Nhóm phụ trách<select id="profileInputGroup" disabled><option value="1">Nhóm 1</option><option value="2">Nhóm 2</option></select></label><label>Ngày sinh<input id="profileInputBirth" type="date"></label><label>Cung hoàng đạo<input id="profileInputZodiac" placeholder="Hiển thị khi có ngày sinh" readonly></label></div></div><div class="profile-edit-panel"><h3>📖 &nbsp; Đôi lời giới thiệu</h3><p>Viết một vài dòng để mọi người hiểu thêm về bạn.</p><textarea id="profileInputIntro" rows="5" placeholder="Viết vài dòng về bản thân..."></textarea></div><p class="profile-draft-note">Bản xem trước giao diện: thông tin hiện chỉ lưu trên trình duyệt này, chưa đồng bộ với các thành viên.</p><div class="profile-edit-actions"><button type="button" onclick="toggleMemberProfileEdit(false)">Hủy</button><button type="submit">▣ &nbsp; Lưu thay đổi</button></div></form></div></div>
+<div id="profileEditView" class="hidden"><div class="profile-edit-layout"><div class="profile-edit-portrait"><div class="profile-avatar-big"><span>●</span></div><h2 id="profileEditName">QTrâm</h2><div class="profile-group-pill" id="profileEditGroup">📁 &nbsp; Nhóm 1</div><p>Thêm ảnh đại diện sau khi kết nối lưu hồ sơ</p><div class="profile-plant"></div></div><form id="memberProfileForm" onsubmit="saveMemberProfileDraft(event)"><div class="profile-edit-panel"><h3>♙ &nbsp; Thông tin cá nhân</h3><p>Những thông tin cơ bản để các thành viên trong nhóm dễ dàng làm quen và phối hợp.</p><div class="profile-edit-fields"><label>Họ và tên<input id="profileInputName" placeholder="Nhập họ và tên"></label><label>Lớp<input id="profileInputClass" placeholder="Nhập tên lớp"></label><label>Vai trò trong nhóm<input id="profileInputRole" placeholder="Nhập vai trò"></label><label>Nhóm phụ trách<select id="profileInputGroup" disabled><option value="1">Nhóm 1</option><option value="2">Nhóm 2</option></select></label><label>Ngày sinh<input id="profileInputBirth" type="date"></label><label>Cung hoàng đạo<input id="profileInputZodiac" placeholder="Hiển thị khi có ngày sinh" readonly></label></div></div><div class="profile-edit-panel"><h3>📖 &nbsp; Đôi lời giới thiệu</h3><p>Viết một vài dòng để mọi người hiểu thêm về bạn.</p><textarea id="profileInputIntro" rows="5" placeholder="Viết vài dòng về bản thân..."></textarea></div><p class="profile-draft-note">Bản xem trước giao diện: thông tin hiện chỉ lưu trên trình duyệt này, chưa đồng bộ với các thành viên.</p><div class="profile-edit-actions"><button type="button" onclick="toggleMemberProfileEdit(false)">Hủy</button><button type="submit">▣ &nbsp; Lưu thay đổi</button></div></form></div></div>
 </section><section id="research" class="research-workspace"><div class="rw-header"><div class="rw-header-left"><svg viewBox="0 0 48 48" width="38" height="38" aria-hidden="true"><path d="M7 7h30l5 5-30 5-5-5z" fill="#eeb263"/><path d="M7 12v8l5 4 30-5v-7l-30 5z" fill="#12405c"/><path d="M5 24l29-5 8 5-29 5z" fill="#9ed3e9"/><path d="M5 24v8l8 5 29-6v-7l-29 5z" fill="#12405c"/></svg><div><h2>Nơi làm việc</h2><p>Quản lý, theo dõi tiến độ và phối hợp nghiên cứu theo từng nhóm nội dung.</p></div></div><svg class="rw-decor" viewBox="0 0 120 75" aria-hidden="true"><g fill="none" stroke="#4d9b78" stroke-width="3" stroke-linecap="round"><path d="M25 60V13M25 36 10 23M25 44 43 25M25 55 8 46"/><path d="M10 23q-8-14 5-11M43 25q13-13 12 0M8 46q-10-8-6-15"/></g><path d="M56 43 108 36l8 9-52 7z" fill="#edae54"/><path d="M64 52 116 45v10l-52 8z" fill="#12405c"/><path d="M56 59 104 55l10 9-48 7z" fill="#9ad3e5"/></svg></div>
 
 
@@ -4420,7 +4420,7 @@ function canonicalMemberName(n){
  const visible=button?.querySelector('span:last-child')?.textContent?.trim()||'';
  const stored=sharedMemberProfiles[n]?.name?.trim()||'';
  if(visible&&!/^Thành viên [1-4]$/.test(visible))return visible;
- return stored||visible||'Thành viên '+n;
+ return stored||visible||({1:'QTrâm',2:'TThảo',3:'KN',4:'MThư'}[n]||'Thành viên '+n);
 }
 function memberFinderLabel(value){const match=String(value||'').match(/^Thành viên ([1-4])$/);return match?canonicalMemberName(Number(match[1])):(value||'Chưa xác định')}
 function populateQuickFinders(){const select=document.getElementById('quickFinder');if(!select)return;const previous=select.value;select.replaceChildren(new Option('Chọn thành viên',''));for(let n=1;n<=4;n++)select.add(new Option(canonicalMemberName(n),'Thành viên '+n));select.value=previous}
