@@ -3391,7 +3391,7 @@ try{
     const owner=document.createElement('p');owner.className='research-draft-owner';owner.textContent='Chưa phân công thành viên';
     const preview=document.createElement('div');preview.className='detail-content';preview.textContent='Chưa có nội dung.';
     const button=document.createElement('button');iconOnly(button,'✎','Chỉnh sửa');
-    button.onclick=()=>window.openResearchEditorUI();
+    button.onclick=()=>{const id=Number(selected||document.querySelector('#researchDetail')?.dataset.cellId||window.currentResearchCellId);window.openResearchEditorUI(id,slot===1?'draft1':'draft2')};
     const controls=document.createElement('div');controls.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:10px';
     const save=document.createElement('button');iconOnly(save,'💾','Lưu bài làm');
     const history=document.createElement('button');iconOnly(history,'🗂','Lịch sử lưu bài');
