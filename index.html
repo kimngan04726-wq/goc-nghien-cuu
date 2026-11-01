@@ -5384,54 +5384,60 @@ document.addEventListener('pointerdown',e=>{if(!researchTools.hidden&&!researchT
 const actions=view.querySelector('.ed-actions');const menu=document.createElement('div');menu.className='ed-export-menu';menu.hidden=true;const docsEntry=document.createElement('button');docsEntry.type='button';docsEntry.textContent='Xuất sang Google Docs';docsEntry.onclick=()=>{menu.hidden=true;if(window.__legacyResearchDocsExport)window.__legacyResearchDocsExport();else alert('Chức năng Google Docs chưa sẵn sàng.');};menu.append(docsEntry);for(const [label,format] of [['Word (.docx)','docx'],['PDF (in ra PDF)','pdf'],['Văn bản thuần (.txt)','txt'],['HTML (.html)','html']]){const b=document.createElement('button');b.type='button';b.textContent=label;b.dataset.exportFormat=format;b.onclick=()=>{menu.hidden=true;exportFile(format)};menu.append(b)}actions.append(menu);
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)}
 function exportFile(format){const title=(document.getElementById('ed-page-title').textContent||'Nghiên cứu').replace('– Soạn thảo','').trim().replace(/[\\/:*?"<>|]/g,'-');const owner=view.querySelector('.ed-chip')?.textContent?.trim()||'Người phụ trách';const name=title+' - '+owner;if(format==='pdf'){if(editor)editor.execCommand('mcePrint');else window.print();return}if(format==='txt'){download(new Blob([getText()],{type:'text/plain;charset=utf-8'}),name+'.txt');return}const html='<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><style>'+css+'</style></head><body>'+getHTML()+'<style id="research-detail-mockup-v3">
-#research.gallery-detail #researchDetail{font-family:var(--font-main)!important;color:#123657!important}
+/* 1) Ẩn khối cũ, chỉ giữ .rd-body (không xóa khỏi DOM) */
 #research.gallery-detail #researchDetail .research-work-box:not(.research-history-panel)>*:not(.rd-body){display:none!important}
-#research.gallery-detail #researchDetail .research-draft-actions,
-#research.gallery-detail #researchDetail .research-draft-actions:before,
-#research.gallery-detail #researchDetail .research-draft-actions:after,
-#research.gallery-detail #researchDetail .research-draft-result,
-#research.gallery-detail #researchDetail .research-history-panel{display:none!important;content:none!important}
-#research.gallery-detail #researchDetail .research-drafts-area,
-#research.gallery-detail #researchDetail .research-draft-grid{display:contents!important}
-#research.gallery-detail #researchDetail .research-work-box:has(>.rd-body){position:relative!important;min-width:0!important;box-sizing:border-box!important;background:#fffdfb!important;border:1px solid #e7be95!important;border-radius:26px!important;padding:0!important;overflow:hidden!important;box-shadow:0 4px 20px #1236570a!important;display:flex!important;flex-direction:column!important}
-#research.gallery-detail #researchDetail .research-work-box:has(>.rd-body):before{content:"";position:absolute;right:-22px;top:-56px;width:150px;height:115px;background:#dcebf9;border-radius:0 0 0 100%;pointer-events:none}
-#research.gallery-detail #researchDetail .rd-body{position:relative;z-index:1;display:flex;flex-direction:column;gap:16px;min-height:0;flex:1;padding:22px 24px;box-sizing:border-box}
-#research.gallery-detail #researchDetail .rd-title{font:700 clamp(19px,2vw,29px)/1.3 var(--font-main)!important;color:#123657!important;margin:0 0 8px!important;padding:0!important;border:0!important;background:none!important}
-#research.gallery-detail #researchDetail .rd-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;font:17px/1.4 var(--font-main);color:#123657}
-#research.gallery-detail #researchDetail .rd-row strong{font-weight:700}
-#research.gallery-detail #researchDetail .rd-row button{font:700 17px var(--font-main)!important;border:0!important;border-radius:12px!important;padding:8px 14px!important;cursor:pointer;color:#123657!important}
-#research.gallery-detail #researchDetail .rd-owner{border-bottom:1px solid #d9e1e8;padding-bottom:16px}
-#research.gallery-detail #researchDetail .rd-owner button{background:#dcebf9!important}
-#research.gallery-detail #researchDetail .rd-progress button{background:#d8f1f5!important}
-#research.gallery-detail #researchDetail .rd-progress button[data-status="Chưa viết"]{background:#e9ecef!important}
-#research.gallery-detail #researchDetail .rd-progress button[data-status="Chờ duyệt"]{background:#fff0bf!important}
-#research.gallery-detail #researchDetail .rd-progress button[data-status="Đã duyệt"]{background:#d5f4dd!important}
-#research.gallery-detail #researchDetail .rd-updated button{background:transparent!important;padding:4px 0!important;font-weight:400!important}
-#research.gallery-detail #researchDetail .rd-edit{align-self:flex-end!important;margin-top:auto!important;background:#075078!important;color:white!important;border:0!important;border-radius:15px!important;width:60px!important;height:60px!important;font-size:28px!important;cursor:pointer!important}
-#research.gallery-detail #researchDetail .rd-edit:disabled{opacity:.4!important;cursor:not-allowed!important}
+#research.gallery-detail #researchDetail>.research-drafts-area>.research-draft-actions,
+#research.gallery-detail #researchDetail>.research-drafts-area>.research-draft-result,
+#research.gallery-detail #researchDetail>.research-history-panel{display:none!important}
+
+/* 2) Thẻ */
+#research.gallery-detail #researchDetail .research-work-box:not(.research-history-panel){position:relative!important;display:flex!important;flex-direction:column!important;min-height:230px!important;height:auto!important;margin:0!important;padding:16px 20px!important;border:1px solid #e6be99!important;border-radius:18px!important;background:radial-gradient(ellipse 150px 72px at 103% -4%,#dcebf9 0 74%,transparent 75%),#fffdfb!important;box-shadow:0 5px 18px #132f4d13!important;overflow:visible!important}
+#research.gallery-detail #researchDetail .rd-body{display:flex;flex-direction:column;gap:12px;flex:1;padding-bottom:60px}
+#research.gallery-detail #researchDetail .rd-title{margin:0 0 2px!important;padding:0!important;font:700 clamp(20px,2.4vh,27px)/1.2 var(--font-main)!important;color:#10365d!important}
+#research.gallery-detail #researchDetail .rd-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0;padding:0}
+#research.gallery-detail #researchDetail .rd-row>strong{font-weight:700;color:#10365d;font-size:clamp(15px,1.8vh,18px);white-space:nowrap}
+#research.gallery-detail #researchDetail .rd-row>button{margin:0!important;min-height:0!important;font-family:var(--font-main)!important}
+
+/* Phụ trách */
+#research.gallery-detail #researchDetail .rd-owner>button.draft-member-profile-link{background:#d8e7f8!important;color:#123657!important;border:0!important;border-radius:22px!important;padding:4px 16px!important;font-weight:700!important;font-size:clamp(15px,1.8vh,18px)!important;text-decoration:none!important}
+#research.gallery-detail #researchDetail .rd-owner>button:disabled{opacity:1!important;cursor:default!important}
+
+/* Tiến độ (huy hiệu) */
+#research.gallery-detail #researchDetail .rd-progress>button.rw-status{display:inline-flex!important;align-items:center;gap:6px;border:0!important;border-radius:30px!important;padding:5px 14px!important;font-size:clamp(14px,1.7vh,17px)!important;font-weight:700!important;cursor:pointer;background:#ecebea!important;color:#60666c!important}
+#research.gallery-detail #researchDetail .rd-progress>button.rw-status[data-tone="writing"]{background:#dcebfa!important;color:#12405c!important}
+#research.gallery-detail #researchDetail .rd-progress>button.rw-status[data-tone="review"]{background:#fff1cc!important;color:#85510b!important}
+#research.gallery-detail #researchDetail .rd-progress>button.rw-status[data-tone="done"]{background:#dff3e3!important;color:#176e31!important}
+
+/* Tình trạng cập nhật (nút dạng liên kết) */
+#research.gallery-detail #researchDetail .rd-updated>button.ed-detail-updated{background:none!important;border:0!important;padding:0!important;color:#12405c!important;font-size:clamp(15px,1.8vh,18px)!important;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+
+/* Nút sửa góc dưới phải */
+#research.gallery-detail #researchDetail .rd-edit{position:absolute!important;right:18px;bottom:16px;width:58px;height:46px;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:12px!important;background:#10395d!important;color:#fff!important;font-size:22px!important;line-height:1;cursor:pointer}
+#research.gallery-detail #researchDetail .rd-edit:disabled{opacity:.45;cursor:not-allowed}
+
+/* 3) Bố cục 3 thẻ một hàng (desktop) */
+@media(min-width:900px){
+ #research.gallery-detail #researchDetail{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:14px 18px!important;align-content:start!important}
+ #research.gallery-detail #researchDetail>button:first-child,
+ #research.gallery-detail #researchDetail>h2,
+ #research.gallery-detail #researchDetail>.research-task-box{grid-column:1/-1!important}
+ #research.gallery-detail #researchDetail>.research-drafts-area,
+ #research.gallery-detail #researchDetail .research-draft-grid{display:contents!important}
+}
+
+/* 4) Không cuộn trang (desktop đủ cao). --rd-top là phần phía trên (thanh tài khoản, padding của main): ĐO bằng DevTools và chỉnh cho đúng */
 @media(min-width:900px) and (min-height:640px){
-html:has(#research.gallery-detail:not(.hidden)),body:has(#research.gallery-detail:not(.hidden)){height:100dvh!important;overflow:hidden!important;overflow-y:hidden!important}
-#research.gallery-detail{height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;box-sizing:border-box!important;display:block!important}
-#research.gallery-detail #researchDetail{height:100%!important;max-height:100%!important;overflow:hidden!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:auto auto minmax(0,1fr)!important;gap:16px 20px!important;align-content:start!important;box-sizing:border-box!important;padding:12px 20px 18px!important}
-#research.gallery-detail #researchDetail>:not(.research-drafts-area):not(.research-work-box):not(.research-draft-grid){grid-column:1/-1!important}
-#research.gallery-detail #researchDetail .research-work-box:not(.research-draft-card):not(.research-history-panel):not(:has(>.rd-body)){grid-column:1/-1!important}
-#research.gallery-detail #researchDetail .research-work-box:has(>.rd-body){min-height:0!important;height:100%!important;max-height:100%!important;grid-row:3!important}
-#research.gallery-detail #researchDetail .research-draft-card:nth-child(1){grid-column:1!important}
-#research.gallery-detail #researchDetail .research-draft-card:nth-child(2){grid-column:2!important}
-#research.gallery-detail #researchDetail .research-work-box:not(.research-draft-card):not(.research-history-panel):has(>.rd-body){grid-column:3!important}
-#research.gallery-detail #researchDetail .rd-body{overflow:auto}
-#research.gallery-detail #researchDetail .research-description,
-#research.gallery-detail #researchDetail .research-task-description{max-height:14dvh!important;overflow:auto!important;scrollbar-width:thin}
+ :root{--rd-top:130px}
+ html:has(#research.gallery-detail:not(.hidden)),body:has(#research.gallery-detail:not(.hidden)){height:100dvh!important;min-height:0!important;overflow:hidden!important}
+ body:has(#research.gallery-detail:not(.hidden)) header{display:none!important}
+ body:has(#research.gallery-detail:not(.hidden)) main{padding-bottom:8px!important}
+ #research.gallery-detail{height:calc(100dvh - var(--rd-top))!important;max-height:calc(100dvh - var(--rd-top))!important;min-height:0!important;overflow:hidden!important;box-sizing:border-box!important}
+ #research.gallery-detail #researchDetail{height:100%!important;max-height:100%!important;min-height:0!important;overflow:hidden!important;grid-template-rows:auto auto auto minmax(0,1fr)!important;padding:8px 0 10px!important}
+ #research.gallery-detail #researchDetail .research-work-box:not(.research-history-panel){height:100%!important;min-height:0!important}
+ #research.gallery-detail #researchDetail .research-task-box .research-task-text{max-height:11dvh!important;overflow:auto!important}
 }
-@media(max-width:899px), (max-height:639px){
-#research.gallery-detail{height:auto!important;max-height:none!important;overflow:visible!important}
-#research.gallery-detail #researchDetail{height:auto!important;max-height:none!important;overflow:visible!important;display:grid!important;grid-template-columns:1fr!important;gap:16px!important}
-#research.gallery-detail #researchDetail>*{grid-column:1!important}
-#research.gallery-detail #researchDetail .research-drafts-area,
-#research.gallery-detail #researchDetail .research-draft-grid{display:contents!important}
-#research.gallery-detail #researchDetail .research-work-box:has(>.rd-body){min-height:320px!important;height:auto!important;grid-column:1!important;grid-row:auto!important}
-}
-</style></body></html>';if(format==='html'){download(new Blob([html],{type:'text/html;charset=utf-8'}),name+'.html');return}if(window.htmlDocx){try{download(window.htmlDocx.asBlob(html),name+'.docx')}catch(err){alert('Không xuất được Word: '+err.message)}}else alert('Thư viện xuất Word chưa tải được')}
+</style>
+</body></html>';if(format==='html'){download(new Blob([html],{type:'text/html;charset=utf-8'}),name+'.html');return}if(window.htmlDocx){try{download(window.htmlDocx.asBlob(html),name+'.docx')}catch(err){alert('Không xuất được Word: '+err.message)}}else alert('Thư viện xuất Word chưa tải được')}
 view.addEventListener('click',async e=>{const b=e.target.closest('[data-action]');if(!b)return;const a=b.dataset.action;if(a==='save'){e.stopPropagation();save()}else if(a==='export'){e.stopPropagation();menu.hidden=!menu.hidden}else if(a==='add-subsection'){e.stopPropagation();await init();if(!readonly){editor.focus();editor.insertContent('<h2>Tiểu mục mới</h2><p></p>')}}else if(a==='import-docx'){document.getElementById('ed-word-file').click()}});document.addEventListener('click',e=>{if(!e.target.closest('.ed-export-menu,[data-action="export"]'))menu.hidden=true});
 document.getElementById('ed-word-file').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{await init();if(!window.mammoth)throw Error('Không tải được Mammoth');const result=await mammoth.convertToHtml({arrayBuffer:await file.arrayBuffer()});editor.setContent(result.value);if(result.messages?.length)console.warn('Thông báo nhập Word:',result.messages)}catch(err){alert('Không nhập được Word: '+err.message)}e.target.value=''});
 document.getElementById('ed-word-zoom').addEventListener('input',e=>setZoom(Number(e.target.value),false));view.querySelector('[data-action="zoom-out"]').addEventListener('click',()=>setZoom(zoom-10,false));view.querySelector('[data-action="zoom-in"]').addEventListener('click',()=>setZoom(zoom+10,false));view.querySelector('[data-action="fit-width"]').addEventListener('click',fitWidth);
