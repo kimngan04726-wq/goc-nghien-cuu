@@ -5643,6 +5643,21 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
  }
 }
 
+/* M08: allow the full document to scroll; undo legacy viewport height lock. */
+@media (min-width:1001px) and (min-height:590px){
+ html:has(#library:not(.hidden)),body:has(#library:not(.hidden)){
+  height:auto!important;max-height:none!important;overflow-y:auto!important;
+ }
+ body:has(#library:not(.hidden)) main{
+  height:auto!important;max-height:none!important;min-height:100dvh!important;
+  overflow:visible!important;padding-bottom:24px!important;
+ }
+ #library:not(.hidden){
+  height:auto!important;max-height:none!important;min-height:0!important;
+  overflow:visible!important;
+ }
+}
+
 /* M04/B02: size the back button to its label, without changing its height. */
 #research.gallery-detail #researchDetail > button:first-child{
   width:max-content!important;max-width:100%!important;min-width:0!important;
