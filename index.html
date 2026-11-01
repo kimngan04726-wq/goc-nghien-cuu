@@ -1898,7 +1898,8 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 <div id="adminModeControls" class="hidden" role="group" aria-label="Chế độ hiển thị"><button type="button" onclick="setAdminMode('edit')" data-admin-mode="edit">✎ Quản trị</button><button type="button" onclick="setAdminMode('member')" data-admin-mode="member">👥 Thành viên</button><button type="button" onclick="setAdminMode('guest')" data-admin-mode="guest">👁 Khách</button></div>
 <button id="logoutButton" onclick="signOut()">Đăng xuất</button>
 <div id="memberAccessAdmin" class="hidden" style="max-width:610px;margin:14px 0;padding:16px;border:1px solid #d9c9ac;border-radius:14px;background:#fffaf1">
-<h3 style="margin:0 0 9px">🔐 Quản lý quyền thành viên</h3>
+<h3 style="margin:0 0 9px;display:flex;align-items:center;justify-content:space-between;gap:12px">🔐 Quản lý quyền thành viên <button type="button" aria-controls="memberAccessDetails" aria-expanded="true" onclick="const d=document.getElementById('memberAccessDetails');d.hidden=!d.hidden;this.setAttribute('aria-expanded',String(!d.hidden));this.textContent=d.hidden?'Mở rộng ▾':'Thu nhỏ ▴'" style="font-size:13px;padding:6px 10px;white-space:nowrap">Thu nhỏ ▴</button></h3>
+<div id="memberAccessDetails">
 <p style="margin:0 0 12px;font-size:14px">Nhập email đã đăng ký hoặc đã chấp nhận lời mời Supabase. Không cần mật khẩu của thành viên.</p>
 <form id="memberAccessForm" onsubmit="manageMemberAccess(event)" style="display:grid;gap:9px">
 <label>Email thành viên<input id="memberAccessEmail" type="email" required placeholder="ten@example.com" autocomplete="off"></label>
@@ -1907,6 +1908,7 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 <p id="memberAccessStatus" role="status" style="font-size:14px;margin:0"></p>
 </form>
 <p style="font-size:13px;margin:10px 0 0">Nếu email chưa có tài khoản, hãy mời qua Supabase → Authentication → Users → Invite user trước. Chức năng này cần cài RPC bảo mật trong SQL Editor.</p>
+</div>
 </div>
 </section>
 
