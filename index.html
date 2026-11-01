@@ -5558,7 +5558,7 @@ async function refreshDetail(){
    owner.className='draft-member-profile-link';
    if(slot==='summary'){owner.disabled=true;owner.classList.add('rd-summary-owner')}else owner.onclick=()=>openMemberProfile(memberNumber);
    const progress=slot==='summary'?(window.getCellProgress?.(id)?.label||'Chưa viết'):(String(draft?.content_text||'').trim()?'Đang viết':'Chưa viết');
-   const status=row('Tiến độ:',progress,'progress');status.className='rw-status';status.dataset.status=progress;status.onclick=()=>showPage('tasks');
+   const status=row('Tiến độ:',progress,'progress');status.className='rw-status';status.dataset.status=progress;status.dataset.tone={'Chưa viết':'idle','Đang viết':'writing','Chờ duyệt':'review','Đã duyệt':'done'}[progress]||'idle';status.onclick=()=>showPage('tasks');
    const updated=row('Tình trạng cập nhật:',draft?.updated_at?time(draft.updated_at):'Chưa cập nhật','updated');updated.className='ed-detail-updated';
    updated.onclick=()=>{window.openResearchEditorUI(id,slot);setTimeout(()=>document.querySelector('#view-editor [data-action="history"]')?.click(),450)};
    const edit=document.createElement('button');edit.type='button';edit.className='rd-edit';edit.textContent='✎';edit.setAttribute('aria-label','Chỉnh sửa '+(slot==='summary'?'Bài tổng hợp':slot));edit.onclick=()=>window.openResearchEditorUI(id,slot);
