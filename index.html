@@ -5586,6 +5586,15 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
  }
 }
 
+/* M04/B03: prevent title centering across its wide grid area. */
+@media (min-width:900px){
+ #research.gallery-detail #researchDetail > h2{
+  justify-self:start!important;text-align:left!important;
+  width:max-content!important;max-width:100%!important;
+  transform:none!important;
+ }
+}
+
 /* M04/B03: title beside the B02 back button, without the book icon. */
 @media (min-width:900px){
  #research.gallery-detail #researchDetail{
