@@ -1644,7 +1644,7 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 </style><style id="ed-word-real-editor-css">
 #view-editor .ed-center{min-width:0!important}
 #view-editor .ed-word-shell{min-width:0;display:flex;flex-direction:column;border:1px solid #ebddcf;border-radius:12px;overflow:hidden;background:#ede9e3}
-#view-editor .ed-editor-scroll{height:min(70vh,800px);min-height:420px;overflow:auto;padding:16px 10px;background:#eae6e0}
+#view-editor .ed-editor-scroll{height:min(70vh,800px);min-height:420px;overflow:auto;overscroll-behavior:contain;padding:16px 10px;background:#eae6e0}
 #view-editor .ed-word-tools{height:0;overflow:hidden}
 #view-editor .ed-word-bottom{display:flex;gap:12px;align-items:center;justify-content:flex-end;padding:8px 12px;background:#fffdfb;border-top:1px solid #ebddcf;font-size:13px}
 #view-editor .ed-word-bottom label{display:flex;align-items:center;gap:7px}
@@ -1654,7 +1654,10 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 #view-editor .tox .tox-editor-header{position:sticky!important;top:0;z-index:3;background:#fffdfb!important;border-bottom:1px solid #ebddcf!important;box-shadow:none!important}
 #view-editor .tox .tox-menubar,#view-editor .tox .tox-toolbar-overlord,#view-editor .tox .tox-toolbar__primary,#view-editor .tox .tox-toolbar__overflow{background:#fffdfb!important}
 #view-editor .tox .tox-tbtn--enabled,#view-editor .tox .tox-tbtn:hover{background:#dcebfa!important}
-#view-editor .tox .tox-edit-area{background:#eae6e0!important}
+#view-editor .tox .tox-edit-area{background:#eae6e0!important;min-height:0!important;overflow:hidden!important}
+#view-editor .tox .tox-edit-area__iframe{height:100%!important}
+#view-editor .tox .tox-sidebar-wrap{min-height:0!important;flex:1 1 auto!important}
+#view-editor .tox.tox-tinymce{height:650px!important;max-height:650px!important;display:flex!important;flex-direction:column!important}
 #view-editor .tox .tox-edit-area__iframe{max-width:794px!important;margin:16px auto!important;box-shadow:0 3px 14px #12405c24!important;background:white!important}
 #view-editor .tox .tox-statusbar{background:#fffdfb!important;border-top:1px solid #ebddcf!important}
 #view-editor .ed-outline [data-ed-heading]{display:flex;align-items:center;gap:6px;width:100%;border:0;background:transparent;text-align:left;padding:7px 4px;border-radius:7px;color:#12405c;font-size:14px;cursor:pointer}
