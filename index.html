@@ -1838,6 +1838,28 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 @media(max-width:760px){#memberProfile .profile-summary,#memberProfile .profile-edit-layout{grid-template-columns:1fr!important}#memberProfile .profile-portrait{display:grid;grid-template-columns:90px 1fr;align-items:center;text-align:left;column-gap:12px}#memberProfile .profile-portrait .profile-avatar-big{grid-row:span 3;width:82px!important;height:82px!important;margin:0!important}#memberProfile .profile-facts-grid{grid-template-columns:1fr 1fr!important}#memberProfile .profile-edit-portrait .profile-plant{display:none}#memberProfile .profile-intro{grid-template-columns:1fr!important}#memberProfile .profile-intro .profile-plant{display:none}}
 @media(max-width:480px){#memberProfile .profile-facts-grid,#memberProfile .profile-edit-fields{grid-template-columns:1fr!important}#memberProfile .profile-head{align-items:flex-start!important;flex-direction:column!important}#memberProfile .profile-footer{flex-wrap:wrap!important}}
 </style>
+<style id="member-profile-side-by-side-2026">
+/* Profile information on the left; introduction at the upper right. */
+@media(min-width:900px){
+ #memberProfile #profileReadView{display:grid!important;grid-template-columns:minmax(0,1.65fr) minmax(270px,1fr)!important;gap:14px!important;align-items:start!important}
+ #memberProfile #profileReadView>.profile-summary{grid-column:1!important;grid-row:1!important;grid-template-columns:minmax(135px,30%) minmax(0,1fr)!important;min-width:0!important}
+ #memberProfile #profileReadView>.profile-intro{grid-column:2!important;grid-row:1!important;display:flex!important;flex-direction:column!important;margin:0!important;min-width:0!important;align-self:stretch!important}
+ #memberProfile #profileReadView>.profile-intro>div:first-child{flex:1 1 auto!important}
+ #memberProfile #profileReadView>.profile-intro .profile-plant{min-height:115px!important;flex:0 0 115px!important}
+ #memberProfile #profileReadView>.profile-footer{grid-column:1/-1!important;grid-row:2!important}
+ #memberProfile #profileReadView .profile-facts-grid{grid-template-columns:1fr 1fr!important;gap:4px 9px!important}
+ #memberProfile #profileReadView .profile-facts-grid>div{gap:5px!important}
+ #memberProfile #profileReadView .profile-facts-grid>div>span{font-size:19px!important;min-width:20px!important}
+ #memberProfile #profileReadView .profile-facts{padding:7px!important}
+ #memberProfile #profileReadView .profile-facts-grid strong{font-size:14px!important}
+}
+@media(min-width:900px) and (max-width:1100px){
+ #memberProfile #profileReadView{grid-template-columns:minmax(0,1.5fr) minmax(235px,1fr)!important}
+ #memberProfile #profileReadView>.profile-summary{grid-template-columns:1fr!important}
+ #memberProfile #profileReadView .profile-portrait{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px!important}
+ #memberProfile #profileReadView .profile-portrait .profile-avatar-big{width:76px!important;height:76px!important;margin:0!important}
+}
+</style>
 </head>
 <body>
 
