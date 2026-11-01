@@ -5577,6 +5577,15 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
 
 /* Removed obsolete desktop viewport scroll lock for M04. */
 
+/* M04/B03: bring the title closer to B02 and increase its font size. */
+@media (min-width:900px){
+ #research.gallery-detail #researchDetail{column-gap:8px!important;}
+ #research.gallery-detail #researchDetail > h2{
+   font-size:clamp(32px,3.5vw,46px)!important;
+   line-height:1.15!important;
+ }
+}
+
 /* M04/B03: title beside the B02 back button, without the book icon. */
 @media (min-width:900px){
  #research.gallery-detail #researchDetail{
