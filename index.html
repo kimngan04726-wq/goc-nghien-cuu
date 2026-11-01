@@ -5531,10 +5531,10 @@ async function refreshDetail(){
  try{
   const id=Number(detail.dataset.cellId||window.currentResearchCellId);
   if(!id)return;
-  const h=detail.querySelector(':scope>h2');
-  if(h&&!h.querySelector('.ed-detail-books')){const icon=document.createElement('span');icon.className='ed-detail-books';icon.innerHTML=svg('book');h.prepend(icon)}
+  const heading=detail.querySelector(':scope>h2');
+  if(heading&&!heading.querySelector('.ed-detail-books')){const icon=document.createElement('span');icon.className='ed-detail-books';icon.innerHTML=svg('book');heading.prepend(icon)}
   const cards=[...detail.querySelectorAll('.research-draft-card')];
-  const summary=detail.querySelector('.research-work-box:not(.research-draft-card)');
+  const summary=detail.querySelector('.research-work-box:not(.research-draft-card):not(.research-history-panel)');
   const page=typeof researchPageCache!=='undefined'?researchPageCache.find(p=>Number(p.id)===id):null;
   const group=Number(page?.group_number)===2?2:1;
   for(const [index,slot] of slots.entries()){
@@ -5543,33 +5543,27 @@ async function refreshDetail(){
    let draft;
    try{draft=await adapter.loadDraft(id,slot)}catch(error){console.warn('Không tải được thông tin thẻ',{id,slot,error});continue}
    if(!card.isConnected||!detail.contains(card)||Number(detail.dataset.cellId||window.currentResearchCellId)!==id)return;
-   card.classList.add('ed-mock-card');
-   let title=card.querySelector(':scope > .ed-mock-title');
-   if(!title){title=document.createElement('h3');title.className='ed-mock-title';card.prepend(title)}
-   title.textContent=(slot==='summary'?'📄 Bài tổng hợp':'📝 Bản nháp '+(index+1));
-   let content=card.querySelector(':scope > .ed-detail-live');
-   if(!content){content=document.createElement('div');content.className='ed-detail-live';card.append(content)}
-   content.replaceChildren();
-   const makeRow=(label,value,kind)=>{
-    const row=document.createElement('div');row.className='ed-mock-row ed-mock-'+kind;
-    const name=document.createElement('strong');name.textContent=label;
-    const val=document.createElement('button');val.type='button';val.textContent=value;
-    row.append(name,val);content.append(row);return val;
+   let body=card.querySelector(':scope > .rd-body');
+   if(!body){body=document.createElement('div');body.className='rd-body';card.append(body)}
+   body.replaceChildren();
+   const title=document.createElement('h3');title.className='rd-title';title.textContent=slot==='summary'?'📄 Bài tổng hợp':'📝 Bản nháp '+(index+1);body.append(title);
+   const row=(label,value,kind)=>{
+    const line=document.createElement('div');line.className='rd-row rd-'+kind;
+    const caption=document.createElement('strong');caption.textContent=label;
+    const button=document.createElement('button');button.type='button';button.textContent=value;
+    line.append(caption,button);body.append(line);return button;
    };
    const memberNumber=(group-1)*2+index+1;
-   const owner=makeRow('Phụ trách:',slot==='summary'?SUMMARY_OWNER_LABEL:(typeof canonicalMemberName==='function'?canonicalMemberName(memberNumber):'Thành viên '+memberNumber),'owner');
+   const owner=row('Phụ trách:',slot==='summary'?SUMMARY_OWNER_LABEL:(typeof canonicalMemberName==='function'?canonicalMemberName(memberNumber):'Thành viên '+memberNumber),'owner');
    owner.className='draft-member-profile-link';
-   if(slot==='summary'){owner.disabled=true;owner.classList.add('ed-summary-owner')}
-   else owner.onclick=()=>openMemberProfile(memberNumber);
+   if(slot==='summary'){owner.disabled=true;owner.classList.add('rd-summary-owner')}else owner.onclick=()=>openMemberProfile(memberNumber);
    const progress=slot==='summary'?(window.getCellProgress?.(id)?.label||'Chưa viết'):(String(draft?.content_text||'').trim()?'Đang viết':'Chưa viết');
-   const status=makeRow('Tiến độ:',progress,'progress');status.className='rw-status';status.dataset.status=progress;status.onclick=()=>showPage('tasks');
-   const stamp=makeRow('Tình trạng cập nhật:',draft?.updated_at?time(draft.updated_at):'Chưa cập nhật','updated');
-   stamp.className='ed-detail-updated';
-   stamp.onclick=()=>{window.openResearchEditorUI(id,slot);setTimeout(()=>document.querySelector('#view-editor [data-action="history"]')?.click(),450)};
-   let edit=card.querySelector(':scope > .ed-mock-edit');
-   if(!edit){edit=document.createElement('button');edit.type='button';edit.className='ed-mock-edit';edit.textContent='✎';edit.setAttribute('aria-label','Chỉnh sửa '+(slot==='summary'?'Bài tổng hợp':slot));card.append(edit)}
-   edit.onclick=()=>window.openResearchEditorUI(id,slot);
+   const status=row('Tiến độ:',progress,'progress');status.className='rw-status';status.dataset.status=progress;status.onclick=()=>showPage('tasks');
+   const updated=row('Tình trạng cập nhật:',draft?.updated_at?time(draft.updated_at):'Chưa cập nhật','updated');updated.className='ed-detail-updated';
+   updated.onclick=()=>{window.openResearchEditorUI(id,slot);setTimeout(()=>document.querySelector('#view-editor [data-action="history"]')?.click(),450)};
+   const edit=document.createElement('button');edit.type='button';edit.className='rd-edit';edit.textContent='✎';edit.setAttribute('aria-label','Chỉnh sửa '+(slot==='summary'?'Bài tổng hợp':slot));edit.onclick=()=>window.openResearchEditorUI(id,slot);
    edit.disabled=!(typeof isAdmin!=='undefined'&&isAdmin&&adminMode==='edit'||typeof isMember!=='undefined'&&isMember&&assignedResearchPages.has(id));
+   body.append(edit);
   }
  }finally{detailRefreshing=false;if(detailRefreshPending){detailRefreshPending=false;queueMicrotask(refreshDetail)}}
 }
