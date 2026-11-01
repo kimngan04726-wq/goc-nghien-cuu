@@ -5506,20 +5506,9 @@ async function refreshDetail(){
     line.append(caption,button);body.append(line);return button;
    };
    const memberNumber=(group-1)*2+index+1;
-   const owner=row('Phụ trách:',slot==='summary'?SUMMARY_OWNER_LABEL:(typeof canonicalMemberName==='function'?canonicalMemberName(memberNumber):'Thành viên '+memberNumber),'owner');
+   const owner=row('Phụ trách:',slot==='summary'?'Nhóm '+group:(typeof canonicalMemberName==='function'?canonicalMemberName(memberNumber):'Thành viên '+memberNumber),'owner');
    owner.className='draft-member-profile-link';
-   if(slot==='summary'){owner.disabled=true;owner.classList.add('rd-summary-owner')}else owner.onclick=()=>openMemberProfile(memberNumber);
-   if(slot==='draft1'||slot==='summary'){
-    const groupLink=row('Nhóm:','Nhóm '+group,'group-link');
-    groupLink.className='rd-group-sidebar-link';
-    groupLink.title='Đến Nhóm '+group+' trong menu bên trái';
-    groupLink.onclick=()=>{
-     const target=document.querySelector('#app>nav .sidebar-member-group.'+(group===1?'group-one':'group-two'));
-     if(!target)return;
-     target.scrollIntoView({behavior:'smooth',block:'nearest'});
-     target.setAttribute('tabindex','-1');target.focus({preventScroll:true});
-    };
-   }
+   if(slot==='summary'){owner.classList.add('rd-summary-owner');owner.onclick=()=>{const target=document.querySelector('#app>nav .sidebar-member-group.'+(group===1?'group-one':'group-two'));if(target)target.scrollIntoView({behavior:'smooth',block:'nearest'})}}else owner.onclick=()=>openMemberProfile(memberNumber);
    const progress=slot==='summary'?(window.getCellProgress?.(id)?.label||'Chưa viết'):(String(draft?.content_text||'').trim()?'Đang viết':'Chưa viết');
    const status=row('Tiến độ:',progress,'progress');status.className='rw-status';status.dataset.status=progress;status.dataset.tone={'Chưa viết':'idle','Đang viết':'writing','Chờ duyệt':'review','Đã duyệt':'done'}[progress]||'idle';status.onclick=()=>showPage('tasks');
    const updated=row('Tình trạng cập nhật:',draft?.updated_at?time(draft.updated_at):'Chưa cập nhật','updated');updated.className='ed-detail-updated';
