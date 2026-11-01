@@ -1895,6 +1895,17 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 <p id="account"></p>
 <div id="adminModeControls" class="hidden" role="group" aria-label="Chế độ hiển thị"><button type="button" onclick="setAdminMode('edit')" data-admin-mode="edit">✎ Quản trị</button><button type="button" onclick="setAdminMode('member')" data-admin-mode="member">👥 Thành viên</button><button type="button" onclick="setAdminMode('guest')" data-admin-mode="guest">👁 Khách</button></div>
 <button id="logoutButton" onclick="signOut()">Đăng xuất</button>
+<div id="memberAccessAdmin" class="hidden" style="max-width:610px;margin:14px 0;padding:16px;border:1px solid #d9c9ac;border-radius:14px;background:#fffaf1">
+<h3 style="margin:0 0 9px">🔐 Quản lý quyền thành viên</h3>
+<p style="margin:0 0 12px;font-size:14px">Nhập email đã đăng ký hoặc đã chấp nhận lời mời Supabase. Không cần mật khẩu của thành viên.</p>
+<form id="memberAccessForm" onsubmit="manageMemberAccess(event)" style="display:grid;gap:9px">
+<label>Email thành viên<input id="memberAccessEmail" type="email" required placeholder="ten@example.com" autocomplete="off"></label>
+<label>Hồ sơ được gán<select id="memberAccessNumber" required><option value="1">1 — QTrâm</option><option value="2">2 — TThảo</option><option value="3">3 — KN</option><option value="4">4 — MThư</option></select></label>
+<div style="display:flex;flex-wrap:wrap;gap:8px"><button type="submit" name="memberAction" value="grant">Cấp quyền thành viên</button><button type="submit" name="memberAction" value="revoke">Thu hồi quyền</button></div>
+<p id="memberAccessStatus" role="status" style="font-size:14px;margin:0"></p>
+</form>
+<p style="font-size:13px;margin:10px 0 0">Nếu email chưa có tài khoản, hãy mời qua Supabase → Authentication → Users → Invite user trước. Chức năng này cần cài RPC bảo mật trong SQL Editor.</p>
+</div>
 </section>
 
 <section id="dashboardHome" class="hidden" aria-label="Trang chủ">
@@ -2084,6 +2095,7 @@ function applyAdminView(){
  if(!canEditMemberProfile(currentMemberNumber)){document.getElementById('profileEditView')?.classList.add('hidden');document.getElementById('profileReadView')?.classList.remove('hidden');}
  const controls=el('adminModeControls');
  controls.classList.toggle('hidden',!isAdmin);
+ const memberAccess=document.getElementById('memberAccessAdmin');if(memberAccess)memberAccess.classList.toggle('hidden',!adminEditingEnabled());
  controls.querySelectorAll('button').forEach(btn=>{
   const active=btn.dataset.adminMode===adminMode;
   btn.classList.toggle('mode-active',active);
@@ -2127,6 +2139,24 @@ function showPage(page) {
   if (page === "library") {populateQuickRelated();populateQuickFinders();loadQuickFinderProfiles();loadLibrary();const form=document.getElementById('referenceQuickForm');if(form)form.querySelectorAll('input,select,button').forEach(x=>x.disabled=!canContributeLibrary());}
 }
 
+async function manageMemberAccess(e){
+ e.preventDefault();
+ if(!adminEditingEnabled())return;
+ const email=document.getElementById('memberAccessEmail').value.trim().toLowerCase();
+ const number=Number(document.getElementById('memberAccessNumber').value);
+ const action=e.submitter?.value==='revoke'?'revoke':'grant';
+ if(!email||!Number.isInteger(number)||number<1||number>4)return;
+ if(!confirm(action==='revoke'?'Thu hồi quyền thành viên của '+email+'?':'Cấp quyền hồ sơ '+number+' cho '+email+'?'))return;
+ const status=document.getElementById('memberAccessStatus');
+ const buttons=document.querySelectorAll('#memberAccessForm button');buttons.forEach(b=>b.disabled=true);
+ status.textContent='Đang xử lý...';
+ try{
+  const {data,error}=await db.rpc('manage_member_access',{p_email:email,p_member_number:number,p_action:action});
+  if(error)throw error;
+  status.textContent=data||'Đã cập nhật quyền.';
+ }catch(err){status.textContent='Không thể cập nhật: '+err.message+' (kiểm tra RPC Supabase và quyền Admin).'}
+ finally{buttons.forEach(b=>b.disabled=false)}
+}
 async function signIn() {
   el("error").textContent = "Đang đăng nhập...";
   try {
