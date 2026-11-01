@@ -1870,6 +1870,9 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 #app>nav .sidebar-avatar{background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important}
 #app>nav .sidebar-avatar.has-photo:before,#app>nav .sidebar-avatar.has-photo:after{display:none!important}
 #app>nav .sidebar-avatar.has-photo{font-size:0!important}
+</style><style id="sidebar-synced-avatar-image">
+#app>nav .sidebar-avatar.has-photo:before,#app>nav .sidebar-avatar.has-photo:after{display:none!important}
+#app>nav .sidebar-avatar .member-synced-avatar{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important;position:relative!important;z-index:2!important}
 </style></head>
 <body>
 
@@ -2177,6 +2180,7 @@ async function initialize() {
 
   await Promise.all([loadTasks(),loadResearch(),loadLibrary()]);
   showPage("home");
+  loadAllSidebarMemberAvatars();
 }
 
 async function loadTasks() {
@@ -2310,7 +2314,7 @@ async function enterGuestMode(){
  el("logoutButton").classList.add("hidden");
  el("app").classList.remove("hidden");
  el("login").classList.remove("hidden");
- try{await Promise.all([loadTasks(),loadResearch(),loadLibrary()]);showPage("home");}
+ try{await Promise.all([loadTasks(),loadResearch(),loadLibrary()]);showPage("home");loadAllSidebarMemberAvatars();}
  catch(error){console.error("Guest data load:",error);}
 }
 </script>
@@ -4477,7 +4481,8 @@ function renderMemberProfile(){const n=currentMemberNumber,d=memberProfileData(n
 function toggleMemberProfileEdit(edit){if(edit===true||edit===undefined)pendingMemberAvatar=undefined;if(!adminEditingEnabled()){document.getElementById('profileReadView').classList.remove('hidden');document.getElementById('profileEditView').classList.add('hidden');document.getElementById('profileEditButton').classList.add('hidden');return;}const on=typeof edit==='boolean'?edit:document.getElementById('profileEditView').classList.contains('hidden');document.getElementById('profileReadView').classList.toggle('hidden',on);document.getElementById('profileEditView').classList.toggle('hidden',!on);document.getElementById('profileEditButton').classList.toggle('hidden',on)}
 let pendingMemberAvatar;
 function renderProfileAvatar(id,url){const node=document.getElementById(id);if(!node)return;node.style.backgroundImage=url?'url("'+url.replaceAll('"','%22')+'")':'';node.classList.toggle('has-photo',!!url)}
-function syncSidebarMemberAvatar(n,url){const node=document.querySelector('.sidebar-person[onclick*="openMemberProfile('+n+')"] .sidebar-avatar');if(!node)return;node.style.backgroundImage=url?'url("'+url.replaceAll('"','%22')+'")':'';node.classList.toggle('has-photo',!!url)}
+function syncSidebarMemberAvatar(n,url){const node=document.querySelector('.sidebar-person[onclick*="openMemberProfile('+n+')"] .sidebar-avatar');if(!node)return;node.replaceChildren();node.style.setProperty('background-image','none','important');node.classList.toggle('has-photo',!!url);if(url){const img=document.createElement('img');img.src=url;img.alt='Ảnh đại diện '+canonicalMemberName(n);img.className='member-synced-avatar';node.appendChild(img)}}
+async function loadAllSidebarMemberAvatars(){if(!MEMBER_PUBLIC_PROFILES_READY||!db)return;try{const {data,error}=await db.from('member_public_profiles').select('member_number,avatar_url');if(error)throw error;for(const p of data||[]){const n=Number(p.member_number);if(n>=1&&n<=4){sharedMemberProfiles[n]={...(sharedMemberProfiles[n]||{}),avatarUrl:p.avatar_url||''};syncSidebarMemberAvatar(n,p.avatar_url||'')}}}catch(err){console.warn('Không tải được ảnh đại diện menu:',err.message)}}
 function clearMemberAvatar(){pendingMemberAvatar='';document.getElementById('profileInputAvatar').value='';renderProfileAvatar('profileEditAvatar','')}
 async function previewMemberAvatar(input){const file=input.files?.[0];if(!file)return;if(!file.type.startsWith('image/'))return alert('Vui lòng chọn tệp ảnh.');if(file.size>8*1024*1024)return alert('Ảnh tối đa 8 MB.');const img=new Image();const url=URL.createObjectURL(file);try{await new Promise((ok,fail)=>{img.onload=ok;img.onerror=fail;img.src=url});const canvas=document.createElement('canvas');const scale=Math.min(1,480/Math.max(img.naturalWidth,img.naturalHeight));canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);pendingMemberAvatar=canvas.toDataURL('image/jpeg',0.78);renderProfileAvatar('profileEditAvatar',pendingMemberAvatar)}catch(e){alert('Không đọc được ảnh.')}finally{URL.revokeObjectURL(url)}}
 const MEMBER_PUBLIC_PROFILES_READY=true; // Bảng và chính sách RLS đã được cấu hình trên Supabase.
