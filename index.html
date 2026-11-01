@@ -1887,6 +1887,8 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 <input id="email" type="email" placeholder="Email">
 <input id="password" type="password" placeholder="Mật khẩu">
 <button onclick="signIn()">Đăng nhập</button>
+<button type="button" onclick="requestPasswordReset()" style="margin-left:8px">Quên mật khẩu?</button>
+<div id="passwordRecovery" class="hidden" style="margin-top:12px"><label for="newRecoveryPassword">Đặt mật khẩu mới (ít nhất 8 ký tự)</label><input id="newRecoveryPassword" type="password" autocomplete="new-password" placeholder="Mật khẩu mới"><button type="button" onclick="finishPasswordRecovery()">Lưu mật khẩu mới</button></div>
 <p id="error"></p>
 </section>
 
@@ -2174,6 +2176,16 @@ async function signIn() {
   }
 }
 
+async function requestPasswordReset(){
+ const email=el('email').value.trim();
+ if(!email){el('error').textContent='Vui lòng nhập email tài khoản trước.';return;}
+ try{const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:'https://kimngan04726-wq.github.io/goc-nghien-cuu/'});if(error)throw error;el('error').textContent='Nếu email có tài khoản, bạn sẽ nhận được liên kết đặt lại mật khẩu. Hãy kiểm tra cả thư mục Spam.';}catch(e){el('error').textContent=e.message;}
+}
+async function finishPasswordRecovery(){
+ const password=el('newRecoveryPassword').value;
+ if(password.length<8){el('error').textContent='Mật khẩu cần ít nhất 8 ký tự.';return;}
+ try{const {error}=await db.auth.updateUser({password});if(error)throw error;el('newRecoveryPassword').value='';el('passwordRecovery').classList.add('hidden');sessionStorage.removeItem('researchPasswordRecovery');history.replaceState(null,'',location.pathname+location.search);el('error').textContent='Đã đặt mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.';}catch(e){el('error').textContent=e.message;}
+}
 async function signOut() {
   await db.auth.signOut();
   await enterGuestMode();
@@ -2334,8 +2346,12 @@ window.addEventListener("load",async () => {
       {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
     );
 
+    const recoveryLink=location.hash.includes('type=recovery')||location.search.includes('type=recovery')||sessionStorage.getItem('researchPasswordRecovery')==='yes';
+    if(recoveryLink)sessionStorage.setItem('researchPasswordRecovery','yes');
+    db.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){sessionStorage.setItem('researchPasswordRecovery','yes');el('passwordRecovery').classList.remove('hidden');el('login').classList.remove('hidden');el('error').textContent='Nhập mật khẩu mới để hoàn tất.';}});
     const {data:{session}} = await db.auth.getSession();
-    if (session) await initialize();
+    if(recoveryLink){await enterGuestMode();el('passwordRecovery').classList.remove('hidden');el('login').classList.remove('hidden');}
+    else if(session) await initialize();
     else await enterGuestMode();
   } catch (err) {
     el("error").textContent = err.message;
