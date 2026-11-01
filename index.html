@@ -5509,7 +5509,7 @@ async function refreshDetail(){
    let body=card.querySelector(':scope > .rd-body');
    if(!body){body=document.createElement('div');body.className='rd-body';card.append(body)}
    body.replaceChildren();
-   const title=document.createElement('h3');title.className='rd-title';title.textContent=slot==='summary'?'📄 Bài tổng hợp':'📝 Bản nháp '+(index+1);body.append(title);
+   const title=document.createElement('h3');title.className='rd-title';title.textContent=slot==='summary'?'📄 Bài tổng hợp':'📝 Bản nháp '+((group-1)*2+index+1);body.append(title);
    const row=(label,value,kind)=>{
     const line=document.createElement('div');line.className='rd-row rd-'+kind;
     const caption=document.createElement('strong');caption.textContent=label;
