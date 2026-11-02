@@ -3462,7 +3462,8 @@ researchSetup();
           callback:result=>result.access_token?resolve(result.access_token):reject(Error(result.error_description||'Google không cấp quyền')),
           error_callback:err=>reject(Error(err.message||err.type||'Không mở được cửa sổ Google; hãy cho phép popup'))
         });
-        client.requestAccessToken({prompt:'consent'});
+        // Chỉ hiện màn hình cấp quyền khi Google thực sự cần; tránh ép đồng ý mỗi lần xuất.
+        client.requestAccessToken({prompt:''});
       });
       const input=prompt('Đường dẫn Google Docs đích:','https://docs.google.com/document/d/1xcBZnQNKFz9dIw_g2PSh3ABRuBmHarSHvnJ5dFSlYrE/edit');
       if(input===null)return;
