@@ -3408,15 +3408,20 @@ researchSetup();
     }catch(e){alert('Không lưu được: '+(e.message||e));}
     finally{saveVersion.disabled=false;}
   };
+  const googleDocsSummaryText=async(page)=>{
+    const {data,error}=await db.from('research_editor_drafts').select('content_html,content_text').eq('cell_id',Number(page.id)).eq('slot','summary').maybeSingle();
+    if(error)throw error;
+    if(!data)return '';
+    const html=String(data.content_html||'');
+    if(html){const parsed=new DOMParser().parseFromString(html,'text/html');parsed.querySelectorAll('script,style,iframe').forEach(n=>n.remove());return (parsed.body.innerText||parsed.body.textContent||'').trim()}
+    return String(data.content_text||'').trim();
+  };
   docsButton.onclick=async()=>{
     const page=researchPageCache.find(p=>Number(p.id)===selected);
     if(!page||!canEditResearch(selected))return alert('Bạn không có quyền xuất bài.');
     if(document.getElementById('researchEditor')?.style.display==='block')return alert('Hãy lưu bài đang chỉnh sửa trước.');
-    const raw=String(page.content||'').replace(/^<!--RICH_RESEARCH_V1-->/,'');
-    const parsed=new DOMParser().parseFromString(raw,'text/html');
-    parsed.querySelectorAll('script,style,iframe').forEach(node=>node.remove());
-    const content=(/<[a-z][^>]*>/i.test(raw)?parsed.body.textContent:raw).trim();
-    if(!content)return alert('Bài tổng hợp chưa có nội dung.');
+    let content='';try{content=await googleDocsSummaryText(page)}catch(e){return alert('Không đọc được Bài tổng hợp đã lưu: '+e.message)}
+    if(!content)return alert('Bài tổng hợp chưa có nội dung đã lưu. Hãy lưu bài trước khi xuất.');
     const title=(page.title||'Nhiệm vụ '+page.id).trim();
     // Hộp chọn HTML thay cho confirm(): không làm mất user activation của popup Google.
     const existing=document.getElementById('google-docs-export-choice');
@@ -3445,10 +3450,7 @@ researchSetup();
     const page=researchPageCache.find(p=>Number(p.id)===selected);
     if(!page)return;
     const title=(page.title||'Nhiệm vụ '+page.id).trim();
-    const raw=String(page.content||'').replace(/^<!--RICH_RESEARCH_V1-->/,'');
-    const parsed=new DOMParser().parseFromString(raw,'text/html');
-    parsed.querySelectorAll('script,style,iframe').forEach(node=>node.remove());
-    const content=(/<[a-z][^>]*>/i.test(raw)?parsed.body.textContent:raw).trim();
+    const content=await googleDocsSummaryText(page);
     if(!window.google?.accounts?.oauth2)return alert('Google chưa sẵn sàng. Hãy tải lại trang.');
     docsButton.disabled=true;
     try{
@@ -3482,7 +3484,7 @@ researchSetup();
       if(matches.length>1)throw Error('Có nhiều thẻ trùng tên "'+title+'". Hãy đổi tên các thẻ trùng trước khi xuất.');
       let tab=matches[0]||null;
       const action=tab?(exportMode==='replace'?'THAY NỘI DUNG':'THÊM VÀO CUỐI'):'TẠO THẺ MỚI';
-      if(!confirm('Tài liệu: '+meta.name+'\nThẻ: '+title+'\nThao tác: '+action+'\n\nSẽ tạo bản sao lưu trước. Chỉ tác động đến thẻ này.\n\nTiếp tục?'))return;
+      // Người dùng đã chọn cách xuất trong hộp thoại ở giữa màn hình.
       const backup=await api('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(id)+'/copy?fields=id,name',{
         method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({name:meta.name+' - Sao lưu - '+new Date().toLocaleString('vi-VN')})
