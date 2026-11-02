@@ -5732,6 +5732,11 @@ function buildAddForm(id,slot){
  const finder=document.createElement('select');
  for(let n=1;n<=4;n++){const o=document.createElement('option');o.value='Thành viên '+n;o.textContent=typeof canonicalMemberName==='function'?canonicalMemberName(n):'Thành viên '+n;finder.append(o)}
  finder.value='Thành viên '+(slot==='draft2'?first+1:first);
+ if(typeof isMember!=='undefined'&&isMember&&Number.isInteger(myMemberNumber)){
+  finder.value='Thành viên '+myMemberNumber;
+  finder.disabled=true;
+  finder.title='Thành viên chỉ được ghi tài liệu bằng tên của mình';
+ }
  finder.style.cssText='width:100%;padding:9px;border:1px solid #e3d6c8;border-radius:8px;background:#fff;color:#123d59;font:inherit';
  finderWrap.append(finder);
  lookupBtn.onclick=async()=>{
@@ -5965,6 +5970,16 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
   if(typeof canContributeLibrary!=='function'||!canContributeLibrary())return fail('Bạn không có quyền thêm tài liệu.');
   const cellId=Number(input?.cellId),slot=String(input?.slot||'');
   if(!Number.isInteger(cellId)||cellId<1||!['draft1','draft2','summary'].includes(slot))return fail('Không xác định được khung soạn thảo.');
+  const memberNumber=(typeof isMember!=='undefined'&&isMember)?Number(myMemberNumber):null;
+  if(typeof isMember!=='undefined'&&isMember){
+   if(!Number.isInteger(memberNumber)||memberNumber<1||memberNumber>4)return fail('Không xác định được thành viên. Hãy đăng nhập lại.');
+   if(typeof assignedResearchPages==='undefined'||!assignedResearchPages.has(cellId))return fail('Bạn chưa được phân công ô nghiên cứu này.');
+   const page=(typeof researchPageCache!=='undefined'?researchPageCache:[]).find(p=>Number(p.id)===cellId);
+   if(!page)return fail('Không xác định được nhóm nghiên cứu.');
+   const group=Number(page.group_number)===2?2:1;
+   const first=(group-1)*2+1;
+   if(slot==='draft1'&&memberNumber!==first||slot==='draft2'&&memberNumber!==first+1||slot==='summary'&&Math.ceil(memberNumber/2)!==group)return fail('Bạn không có quyền thêm tài liệu vào bản nháp này.');
+  }
   const title=String(input.title||'').trim();
   const authors=Array.isArray(input.authors)?input.authors.map(a=>typeof a==='string'?a:[a.family,a.given].filter(Boolean).join(', ')).filter(Boolean).join('; '):String(input.authors||'').trim();
   const source=String(input.source||'').trim();
@@ -5980,7 +5995,7 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
   if(duplicate)return fail('Tài liệu này đã có trong khung này.');
   busy=true;
   try{
-   const payload={title,authors,year,category:'Phương pháp nghiên cứu',doi,url,notes:JSON.stringify({quickReference:true,type:'article',source,volume:'',finder:String(input.finder||''),related:String(cellId),read:'Chưa đọc',memo:'',editorCell:cellId,editorSlot:slot})};
+   const payload={title,authors,year,category:'Phương pháp nghiên cứu',doi,url,notes:JSON.stringify({quickReference:true,type:'article',source,volume:'',finder:memberNumber!==null?'Thành viên '+memberNumber:String(input.finder||''),related:String(cellId),read:'Chưa đọc',memo:'',editorCell:cellId,editorSlot:slot})};
    const {data,error}=await db.from('research_references').insert(payload).select('id');
    if(error)return fail('Không lưu được: '+error.message);
    await loadLibrary();
