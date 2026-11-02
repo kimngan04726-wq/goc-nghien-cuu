@@ -3446,6 +3446,8 @@ researchSetup();
     dialog.append(heading,description,actions);overlay.append(dialog);document.body.append(overlay);
     return;
   };
+  // Chỉ giữ token trong bộ nhớ của tab, không lưu vào localStorage hay Supabase.
+  let googleDocsAccess=null;
   const runGoogleDocsExport=async(exportMode)=>{
     const page=researchPageCache.find(p=>Number(p.id)===selected);
     if(!page)return;
@@ -3454,12 +3456,12 @@ researchSetup();
     if(!window.google?.accounts?.oauth2)return alert('Google chưa sẵn sàng. Hãy tải lại trang.');
     docsButton.disabled=true;
     try{
-      // Phải gọi trực tiếp khi người dùng bấm để trình duyệt cho phép popup.
-      const token=await new Promise((resolve,reject)=>{
+      // Dùng lại token còn hiệu lực; chỉ gọi Google khi chưa có hoặc đã hết hạn.
+      const token=googleDocsAccess&&Date.now()<googleDocsAccess.expiresAt?googleDocsAccess.token:await new Promise((resolve,reject)=>{
         const client=google.accounts.oauth2.initTokenClient({
           client_id:'453242836681-7qoe89ghj3mmbiua5cnf9se25ig60ea5.apps.googleusercontent.com',
           scope:'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive',
-          callback:result=>result.access_token?resolve(result.access_token):reject(Error(result.error_description||'Google không cấp quyền')),
+          callback:result=>{if(result.access_token){googleDocsAccess={token:result.access_token,expiresAt:Date.now()+Math.max(60,Number(result.expires_in||3600)-120)*1000};resolve(result.access_token)}else reject(Error(result.error_description||'Google không cấp quyền'))},
           error_callback:err=>reject(Error(err.message||err.type||'Không mở được cửa sổ Google; hãy cho phép popup'))
         });
         // Chỉ hiện màn hình cấp quyền khi Google thực sự cần; tránh ép đồng ý mỗi lần xuất.
