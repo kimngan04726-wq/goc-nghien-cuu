@@ -3564,11 +3564,9 @@ try{
   async function loadDrafts(){
     if(selected===null)return;
     const id=selected;
-    refreshDraftCardLabels();
     const {data,error}=await db.from('research_drafts').select('slot,content,author_id').eq('page_id',id);
     if(id!==selected)return;
     if(error){
-      draftNodes.forEach(x=>{x.preview.textContent='Chưa kết nối bảng research_drafts trong Supabase.';x.button.disabled=!canEditResearch(id);});
       actions.querySelectorAll('button').forEach(x=>x.disabled=true);
       result.hidden=false;result.textContent='Cần tạo bảng research_drafts và cấu hình quyền trong Supabase trước khi lưu bản nháp. Bài tổng hợp vẫn hoạt động như cũ.';
       return;
@@ -3578,22 +3576,6 @@ try{
     for(let slot of [1,2]){
       const row=(data||[]).find(x=>Number(x.slot)===slot);
       draftState[slot]=row?.content||'';
-      const x=draftNodes[slot-1];
-      const pageGroup=Number(researchPageCache.find(p=>Number(p.id)===id)?.group_number)===2?2:1;
-      const memberNumber=(pageGroup-1)*2+slot;
-      x.panel.querySelector('h3').textContent='📝 Bản nháp '+memberNumber;
-      x.owner.replaceChildren();
-      x.owner.append(document.createTextNode('Người phụ trách: '));
-      const memberLink=document.createElement('button');
-      memberLink.type='button';
-      memberLink.className='draft-member-profile-link';
-      memberLink.textContent=canonicalMemberName(memberNumber);
-      memberLink.onclick=()=>openMemberProfile(memberNumber);
-      x.owner.append(memberLink);
-      if(selected!==id)return;
-      const display=draftState[slot];
-      x.preview.textContent=stripText(display.startsWith('<!--RICH_RESEARCH_V1-->')?display.slice('<!--RICH_RESEARCH_V1-->'.length):display)||'Chưa có nội dung.';
-      x.button.disabled=!(isAdmin&&adminMode==='edit'||isMember&&assignedResearchPages.has(id));
     }
   }
   // Đồng bộ tên khi hồ sơ hoặc tên ở thanh thành viên thay đổi.
@@ -3974,6 +3956,7 @@ try{
     detail.dataset.cellId=String(id);
     section.classList.add('gallery-detail');
     refresh();
+    window.refreshResearchDetail?.();
     window.scrollTo({top:0,behavior:'smooth'});
   }
   function close(){
@@ -5655,11 +5638,22 @@ async function refreshDetail(){
   const summary=detail.querySelector('.research-work-box:not(.research-draft-card):not(.research-history-panel)');
   const page=typeof researchPageCache!=='undefined'?researchPageCache.find(p=>Number(p.id)===id):null;
   const group=(page&&['Mô hình nghiên cứu và giả thuyết','Các biến nghiên cứu','Thang đo và phương án đo lường','Các nội dung khác'].includes(String(page.title||'').normalize('NFC').trim()))?2:(Number(page?.group_number)===2?2:1);
+  const switched = detail.dataset.renderedCell !== String(id);
+  for (const card of [...cards, summary]) {
+    if (!card) continue;
+    let b = card.querySelector(':scope > .rd-body');
+    if (!b) { b = document.createElement('div'); b.className = 'rd-body'; card.append(b); }
+    if (switched || !b.textContent.trim()) b.textContent = 'Đang tải…';
+  }
+  detail.dataset.renderedCell = String(id);
+  const withTimeout=(p,ms)=>Promise.race([p,new Promise(r=>setTimeout(()=>r(null),ms))]);
+  const drafts=await Promise.all(slots.map(s=>withTimeout(
+    adapter.loadDraft(id,s).catch(error=>{console.warn('Không tải được thông tin thẻ',{id,slot:s,error});return null;}),8000)));
+  if(Number(detail.dataset.cellId||window.currentResearchCellId)!==id)return;
   for(const [index,slot] of slots.entries()){
    const card=index<2?cards[index]:summary;
    if(!card)continue;
-   let draft;
-   try{draft=await adapter.loadDraft(id,slot)}catch(error){console.warn('Không tải được thông tin thẻ',{id,slot,error});continue}
+   const draft=drafts[index];
    if(!card.isConnected||!detail.contains(card)||Number(detail.dataset.cellId||window.currentResearchCellId)!==id)return;
    let body=card.querySelector(':scope > .rd-body');
    if(!body){body=document.createElement('div');body.className='rd-body';card.append(body)}
@@ -5685,6 +5679,7 @@ async function refreshDetail(){
   }
  }finally{detailRefreshing=false;if(detailRefreshPending){detailRefreshPending=false;queueMicrotask(refreshDetail)}}
 }
+window.refreshResearchDetail = refreshDetail;
 if(detail){const observer=new MutationObserver(()=>{const page=researchPageCache.find(p=>safe(p.title).trim()===safe(detail.querySelector(':scope>h2')?.textContent?.trim()).replace(/\s+/g,' ').trim());if(page){detail.dataset.cellId=page.id;window.currentResearchCellId=Number(page.id)}if(detail.closest('.gallery-detail')&&!detailRefreshing)refreshDetail()});observer.observe(detail,{childList:true,subtree:false});document.addEventListener('research:draft-saved',()=>refreshDetail());window.addEventListener('research-tasks-updated',()=>refreshDetail());document.addEventListener('click',e=>{const card=e.target.closest('#researchDetail .research-draft-card');if(card&&e.target.closest('button')&&/soạn thảo/i.test(e.target.textContent||'')){window.currentResearchSlot=[...detail.querySelectorAll('.research-draft-card')].indexOf(card)===0?'draft1':'draft2'}})}
 })();
 </script><script id="ed-popup-close-on-outside-click">
