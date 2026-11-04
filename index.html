@@ -1905,6 +1905,7 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 <button class="sidebar-main-link" onclick="showPage('research')"><span class="sidebar-nav-icon" aria-hidden="true">▣</span><span>Nơi làm việc</span></button>
 <button class="sidebar-main-link" onclick="showPage('tasks')"><span class="sidebar-nav-icon" aria-hidden="true">☷</span><span>Tiến độ</span></button>
 <button class="sidebar-main-link" onclick="showPage('library')"><span class="sidebar-nav-icon sidebar-document-icon" aria-hidden="true">📑</span><span>Tài liệu</span></button>
+<button id="mtx-nav" class="sidebar-main-link" type="button" onclick="mtxOpen()"><span class="sidebar-nav-icon" aria-hidden="true">▦</span><span>Ma trận tài liệu</span></button>
 <div class="sidebar-members">
 <h3>👥 &nbsp; Thành viên nhóm</h3>
 <div class="sidebar-member-group group-one">
@@ -2021,6 +2022,54 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 <div id="libraryAdmin" class="hidden"><button type="button" onclick="openLibraryForm()">＋ Thêm tài liệu</button></div></div>
 <p id="libraryMessage" role="status"></p>
 <div class="library-results-panel"><h3>📖 &nbsp; DANH MỤC TÀI LIỆU THAM KHẢO — APA 7</h3><div class="library-apa-tools"><button type="button" onclick="copyLibraryAPA()">▣ &nbsp; Sao chép danh mục</button><span>Danh mục tự cập nhật theo tài liệu đã lưu</span></div><div id="libraryAPAList" aria-live="polite"></div><div class="library-apa-warning">⚠ &nbsp; Trích dẫn tự động cần được kiểm tra và bổ sung thông tin theo APA 7 trước khi sử dụng chính thức.</div></div><div class="library-records-panel"><h3>▤ &nbsp; Tài liệu đã lưu <small>(nhấn Sửa để cập nhật)</small></h3><div id="libraryList"></div></div></div>
+</section>
+<!-- CHÈN MỚI ngay sau </section> của trang Tài liệu, trước </div> đóng #app. -->
+<section id="mtx-page" class="mtx-page hidden" aria-label="Ma trận tài liệu">
+  <h2>Ma trận tài liệu</h2>
+  <div class="mtx-toolbar">
+    <button type="button" onclick="mtxAdd()">＋ Thêm bài</button>
+    <label>Lọc theo biến <input id="mtx-filter-variable" type="search" oninput="mtxRender()" placeholder="Tên biến"></label>
+    <label>Lọc theo lý thuyết nền <input id="mtx-filter-theory" type="search" oninput="mtxRender()" placeholder="Lý thuyết"></label>
+    <label>Lọc theo năm <input id="mtx-filter-year" type="number" min="1900" max="2100" oninput="mtxRender()" placeholder="Năm"></label>
+  </div>
+  <form id="mtx-form" class="mtx-form mtx-hidden" onsubmit="mtxSave(event)">
+    <h3 id="mtx-form-title">Thêm bài vào ma trận</h3>
+    <div class="mtx-fields">
+      <label class="mtx-wide">Chọn từ trang Tài liệu
+        <select id="mtx-reference" onchange="mtxChooseReference()"><option value="">— Nhập thủ công / chọn tài liệu —</option></select>
+      </label>
+      <label class="mtx-wide">Tên bài báo <input id="mtx-title" required maxlength="500"></label>
+      <label>Tác giả <input id="mtx-authors" maxlength="500"></label>
+      <label>Năm <input id="mtx-year" type="number" min="1900" max="2100" oninput="mtxUpdateYearWarning()"></label>
+      <label>Loại tài liệu
+        <select id="mtx-source-type" onchange="mtxUpdateYearWarning()">
+          <option value="ordinary">Tài liệu thông thường (từ 2023)</option>
+          <option value="foundation">Mô hình / thang đo / biến gốc (từ 2021)</option>
+        </select>
+      </label>
+      <label class="mtx-wide">Bối cảnh (nước, đối tượng, cỡ mẫu) <textarea id="mtx-context"></textarea></label>
+      <label class="mtx-wide">Biến độc lập <textarea id="mtx-independent"></textarea></label>
+      <label class="mtx-wide">Biến phụ thuộc <textarea id="mtx-dependent"></textarea></label>
+      <label class="mtx-wide">Biến trung gian/điều tiết <textarea id="mtx-mediators"></textarea></label>
+      <label class="mtx-wide">Lý thuyết nền <textarea id="mtx-theory"></textarea></label>
+      <label class="mtx-wide">Thang đo (số câu) <textarea id="mtx-scale-items"></textarea></label>
+      <label class="mtx-wide">Thang đo lấy từ (tác giả, năm) <textarea id="mtx-scale-sources"></textarea></label>
+      <label class="mtx-wide">Kết quả chính <textarea id="mtx-results"></textarea></label>
+      <label class="mtx-wide">Link/PDF <input id="mtx-link" type="url" maxlength="2000"></label>
+      <label><input id="mtx-exception" type="checkbox" onchange="mtxUpdateYearWarning()"> Ngoại lệ được thầy đồng ý</label>
+      <span id="mtx-year-warning" class="mtx-alert mtx-hidden">Ngoài khung năm</span>
+    </div>
+    <div class="mtx-actions"><button type="submit">Lưu</button><button type="button" onclick="mtxCancel()">Hủy</button></div>
+  </form>
+  <p id="mtx-status" class="mtx-status" role="status"></p>
+  <div class="mtx-scroll" tabindex="0" aria-label="Bảng ma trận cuộn ngang">
+    <table class="mtx-table"><thead><tr>
+      <th>STT</th><th>Tác giả, năm</th><th>Bối cảnh (nước, đối tượng, cỡ mẫu)</th>
+      <th>Biến độc lập</th><th>Biến phụ thuộc</th><th>Biến trung gian/điều tiết</th>
+      <th>Lý thuyết nền</th><th>Thang đo (số câu)</th><th>Thang đo lấy từ (tác giả, năm)</th>
+      <th>Kết quả chính</th><th>Link/PDF</th><th>Người nhập</th><th>Thao tác</th>
+    </tr></thead><tbody id="mtx-rows"></tbody></table>
+  </div>
 </section>
 </div>
 </main>
@@ -5826,6 +5875,55 @@ action(edit);action(del);menu.append(toggle,actions);card.style.position='relati
   }catch(e){return fail('Không lưu được: '+(e.message||e))}
   finally{busy=false}
  };
+})();
+</script>
+<style>
+/* Chỉ áp dụng cho trang Ma trận tài liệu mới. */
+.mtx-page{padding:20px;min-width:0}
+.mtx-toolbar,.mtx-actions,.mtx-fields{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
+.mtx-toolbar input,.mtx-toolbar select,.mtx-fields input,.mtx-fields select,.mtx-fields textarea{max-width:100%;padding:8px}
+.mtx-scroll{overflow-x:auto;width:100%;border:1px solid #ddd;border-radius:8px}
+.mtx-table{border-collapse:collapse;min-width:1800px;width:100%}
+.mtx-table th,.mtx-table td{border:1px solid #ddd;padding:8px;vertical-align:top;text-align:left;min-width:130px;white-space:pre-wrap}
+.mtx-table th:first-child,.mtx-table td:first-child{min-width:45px}
+.mtx-table td:nth-child(3),.mtx-table td:nth-child(10){min-width:220px}
+.mtx-fields label{display:flex;flex-direction:column;gap:4px;min-width:220px;flex:1}
+.mtx-fields textarea{min-height:80px;resize:vertical}
+.mtx-fields .mtx-wide{min-width:300px;flex-basis:45%}
+.mtx-form{border:1px solid #ddd;border-radius:8px;padding:16px;margin:14px 0}
+.mtx-alert{display:inline-block;color:#b91c1c;background:#fee2e2;border-radius:4px;padding:2px 6px;font-weight:bold}
+.mtx-warning{color:#b91c1c}
+.mtx-muted{opacity:.75;font-size:.9em}
+.mtx-status{min-height:1.4em}
+.mtx-hidden{display:none!important}
+</style>
+<script>
+/* Mã thêm mới độc lập; không sửa hàm hoặc dữ liệu hiện có. */
+(function(){
+'use strict';
+let rows=[],editingId=null,selectedReferenceId='';
+const get=id=>document.getElementById('mtx-'+id);
+const fields={title:'title',authors:'authors',year:'publication_year',context:'context',independent:'independent_variables',dependent:'dependent_variables',mediators:'mediators_moderators',theory:'theory', 'scale-items':'scale_items','scale-sources':'scale_sources',results:'main_results',link:'source_link'};
+const val=id=>String(get(id)?.value||'').trim();
+const status=message=>{get('status').textContent=message};
+const text=(tag,value)=>{const e=document.createElement(tag);e.textContent=String(value??'');return e};
+const currentName=()=>typeof currentDisplayName==='function'?currentDisplayName():String(localStorage.getItem('research_display_name_v1')||'').trim();
+const sourceList=()=>typeof libraryItems!=='undefined'&&Array.isArray(libraryItems)?libraryItems:[];
+const tooOld=item=>{const y=Number(item.publication_year);return Number.isInteger(y)&&y>0&&y<(item.source_type==='foundation'?2021:2023)&&!item.approved_exception};
+const setFormVisible=visible=>get('form').classList.toggle('mtx-hidden',!visible);
+window.mtxUpdateYearWarning=function(){get('year-warning').classList.toggle('mtx-hidden',!tooOld({publication_year:val('year'),source_type:val('source-type'),approved_exception:get('exception').checked}))};
+window.mtxCancel=function(){editingId=null;selectedReferenceId='';get('form').reset();setFormVisible(false)};
+function fillReferenceChoices(){const select=get('reference');select.replaceChildren(new Option('— Nhập thủ công / chọn tài liệu —',''));sourceList().forEach(item=>select.add(new Option([item.title,item.authors,item.year].filter(Boolean).join(' — '),String(item.id))))}
+window.mtxChooseReference=function(){selectedReferenceId=val('reference');const ref=sourceList().find(x=>String(x.id)===selectedReferenceId);if(!ref)return;get('title').value=ref.title||'';get('authors').value=ref.authors||'';get('year').value=ref.year||'';get('link').value=ref.url||((ref.doi&&'https://doi.org/'+String(ref.doi).replace(/^https?:\/\/(dx\.)?doi\.org\//i,''))||'');mtxUpdateYearWarning()};
+window.mtxAdd=function(){mtxCancel();fillReferenceChoices();get('form-title').textContent='Thêm bài vào ma trận';setFormVisible(true);get('reference').focus()};
+window.mtxEdit=function(id){const item=rows.find(x=>String(x.id)===String(id));if(!item)return;mtxCancel();fillReferenceChoices();editingId=item.id;selectedReferenceId=item.reference_id||'';get('reference').value=selectedReferenceId;for(const [field,column] of Object.entries(fields))get(field).value=item[column]??'';get('source-type').value=item.source_type||'ordinary';get('exception').checked=!!item.approved_exception;get('form-title').textContent='Sửa bài trong ma trận';mtxUpdateYearWarning();setFormVisible(true);get('form').scrollIntoView({block:'nearest'})};
+window.mtxSave=async function(event){event.preventDefault();if(!db)return status('Chưa kết nối Supabase.');const payload={};for(const [field,column] of Object.entries(fields))payload[column]=val(field);payload.publication_year=val('year')?Number(val('year')):null;payload.reference_id=selectedReferenceId||null;payload.source_type=val('source-type');payload.approved_exception=get('exception').checked;payload.entered_by=editingId?(rows.find(x=>x.id===editingId)?.entered_by||currentName()):currentName();payload.updated_at=new Date().toISOString();if(!payload.entered_by){status('Vui lòng nhập tên người thực hiện ở đầu trang trước khi lưu.');return}if(!payload.title){status('Vui lòng nhập tên bài báo.');return}const button=get('form').querySelector('button[type=submit]');button.disabled=true;try{const query=editingId?db.from('matran_tailieu').update(payload).eq('id',editingId):db.from('matran_tailieu').insert(payload);const {error}=await query;if(error)throw error;mtxCancel();await mtxLoad();status('Đã lưu ma trận.')}catch(e){status('Không lưu được: '+e.message)}finally{button.disabled=false}};
+window.mtxDelete=async function(id){if(!confirm('Xóa bài này khỏi ma trận? (Không xóa khỏi trang Tài liệu)'))return;try{const {error}=await db.from('matran_tailieu').delete().eq('id',id);if(error)throw error;await mtxLoad();status('Đã xóa khỏi ma trận.')}catch(e){status('Không xóa được: '+e.message)}};
+window.mtxRender=function(){const body=get('rows');body.replaceChildren();const variable=val('filter-variable').toLocaleLowerCase('vi'),theory=val('filter-theory').toLocaleLowerCase('vi'),year=val('filter-year');const filtered=rows.filter(item=>(!variable||[item.independent_variables,item.dependent_variables,item.mediators_moderators].some(v=>String(v||'').toLocaleLowerCase('vi').includes(variable)))&&(!theory||String(item.theory||'').toLocaleLowerCase('vi').includes(theory))&&(!year||String(item.publication_year||'')===year));if(!filtered.length){const tr=document.createElement('tr'),td=text('td','Chưa có bài phù hợp.');td.colSpan=13;tr.append(td);body.append(tr);return}filtered.forEach((item,index)=>{const tr=document.createElement('tr');tr.append(text('td',index+1));const author=text('td',[item.authors,item.publication_year].filter(Boolean).join(', '));author.append(text('div',item.title));if(tooOld(item)){const warning=text('span','Ngoài khung năm');warning.className='mtx-alert';author.append(warning)}tr.append(author);for(const key of ['context','independent_variables','dependent_variables','mediators_moderators','theory','scale_items','scale_sources','main_results'])tr.append(text('td',item[key]));const linkCell=document.createElement('td');if(/^https?:\/\//i.test(item.source_link||'')){const link=text('a','Mở link/PDF');link.href=item.source_link;link.target='_blank';link.rel='noopener noreferrer';linkCell.append(link)}else linkCell.textContent=item.source_link||'';tr.append(linkCell,text('td',item.entered_by));const actions=document.createElement('td'),edit=text('button','Sửa'),remove=text('button','Xóa');edit.type=remove.type='button';edit.onclick=()=>mtxEdit(item.id);remove.onclick=()=>mtxDelete(item.id);actions.append(edit,remove);tr.append(actions);body.append(tr)})};
+window.mtxLoad=async function(){if(!db)return status('Chưa kết nối Supabase.');status('Đang tải ma trận...');try{const {data,error}=await db.from('matran_tailieu').select('*').order('created_at',{ascending:false});if(error)throw error;rows=data||[];mtxRender();status(rows.length+' bài trong ma trận.')}catch(e){status('Không tải được ma trận: '+e.message+' — Kiểm tra đã chạy file SQL chưa.')}};
+const originalShowPage=window.showPage;
+window.showPage=function(page){get('page').classList.add('hidden');return originalShowPage.apply(this,arguments)};
+window.mtxOpen=function(){originalShowPage('library');document.getElementById('library').classList.add('hidden');get('page').classList.remove('hidden');document.querySelectorAll('nav button').forEach(b=>{const active=b.id==='mtx-nav';b.classList.toggle('nav-active',active);b.setAttribute('aria-current',active?'page':'false')});mtxLoad()};
 })();
 </script>
 </body>
