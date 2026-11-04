@@ -3062,7 +3062,7 @@ researchSetup();
     const active=hasText(current?.content)||(drafts||[]).some(d=>hasText(d.content));
     const status=active?'Đang làm':'Chưa làm';
     if(tasks[0].status===status)return;
-    const {error}=await db.from("group_tasks").update({status:status}).eq("id",tasks[0].id);
+    const {error}=await db.from("group_tasks").update({status}).eq("id",tasks[0].id);
     if(error)console.warn('Chưa đồng bộ được trạng thái từ bài viết:',error.message);
     else if(typeof loadTasks==='function')await loadTasks();
   };
@@ -3322,7 +3322,7 @@ researchSetup();
 try{
  const task=await linkedTask();
  if(!task)throw Error('Không tìm được duy nhất một nhiệm vụ trùng với tiêu đề bài. Hãy kiểm tra tên nhiệm vụ hoặc nhiệm vụ trùng tên.');
- const {error}=await db.from("group_tasks").update({status:'Chờ rà soát'}).eq("id",task.id);
+ const {error}=await db.rpc('set_group_task_status',{p_task_id:task.id,p_status:'Chờ rà soát'});
  if(error)throw error;
  progressSynced=true;
  if(typeof loadTasks==='function')await loadTasks();
@@ -3513,11 +3513,12 @@ try{
     if(!window.DOMPurify)return alert('Chưa tải được thư viện bảo mật. Chưa lưu nội dung.');
     const rich=document.getElementById('richEditor');
     const content=RICH_MARKER+DOMPurify.sanitize(rich.innerHTML);
-    
-    const {data:existing,error:readError}=await db.from('research_drafts').select('author_id').eq('page_id'),pageId).eq('slot',slot).maybeSingle();
+    const {data:{user}}=await db.auth.getUser();
+    if(!user)return alert('Vui lòng đăng nhập.');
+    const {data:existing,error:readError}=await db.from('research_drafts').select('author_id').eq('page_id',pageId).eq('slot',slot).maybeSingle();
     if(readError)return alert('Chưa kết nối bảng research_drafts. Chưa lưu nội dung.');
     const payload={page_id:pageId,slot,content,updated_at:new Date().toISOString()};
-    if(!existing)payload.author_id=(await db.auth.getUser()).data.user.id;
+    if(!existing)payload.author_id=user.id;
     const query=existing?db.from('research_drafts').update(payload).eq('page_id',pageId).eq('slot',slot):db.from('research_drafts').insert(payload);
     const {error}=await query;
     if(error)return alert('Không lưu được bản nháp: '+error.message);
@@ -4362,7 +4363,7 @@ const sharedMemberProfiles={};function memberProfileData(n){return sharedMemberP
 function memberZodiac(date){if(!date)return '';const p=date.split('-');const m=Number(p[1]),d=Number(p[2]);if(!m||!d)return '';const z=['Ma Kết','Bảo Bình','Song Ngư','Bạch Dương','Kim Ngưu','Song Tử','Cự Giải','Sư Tử','Xử Nữ','Thiên Bình','Bọ Cạp','Nhân Mã'];const edges=[20,19,21,20,21,21,23,23,23,23,22,22];return d<edges[m-1]?z[(m+11)%12]:z[m%12]}
 function openMemberProfile(n){currentMemberNumber=Math.max(1,Math.min(4,Number(n)||1));showPage('member');document.querySelectorAll('.sidebar-person').forEach((b,i)=>b.classList.toggle('selected',i===currentMemberNumber-1));renderMemberProfile();loadSharedMemberProfile(currentMemberNumber);window.scrollTo?.(0,0)}
 function renderMemberProfile(){const n=currentMemberNumber,d=memberProfileData(n),group=n<=2?1:2,groupNote=group===1?'Lý thuyết và định hướng':'Mô hình và triển khai',name=d.name?.trim()||canonicalMemberName(n);const put=(id,value)=>{const e=document.getElementById(id);if(e)e.textContent=value};put('profileCrumbName',canonicalMemberName(n));put('profileDisplayName',canonicalMemberName(n));put('profileEditName',canonicalMemberName(n));put('profileGroupPill','📁  Nhóm '+group);put('profileEditGroup','📁  Nhóm '+group);put('profileGroupNote',groupNote);put('profileFactName',name);const factName=document.getElementById('profileFactName');if(factName){const words=name.trim().split(/\s+/);if(words.length===4&&name.trim().length>17)factName.innerHTML=words.slice(0,2).map(escapeHTML).join(' ')+'<br>'+words.slice(2).map(escapeHTML).join(' ');factName.classList.toggle('short-fullname',name.trim().length<=17);}put('profileFactClass',d.className||'Chưa cập nhật');put('profileFactRole',d.role||'Chưa cập nhật');put('profileFactGroup','Nhóm '+group);put('profileFactBirth',d.birth?d.birth.split('-').reverse().join('/'):'Chưa cập nhật');put('profileFactZodiac',memberZodiac(d.birth)||'Chưa cập nhật');put('profileIntroText',d.intro||'Thành viên chưa thêm lời giới thiệu.');document.getElementById('profileInputName').value=d.name||name;document.getElementById('profileInputClass').value=d.className||'';document.getElementById('profileInputRole').value=d.role||'';document.getElementById('profileInputGroup').value=String(group);document.getElementById('profileInputBirth').value=d.birth||'';document.getElementById('profileInputZodiac').value=memberZodiac(d.birth);document.getElementById('profileInputIntro').value=d.intro||'';toggleMemberProfileEdit(false);syncSidebarMemberAvatar(n,d.avatarUrl);renderProfileAvatar('profileReadAvatar',d.avatarUrl);renderProfileAvatar('profileEditAvatar',d.avatarUrl);const editButton=document.getElementById('profileEditButton');if(editButton)editButton.classList.toggle('hidden',!canEditMemberProfile(n))}
-function toggleMemberProfileEdit(edit){if(edit===true||edit===undefined)pendingMemberAvatar=undefined;
+function toggleMemberProfileEdit(edit){if(edit===true||edit===undefined)pendingMemberAvatar=undefined;const on=typeof edit==='boolean'?edit:document.getElementById('profileEditView').classList.contains('hidden');document.getElementById('profileReadView').classList.toggle('hidden',on);document.getElementById('profileEditView').classList.toggle('hidden',!on);document.getElementById('profileEditButton').classList.toggle('hidden',on)}
 let pendingMemberAvatar;
 function renderProfileAvatar(id,url){const node=document.getElementById(id);if(!node)return;node.style.backgroundImage=url?'url("'+url.replaceAll('"','%22')+'")':'';node.classList.toggle('has-photo',!!url)}
 function syncSidebarMemberAvatar(n,url){const node=document.querySelector('.sidebar-person[onclick*="openMemberProfile('+n+')"] .sidebar-avatar');if(!node)return;node.replaceChildren();node.style.setProperty('background-image','none','important');node.classList.toggle('has-photo',!!url);if(url){const img=document.createElement('img');img.src=url;img.alt='Ảnh đại diện '+canonicalMemberName(n);img.className='member-synced-avatar';node.appendChild(img)}}
