@@ -2026,6 +2026,10 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
 <!-- CHÈN MỚI ngay sau </section> của trang Tài liệu, trước </div> đóng #app. -->
 <section id="mtx-page" class="mtx-page hidden" aria-label="Ma trận tài liệu">
   <h2>Ma trận tài liệu</h2>
+  <div class="mtx-tabs" role="tablist" aria-label="Các phần của Ma trận tài liệu">
+    <button id="mtx-tab-matrix" type="button" role="tab" aria-selected="true" onclick="mtxSwitchTab('matrix')">Ma trận</button>
+    <button id="mtx-tab-origin" type="button" role="tab" aria-selected="false" onclick="mtxSwitchTab('origin')">Lần gốc</button>
+  </div>
   <div class="mtx-toolbar">
     <button type="button" onclick="mtxAdd()">＋ Thêm bài</button>
     <label>Lọc theo biến <input id="mtx-filter-variable" type="search" oninput="mtxRender()" placeholder="Tên biến"></label>
@@ -2071,6 +2075,12 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
     </tr></thead><tbody id="mtx-rows"></tbody></table>
   </div>
 </section>
+  <section id="mtx-origin-panel" class="mtx-origin-panel mtx-hidden" aria-label="Lần gốc">
+    <div class="mtx-origin-toolbar"><button type="button" onclick="mtxOriginAdd()">＋ Thêm biến</button><span id="mtx-origin-status" role="status"></span></div>
+    <div class="mtx-origin-scroll" tabindex="0" aria-label="Bảng lần gốc cuộn ngang">
+      <table class="mtx-origin-table"><thead><tr><th>Biến</th><th>Bài đang đọc</th><th>Lấy từ (bài 1)</th><th>Lấy từ (bài 2)</th><th>Điểm dừng (bài sớm nhất trong khung năm)</th><th>Ghi chú nguồn cũ hơn khung năm</th><th>Thao tác</th></tr></thead><tbody id="mtx-origin-rows"></tbody></table>
+    </div>
+  </section>
 </div>
 </main>
 
@@ -5924,6 +5934,101 @@ window.mtxLoad=async function(){if(!db)return status('Chưa kết nối Supabase
 const originalShowPage=window.showPage;
 window.showPage=function(page){get('page').classList.add('hidden');return originalShowPage.apply(this,arguments)};
 window.mtxOpen=function(){originalShowPage('library');document.getElementById('library').classList.add('hidden');get('page').classList.remove('hidden');document.querySelectorAll('nav button').forEach(b=>{const active=b.id==='mtx-nav';b.classList.toggle('nav-active',active);b.setAttribute('aria-current',active?'page':'false')});mtxLoad()};
+})();
+</script>
+<style>
+/* Chỉ định dạng phần Lần gốc; không tác động giao diện cũ. */
+.mtx-tabs{display:flex;gap:8px;margin:12px 0}
+.mtx-tabs button[aria-selected="true"]{font-weight:bold;text-decoration:underline}
+.mtx-origin-toolbar{display:flex;gap:12px;align-items:center;margin:12px 0}
+.mtx-origin-scroll{max-width:100%;overflow-x:auto}
+.mtx-origin-table{border-collapse:collapse;min-width:1600px;width:100%}
+.mtx-origin-table th,.mtx-origin-table td{border:1px solid #ddd;padding:8px;vertical-align:top;min-width:175px}
+.mtx-origin-table select,.mtx-origin-table input,.mtx-origin-table textarea{box-sizing:border-box;width:100%;font:inherit}
+.mtx-origin-table textarea{min-height:90px;resize:vertical}
+.mtx-origin-chain{margin-top:8px;white-space:normal;line-height:1.6}
+.mtx-origin-manual{margin-top:6px;display:flex;gap:4px}
+.mtx-origin-manual input:first-child{flex:3}
+.mtx-origin-manual input:last-child{flex:1;min-width:65px}
+.mtx-origin-actions{display:flex;gap:5px;flex-wrap:wrap}
+.mtx-origin-alert{color:#b91c1c;background:#fee2e2;padding:2px 5px;display:inline-block;margin-top:5px}
+</style>
+<script>
+/* Đợt 2: bổ sung độc lập; không thay đổi các hàm ma trận đợt 1. */
+(function(){
+'use strict';
+const prefix='mtx-origin-', defaults=['Kiến thức tài chính số','Thói quen bảo mật','Tần suất dùng ngân hàng số','Nhận diện deepfake','Biến trung gian'];
+const $=id=>document.getElementById(prefix+id);
+const status=message=>{$('status').textContent=message};
+const name=()=>typeof currentDisplayName==='function'?currentDisplayName():String(localStorage.getItem('research_display_name_v1')||'').trim();
+let items=[],articles=[],busy=false;
+const safeText=(tag,value)=>{const e=document.createElement(tag);e.textContent=String(value??'');return e};
+const manual=v=>{try{const p=JSON.parse(v);return p&&p.manual===true?p:null}catch{return null}};
+const article=v=>articles.find(a=>String(a.id)===String(v));
+const label=v=>{if(!v)return '';const m=manual(v);if(m)return (m.title||'Chưa có tên')+(m.year?' ('+m.year+')':'');const a=article(v);return a?[a.authors,a.publication_year].filter(Boolean).join(', ')+' — '+(a.title||'Không có tên'):'(bài đã bị xóa khỏi ma trận)'};
+const year=v=>{const m=manual(v),a=article(v);return Number(m?m.year:a?.publication_year)||null};
+function selector(value,onChange){
+ const box=safeText('div',''),sel=document.createElement('select'),custom=document.createElement('div'),title=document.createElement('input'),yr=document.createElement('input');
+ sel.append(new Option('— Chọn bài —',''),new Option('Nhập tay (bài chưa có trong ma trận)','__manual__'));
+ articles.forEach(a=>sel.add(new Option([a.authors,a.publication_year].filter(Boolean).join(', ')+' — '+(a.title||'Không có tên'),String(a.id))));
+ if(value&&!manual(value)&&!article(value))sel.add(new Option('(bài đã bị xóa khỏi ma trận)',value));
+ const m=manual(value);sel.value=m?'__manual__':value||'';
+ custom.className='mtx-origin-manual';title.placeholder='Tên bài nhập tay';yr.type='number';yr.min='1800';yr.max='2100';yr.placeholder='Năm';
+ title.value=m?.title||'';yr.value=m?.year||'';
+ custom.append(title,yr);custom.classList.toggle('mtx-hidden',sel.value!=='__manual__');
+ const get=()=>sel.value==='__manual__'?JSON.stringify({manual:true,title:title.value.trim(),year:yr.value?Number(yr.value):null}):sel.value;
+ const change=()=>{custom.classList.toggle('mtx-hidden',sel.value!=='__manual__');onChange(get())};
+ sel.onchange=change;title.oninput=()=>onChange(get());yr.oninput=()=>onChange(get());
+ box.append(sel,custom);return {box,get};
+}
+function render(){
+ const body=$('rows');body.replaceChildren();
+ items.forEach(item=>{
+  const tr=document.createElement('tr'),titleCell=document.createElement('td'),title=document.createElement('input');title.value=item.variable_name||'';title.maxLength=200;titleCell.append(title);tr.append(titleCell);
+  const refs={};const values={reading_ref:item.reading_ref,source1_ref:item.source1_ref,source2_ref:item.source2_ref,stop_ref:item.stop_ref};
+  const chain=safeText('div','');chain.className='mtx-origin-chain';
+  const update=()=>{chain.textContent=['reading_ref','source1_ref','source2_ref','stop_ref'].map(k=>refs[k].get()).filter(Boolean).map(v=>label(v)+(v===refs.stop_ref.get()?' [điểm dừng]':'')).join(' → ');const warning=tr.querySelector('.mtx-origin-alert');if(warning)warning.classList.toggle('mtx-hidden',!(year(refs.stop_ref.get())&&year(refs.stop_ref.get())<2021))};
+  for(const key of Object.keys(values)){const td=document.createElement('td');refs[key]=selector(values[key],update);td.append(refs[key].box);if(key==='stop_ref'){const warn=safeText('span','Ngoài khung năm');warn.className='mtx-origin-alert mtx-hidden';td.append(warn)}tr.append(td)}
+  const noteCell=document.createElement('td'),note=document.createElement('textarea');note.value=item.old_source_note||'';noteCell.append(note);tr.append(noteCell);
+  const actionCell=document.createElement('td'),actions=safeText('div','');actions.className='mtx-origin-actions';
+  const save=safeText('button','Lưu'),remove=safeText('button','Xóa');save.type=remove.type='button';
+  save.onclick=async()=>{if(!name())return status('Hãy nhập tên người thực hiện ở đầu trang trước khi lưu.');if(!title.value.trim())return status('Tên biến không được trống.');save.disabled=true;try{const payload={variable_name:title.value.trim(),old_source_note:note.value,entered_by:item.entered_by||name(),updated_at:new Date().toISOString()};for(const k of Object.keys(refs))payload[k]=refs[k].get();const {error}=await db.from('matran_langoc').update(payload).eq('id',item.id);if(error)throw error;await load();status('Đã lưu biến: '+payload.variable_name)}catch(e){status('Không lưu được: '+e.message)}finally{save.disabled=false}};
+  remove.onclick=async()=>{if(!confirm('Xóa biến '+(item.variable_name||'')+'?'))return;remove.disabled=true;try{const {error}=await db.from('matran_langoc').delete().eq('id',item.id);if(error)throw error;await load();status('Đã xóa biến.')}catch(e){status('Không xóa được: '+e.message);remove.disabled=false}};
+  actions.append(save,remove);actionCell.append(actions,chain);tr.append(actionCell);body.append(tr);update();
+ });
+}
+async function load(){
+ if(!db)return status('Chưa kết nối Supabase.');
+ if(busy)return;busy=true;status('Đang tải Lần gốc...');
+ try{
+  const [r,a]=await Promise.all([db.from('matran_langoc').select('*').order('sort_order',{ascending:true}).order('created_at',{ascending:true}),db.from('matran_tailieu').select('id,title,authors,publication_year')]);
+  if(r.error)throw r.error;if(a.error)throw a.error;articles=a.data||[];items=r.data||[];
+  if(!items.length){
+   const payload=defaults.map((variable_name,sort_order)=>({variable_name,sort_order,entered_by:name()}));
+   const {error}=await db.from('matran_langoc').insert(payload);
+   if(error)throw error;
+   const again=await db.from('matran_langoc').select('*').order('sort_order',{ascending:true}).order('created_at',{ascending:true});
+   if(again.error)throw again.error;items=again.data||[];
+  }
+  render();status(items.length+' biến.');
+ }catch(e){status('Không tải được Lần gốc: '+e.message+' — Hãy chạy SQL đợt 2.')}
+ finally{busy=false}
+}
+window.mtxOriginAdd=async function(){
+ if(!db)return status('Chưa kết nối Supabase.');if(!name())return status('Hãy nhập tên người thực hiện ở đầu trang.');
+ const variable_name=prompt('Tên biến mới:');if(variable_name===null)return;if(!variable_name.trim())return status('Tên biến không được trống.');
+ try{const {error}=await db.from('matran_langoc').insert({variable_name:variable_name.trim(),entered_by:name(),sort_order:items.reduce((m,x)=>Math.max(m,Number(x.sort_order)||0),-1)+1});if(error)throw error;await load();status('Đã thêm biến.')}catch(e){status('Không thêm được: '+e.message)}
+};
+window.mtxSwitchTab=function(tab){
+ const origin=tab==='origin',page=document.getElementById('mtx-page');
+ for(const child of page.children){if(child.classList.contains('mtx-tabs')||child.id==='mtx-origin-panel'||child.tagName==='H2')continue;if(origin){child.dataset.mtxWasHidden=String(child.classList.contains('mtx-hidden'));child.classList.add('mtx-hidden')}else{child.classList.toggle('mtx-hidden',child.dataset.mtxWasHidden==='true');delete child.dataset.mtxWasHidden}}
+ $('panel').classList.toggle('mtx-hidden',!origin);
+ document.getElementById('mtx-tab-matrix').setAttribute('aria-selected',String(!origin));
+ document.getElementById('mtx-tab-origin').setAttribute('aria-selected',String(origin));
+ if(origin)load();
+};
+const oldOpen=window.mtxOpen;
+window.mtxOpen=function(){oldOpen.apply(this,arguments);mtxSwitchTab('matrix')};
 })();
 </script>
 </body>
