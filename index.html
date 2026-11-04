@@ -2029,7 +2029,15 @@ small,.muted,.caption,.rw-status,.rw-pct,.ed-chip,.cp-foot,.ed-meta,.research-dr
   <div class="mtx-tabs" role="tablist" aria-label="Các phần của Ma trận tài liệu">
     <button id="mtx-tab-matrix" type="button" role="tab" aria-selected="true" onclick="mtxSwitchTab('matrix')">Ma trận</button>
     <button id="mtx-tab-origin" type="button" role="tab" aria-selected="false" onclick="mtxSwitchTab('origin')">Lần gốc</button>
+    <button id="mtx-tab-count" type="button" role="tab" aria-selected="false" onclick="mtxSwitchTab('count')">Đếm biến trung gian</button>
   </div>
+  <div id="mtx-export-bar" class="mtx-export-bar"><button id="mtx-export-button" type="button" onclick="mtxExportExcel()">Xuất Excel (.xlsx)</button><span id="mtx-export-status" role="status"></span></div>
+  <section id="mtx-count-panel" class="mtx-count-panel mtx-hidden" aria-label="Đếm biến trung gian và biến kiểm soát">
+    <div class="mtx-count-toolbar"><button id="mtx-count-mediators" type="button" aria-pressed="true" onclick="mtxCountMode('mediators_moderators')">Biến trung gian/điều tiết</button><button id="mtx-count-controls" type="button" aria-pressed="false" onclick="mtxCountMode('control_variables')">Biến kiểm soát</button><label>Tìm tên biến <input id="mtx-count-search" type="search" oninput="mtxCountSearch()"></label></div>
+    <p class="mtx-count-note">Tên biến viết khác nhau (ví dụ tiếng Anh và tiếng Việt) sẽ được tính riêng, hãy nhập tên thống nhất để đếm đúng.</p>
+    <p id="mtx-count-status" role="status"></p><p id="mtx-count-empty"></p>
+    <div class="mtx-count-scroll" tabindex="0"><table class="mtx-count-table"><thead><tr><th>Biến</th><th>Số bài</th><th>Danh sách bài chứa biến đó</th></tr></thead><tbody id="mtx-count-rows"></tbody></table></div>
+  </section>
   <div class="mtx-toolbar">
     <button type="button" onclick="mtxAdd()">＋ Thêm bài</button>
     <label>Lọc theo biến <input id="mtx-filter-variable" type="search" oninput="mtxRender()" placeholder="Tên biến"></label>
@@ -6029,6 +6037,88 @@ window.mtxSwitchTab=function(tab){
 };
 const oldOpen=window.mtxOpen;
 window.mtxOpen=function(){oldOpen.apply(this,arguments);mtxSwitchTab('matrix')};
+})();
+</script>
+<style>
+/* Đợt 3: tất cả selector chỉ tác động thành phần mới. */
+.mtx-export-bar,.mtx-count-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:12px 0}
+.mtx-count-scroll{overflow-x:auto;width:100%}
+.mtx-count-table{border-collapse:collapse;min-width:760px;width:100%}
+.mtx-count-table th,.mtx-count-table td{border:1px solid #ddd;padding:9px;text-align:left;vertical-align:top}
+.mtx-count-top{font-weight:bold}
+.mtx-count-note{font-size:.9em;opacity:.8}
+.mtx-count-toolbar button[aria-pressed="true"]{font-weight:bold;text-decoration:underline}
+.mtx-count-table summary{cursor:pointer}
+</style>
+<script>
+/* Đợt 3: chỉ thêm mã; không thay đổi các hàm và màn hình cũ. */
+(function(){
+'use strict';
+const $=id=>document.getElementById('mtx-'+id);
+const columns=[['STT',null],['Tác giả, năm',null],['Tên bài','title'],['Bối cảnh','context'],['Biến độc lập','independent_variables'],['Biến phụ thuộc','dependent_variables'],['Biến trung gian/điều tiết','mediators_moderators'],['Biến kiểm soát','control_variables'],['Lý thuyết nền','theory'],['Thang đo (số câu)','scale_items'],['Thang đo lấy từ','scale_sources'],['Kết quả chính','main_results'],['Link/PDF','source_link'],['Người nhập','entered_by'],['Loại tài liệu','source_type'],['Ngoại lệ được thầy đồng ý','approved_exception']];
+let current='mediators_moderators',active='matrix',requestId=0;
+const clean=s=>String(s||'').trim().replace(/\s+/g,' ');
+const key=s=>clean(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLocaleLowerCase('vi');
+const label=a=>[a.authors,a.publication_year].filter(Boolean).join(', ')+' — '+(a.title||'Không có tên');
+const manual=v=>{try{const o=JSON.parse(v);return o?.manual===true?o:null}catch{return null}};
+const refLabel=(v,byId)=>{if(!v)return '';const m=manual(v);if(m)return (m.title||'Chưa có tên')+(m.year?' ('+m.year+')':'');return byId.get(String(v))?label(byId.get(String(v))):'(bài đã bị xóa khỏi ma trận)'};
+async function fetchAll(table){
+ const out=[];for(let from=0;from<100000;from+=1000){const {data,error}=await db.from(table).select('*').range(from,from+999);if(error)throw error;out.push(...(data||[]));if(!data||data.length<1000)return out}
+ throw Error('Dữ liệu vượt giới hạn xuất 100.000 dòng.');
+}
+function count(articles,field){
+ const counts=new Map();
+ for(const a of articles){const unique=new Set();for(const raw of String(a[field]||'').split(/[\n,;]+/)){const display=clean(raw),k=key(display);if(!k||unique.has(k))continue;unique.add(k);if(!counts.has(k))counts.set(k,{name:display,count:0,articles:[]});const row=counts.get(k);row.count++;row.articles.push(label(a))}}
+ return [...counts.values()].sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name,'vi'));
+}
+function render(data){
+ const body=$('count-rows');body.replaceChildren();const term=key($('count-search').value),filtered=data.filter(x=>key(x.name).includes(term)),max=data[0]?.count||0;
+ $('count-empty').textContent=data.length?'':('Chưa có bài nào ghi '+(current==='control_variables'?'biến kiểm soát.':'biến trung gian/điều tiết.'));
+ for(const row of filtered){const tr=document.createElement('tr'),name=document.createElement('td'),num=document.createElement('td'),list=document.createElement('td'),details=document.createElement('details'),summary=document.createElement('summary'),ul=document.createElement('ul');name.textContent=row.name;num.textContent=String(row.count);if(row.count===max){name.className='mtx-count-top';num.className='mtx-count-top'}summary.textContent='Xem '+row.articles.length+' bài';for(const item of row.articles){const li=document.createElement('li');li.textContent=item;ul.append(li)}details.append(summary,ul);list.append(details);tr.append(name,num,list);body.append(tr)}
+}
+let latest=[];
+async function refresh(){
+ const id=++requestId;$('count-status').textContent='Đang tải dữ liệu...';
+ try{if(!db)throw Error('Chưa kết nối Supabase');const rows=await fetchAll('matran_tailieu');if(id!==requestId)return;latest=count(rows,current);render(latest);$('count-status').textContent='Đã cập nhật từ '+rows.length+' bài.'}
+ catch(e){if(id===requestId)$('count-status').textContent='Không tải được dữ liệu: '+e.message}
+}
+window.mtxCountMode=function(field){current=field==='control_variables'?'control_variables':'mediators_moderators';$('count-mediators').setAttribute('aria-pressed',String(current==='mediators_moderators'));$('count-controls').setAttribute('aria-pressed',String(current==='control_variables'));$('count-empty').textContent='';refresh()};
+window.mtxCountSearch=function(){render(latest)};
+const previous=window.mtxSwitchTab;
+window.mtxSwitchTab=function(tab){
+ const page=$('page'),panel=$('count-panel'),origin=$('origin-panel'),isCount=tab==='count';
+ if(isCount){
+  if(active!=='count'){previous('matrix');for(const child of page.children){if(child.classList.contains('mtx-tabs')||child.tagName==='H2'||child.id==='mtx-count-panel'||child.id==='mtx-export-bar')continue;child.dataset.mtxCountHidden=String(child.classList.contains('mtx-hidden'));child.classList.add('mtx-hidden')}}
+  origin.classList.add('mtx-hidden');panel.classList.remove('mtx-hidden');active='count';refresh();
+ }else{
+  if(active==='count'){for(const child of page.children){if(child.dataset.mtxCountHidden!==undefined){child.classList.toggle('mtx-hidden',child.dataset.mtxCountHidden==='true');delete child.dataset.mtxCountHidden}}}
+  previous(tab);panel.classList.add('mtx-hidden');active=tab;
+ }
+ $('export-bar').classList.remove('mtx-hidden');$('tab-count').setAttribute('aria-selected',String(isCount));$('tab-matrix').setAttribute('aria-selected',String(tab==='matrix'));$('tab-origin').setAttribute('aria-selected',String(tab==='origin'));
+};
+const prevOpen=window.mtxOpen;window.mtxOpen=function(){prevOpen.apply(this,arguments);mtxSwitchTab('matrix')};
+function csvEscape(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
+function saveCsv(name,headers,rows){const csv='\ufeff'+[headers,...rows].map(r=>r.map(csvEscape).join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000)}
+function ensureSheetJS(){return new Promise((resolve,reject)=>{if(window.XLSX?.utils&&window.XLSX?.writeFile)return resolve(window.XLSX);const existing=document.getElementById('mtx-sheetjs');if(existing){existing.addEventListener('load',()=>resolve(window.XLSX),{once:true});existing.addEventListener('error',()=>reject(Error('Không tải được SheetJS')),{once:true});return}const s=document.createElement('script');s.id='mtx-sheetjs';s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=()=>window.XLSX?.utils?resolve(window.XLSX):reject(Error('SheetJS không khởi tạo'));s.onerror=()=>reject(Error('Không tải được SheetJS từ cdnjs'));document.head.append(s)})}
+function sheets(matrix,origins){
+ const byId=new Map(matrix.map(a=>[String(a.id),a]));
+ const m=[columns.map(c=>c[0]),...matrix.map((a,i)=>columns.map(([heading,field])=>heading==='STT'?i+1:heading==='Tác giả, năm'?[a.authors,a.publication_year].filter(Boolean).join(', '):field==='approved_exception'?(a[field]?'Có':'Không'):a[field]??''))];
+ const o=[['Biến','Bài đang đọc','Lấy từ (bài 1)','Lấy từ (bài 2)','Điểm dừng','Ghi chú nguồn cũ hơn khung năm','Người nhập','Thứ tự'],...origins.map(a=>[a.variable_name,...['reading_ref','source1_ref','source2_ref','stop_ref'].map(k=>refLabel(a[k],byId)),a.old_source_note,a.entered_by,a.sort_order])];
+ const makeCount=field=>[['Biến','Số bài','Danh sách bài'],...count(matrix,field).map(a=>[a.name,a.count,a.articles.join('\n')])];
+ return [['Ma trận',m],['Lần gốc',o],['Đếm biến trung gian',makeCount('mediators_moderators')],['Đếm biến kiểm soát',makeCount('control_variables')]];
+}
+window.mtxExportExcel=async function(){
+ const btn=$('export-button'),info=$('export-status');btn.disabled=true;info.textContent='Đang đọc toàn bộ dữ liệu...';
+ try{
+  if(!db)throw Error('Chưa kết nối Supabase');
+  const [matrix,origins]=await Promise.all([fetchAll('matran_tailieu'),fetchAll('matran_langoc')]),data=sheets(matrix,origins),date=new Date().toLocaleDateString('en-CA'),filename='MaTran_TaiLieu_'+date;
+  try{
+   const XLSX=await ensureSheetJS(),wb=XLSX.utils.book_new();
+   for(const [name,values] of data){const ws=XLSX.utils.aoa_to_sheet(values);ws['!cols']=values[0].map((_,i)=>({wch:Math.min(55,Math.max(15,...values.slice(0,101).map(r=>String(r[i]??'').split('\n')[0].length)))}));for(let c=0;c<values[0].length;c++){const cell=ws[XLSX.utils.encode_cell({r:0,c})];if(cell)cell.s={font:{bold:true}}}XLSX.utils.book_append_sheet(wb,ws,name)}
+   XLSX.writeFile(wb,filename+'.xlsx');info.textContent='Đã xuất Excel (4 sheet).';
+  }catch(e){for(const [name,values] of data)saveCsv(filename+'_'+name.replace(/\s+/g,'_')+'.csv',values[0],values.slice(1));info.textContent='Không xuất được XLSX ('+e.message+'). Đã xuất 4 file CSV thay thế.'}
+ }catch(e){info.textContent='Không xuất được dữ liệu: '+e.message}finally{btn.disabled=false}
+};
 })();
 </script>
 </body>
